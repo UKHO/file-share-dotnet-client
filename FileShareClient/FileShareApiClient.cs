@@ -6,10 +6,10 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UKHO.FileShareClient.Internal;
-using UKHO.FileShareClient.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using UKHO.FileShareClient.Internal;
+using UKHO.FileShareClient.Models;
 
 namespace UKHO.FileShareClient
 {
@@ -28,7 +28,7 @@ namespace UKHO.FileShareClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
-        [ExcludeFromCodeCoverage]//This constructor is intended for external use with a real HTTP Client.
+        [ExcludeFromCodeCoverage] //This constructor is intended for external use with a real HTTP Client.
         public FileShareApiClient(string baseAddress, string accessToken, int maxFileBlockSize = 4194304) :
             this(new DefaultHttpClientFactory(), baseAddress, accessToken, maxFileBlockSize)
         {
@@ -49,7 +49,7 @@ namespace UKHO.FileShareClient
                     .SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
 
-                var data = await response.ReadAsTypeAsync<ResponseCreateBatchModel>();
+                var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
                 var batchId = data.BatchId;
 
                 return new BatchHandle(batchId);
@@ -94,10 +94,7 @@ namespace UKHO.FileShareClient
                 {
                     httpRequestMessage.Headers.Add("X-Content-Size", "" + stream.Length);
 
-                    if (!string.IsNullOrEmpty(mimeType))
-                    {
-                        httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
-                    }
+                    if (!string.IsNullOrEmpty(mimeType)) httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
 
 
                     var createFileRecordResponse =
@@ -207,7 +204,7 @@ namespace UKHO.FileShareClient
             Console.WriteLine(request.ToString());
             if (request.Content != null)
             {
-                var readAsString = (await request.Content.ReadAsStringAsync());
+                var readAsString = await request.Content.ReadAsStringAsync();
                 Console.WriteLine(readAsString.Substring(0, Math.Min(1000, readAsString.Length)));
             }
 
@@ -217,10 +214,7 @@ namespace UKHO.FileShareClient
 
             Console.WriteLine("Response:");
             Console.WriteLine(response.ToString());
-            if (response.Content != null)
-            {
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-            }
+            if (response.Content != null) Console.WriteLine(await response.Content.ReadAsStringAsync());
 
             Console.WriteLine();
 

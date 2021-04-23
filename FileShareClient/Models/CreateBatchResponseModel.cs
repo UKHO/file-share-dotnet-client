@@ -1,6 +1,6 @@
 ﻿namespace UKHO.FileShareClient.Models
 {
-    public class ResponseCreateBatchModel
+    public class CreateBatchResponseModel
     {
         public string BatchId { get; set; }
     }

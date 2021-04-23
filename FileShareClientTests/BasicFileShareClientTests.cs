@@ -1,10 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using NUnit.Framework;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Models;
@@ -16,11 +13,16 @@ namespace UKHO.FileShareClientTests
         private object nextResponse = null;
         private FileShareApiClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
+        private Uri lastRequestUri;
 
         [SetUp]
         public void Setup()
         {
-            var fakeHttpClientFactory = new FakeFSSHttpClientFactory(request => (nextResponseStatusCode, nextResponse));
+            var fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            {
+                lastRequestUri = request.RequestUri;
+                return (nextResponseStatusCode, nextResponse);
+            });
             nextResponse = null;
             nextResponseStatusCode = HttpStatusCode.OK;
 
@@ -46,8 +48,9 @@ namespace UKHO.FileShareClientTests
                 Status = expectedBatchStatus
             };
 
-            var status = await fileShareApiClient.GetBatchStatusAsync(batchId);
-            Assert.AreEqual(expectedBatchStatus, status.Status);
+            var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchId);
+            Assert.AreEqual(expectedBatchStatus, batchStatusResponse.Status);
+            Assert.AreEqual($"/batch/{batchId}/status",lastRequestUri.AbsolutePath);
         }
 
         [Test]
@@ -65,39 +68,27 @@ namespace UKHO.FileShareClientTests
             catch (Exception e)
             {
                 Assert.IsInstanceOf<HttpRequestException>(e);
-                //Assert.AreEqual(200, ((System.Net.Http.HttpRequestException)e ).StatusCode);
             }
-
-        }
-    }
-
-    public class FakeFSSHttpClientFactory : DelegatingHandler, IHttpClientFactory
-    {
-        private readonly Func<HttpRequestMessage, (HttpStatusCode, object)> httpMessageHandler;
-
-        public FakeFSSHttpClientFactory(Func<HttpRequestMessage, (HttpStatusCode, object)> httpMessageHandler)
-        {
-            this.httpMessageHandler = httpMessageHandler;
+            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
 
-        public HttpClient CreateClient(string name)
+        [Test]
+        public async Task TestGetBatchStatusForABatchThatHasBeenDeleted()
         {
-            return new HttpClient(this);
-        }
+            var batchId = Guid.NewGuid();
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            var responseData = httpMessageHandler(request);
-            var response = new HttpResponseMessage()
+            nextResponseStatusCode = HttpStatusCode.Gone;
+
+            try
             {
-                StatusCode = responseData.Item1,
-            };
-            if (responseData.Item2 != null)
-                response.Content = new StringContent(JsonConvert.SerializeObject(responseData.Item2), Encoding.UTF8,
-                    "application/json");
-
-            return Task.FromResult(response);
+                await fileShareApiClient.GetBatchStatusAsync(batchId.ToString());
+                Assert.Fail("Expected to throw an exception");
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOf<HttpRequestException>(e);
+            }
+            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
     }
 }
