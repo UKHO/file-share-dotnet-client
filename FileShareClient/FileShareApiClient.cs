@@ -1,63 +1,76 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using FileShareClient.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using UKHO.FileShareClient.Internal;
+using UKHO.FileShareClient.Models;
 
-namespace FileShareClient
+namespace UKHO.FileShareClient
 {
     public class FileShareApiClient
     {
         private readonly int maxFileBlockSize;
-        private readonly HttpClient httpClient = new HttpClient(new LoggingHandler(new HttpClientHandler()));
+        private readonly IHttpClientFactory httpClientFactory;
 
-        public FileShareApiClient(string baseAddress, string accessToken, int maxFileBlockSize = 4194304)
+
+        public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken,
+            int maxFileBlockSize = 4194304)
         {
+            this.httpClientFactory = new AddAuthenticationHeaderHttpClientFactory(
+                new SetBaseAddressHttpClientFactory(httpClientFactory, new Uri(baseAddress)),
+                new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken));
             this.maxFileBlockSize = maxFileBlockSize;
-            httpClient.BaseAddress = new Uri(baseAddress);
-
-            httpClient.DefaultRequestHeaders.Authorization =
-                new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken);
         }
 
-        public async System.Threading.Tasks.Task<IBatchHandle> CreateBatchAsync(Models.BatchModel batchModel)
+        [ExcludeFromCodeCoverage] //This constructor is intended for external use with a real HTTP Client.
+        public FileShareApiClient(string baseAddress, string accessToken, int maxFileBlockSize = 4194304) :
+            this(new DefaultHttpClientFactory(), baseAddress, accessToken, maxFileBlockSize)
         {
-            var uri = "batch";
+        }
+
+        public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
+        {
+            const string uri = "batch";
             var payloadJson = JsonConvert.SerializeObject(batchModel,
-                new IsoDateTimeConverter() {DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK"});
+                new IsoDateTimeConverter {DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK"});
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
             {
                 Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
             })
             {
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                var response = await httpClientFactory.CreateClient()
+                    .SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
-                var data = await response.ReadAsTypeAsync<Models.ResponseCreateBatchModel>();
+
+                var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
                 var batchId = data.BatchId;
+
                 return new BatchHandle(batchId);
             }
         }
 
-        public Task<Models.BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle)
+        public Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle)
         {
             return GetBatchStatusAsync(batchHandle.BatchId);
         }
 
-        public async Task<Models.BatchStatusResponse> GetBatchStatusAsync(string batchId)
+        public async Task<BatchStatusResponse> GetBatchStatusAsync(string batchId)
         {
-            string uri = $"batch/{batchId}/status";
+            var uri = $"batch/{batchId}/status";
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                var response = await httpClientFactory.CreateClient()
+                    .SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
-                var status = await response.ReadAsTypeAsync<Models.BatchStatusResponse>();
+                var status = await response.ReadAsTypeAsync<BatchStatusResponse>();
                 return status;
             }
         }
@@ -69,7 +82,7 @@ namespace FileShareClient
             stream.Seek(0, SeekOrigin.Begin);
 
             var fileUri = $"batch/{batchHandle.BatchId}/files/{fileName}";
-
+            var httpClient = httpClientFactory.CreateClient();
 
             {
                 var fileModel = new FileModel();
@@ -81,10 +94,7 @@ namespace FileShareClient
                 {
                     httpRequestMessage.Headers.Add("X-Content-Size", "" + stream.Length);
 
-                    if (!string.IsNullOrEmpty(mimeType))
-                    {
-                        httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
-                    }
+                    if (!string.IsNullOrEmpty(mimeType)) httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
 
 
                     var createFileRecordResponse =
@@ -133,8 +143,8 @@ namespace FileShareClient
             }
 
             {
-                var writeblockfileModel = new WriteBlockFileModel() {BlockIds = fileBlocks};
-                var payloadJson = JsonConvert.SerializeObject(writeblockfileModel);
+                var writeBlockFileModel = new WriteBlockFileModel {BlockIds = fileBlocks};
+                var payloadJson = JsonConvert.SerializeObject(writeBlockFileModel);
 
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
                     {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
@@ -160,7 +170,8 @@ namespace FileShareClient
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
                 {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
             {
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                var response = await httpClientFactory.CreateClient()
+                    .SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -171,7 +182,8 @@ namespace FileShareClient
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
             {
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                var response = await httpClientFactory.CreateClient()
+                    .SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -192,20 +204,17 @@ namespace FileShareClient
             Console.WriteLine(request.ToString());
             if (request.Content != null)
             {
-                var readAsString = (await request.Content.ReadAsStringAsync());
-                Console.WriteLine(readAsString.Substring(0,Math.Min(1000, readAsString.Length)));
+                var readAsString = await request.Content.ReadAsStringAsync();
+                Console.WriteLine(readAsString.Substring(0, Math.Min(1000, readAsString.Length)));
             }
 
             Console.WriteLine();
 
-            HttpResponseMessage response = await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken);
 
             Console.WriteLine("Response:");
             Console.WriteLine(response.ToString());
-            if (response.Content != null)
-            {
-                Console.WriteLine(await response.Content.ReadAsStringAsync());
-            }
+            if (response.Content != null) Console.WriteLine(await response.Content.ReadAsStringAsync());
 
             Console.WriteLine();
 

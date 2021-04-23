@@ -50,11 +50,20 @@ stages:
               targetType: filePath
               filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
               arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET Core 3.1.x sdk'
+            inputs:
+              packageType: sdk
+              version: 3.1.x
+
           - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore"
+            displayName: ".Net Core - NuGet restore non-test projects"
             inputs:
               command: restore
-              projects: "**/*.sln"
+              projects: |
+                **/*.csproj
+                !**/*Tests.csproj
               feedsToUse: config
               noCache: true
               nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
@@ -83,8 +92,27 @@ stages:
                 Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
           - task: DotNetCoreCLI@2
+            displayName: ".Net Core - NuGet restore for test projects"
+            inputs:
+              command: restore
+              projects: |
+                **/*Tests.csproj
+              feedsToUse: config
+              noCache: true
+              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+              workingDirectory: '$(Build.SourcesDirectory)'
+              packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
+    
+          - task: DotNetCoreCLI@2
             displayName: "dotnet build"
             inputs:
               command: "build"
               projects: "**/*.csproj"
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
+          - task: DotNetCoreCLI@2
+            displayName: "dotnet test"
+            inputs:
+              command: "test"
+              projects: "**/*Tests.csproj"
               arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'

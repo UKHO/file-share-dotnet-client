@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
+    <suppress>
+        <notes><![CDATA[
+            file name: System.Runtime.CompilerServices.Unsafe.dll
+            Suppress false positive as this CVE is for Drupal.
+        ]]></notes>
+        <cve>CVE-2014-9152</cve>
+    </suppress>
 </suppressions>

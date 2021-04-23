@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace FileShareClient.Models
+namespace UKHO.FileShareClient.Models
 {
     public class Acl
     {

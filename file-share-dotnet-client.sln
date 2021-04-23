@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31019.35
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClient", "FileShareClient\FileShareClient.csproj", "{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientTests", "FileShareClientTests\FileShareClientTests.csproj", "{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
