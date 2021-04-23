@@ -50,11 +50,14 @@ stages:
               targetType: filePath
               filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
               arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
+
           - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore"
+            displayName: ".Net Core - NuGet restore non-test projects"
             inputs:
               command: restore
-              projects: "**/*.sln"
+              projects: |
+                **/*.csproj
+                !**/*Tests.csproj
               feedsToUse: config
               noCache: true
               nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
@@ -82,6 +85,18 @@ stages:
                 param($ReportLocation)
                 Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
+          - task: DotNetCoreCLI@2
+            displayName: ".Net Core - NuGet restore for test projects"
+            inputs:
+              command: restore
+              projects: |
+                **/*Tests.csproj
+              feedsToUse: config
+              noCache: true
+              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+              workingDirectory: '$(Build.SourcesDirectory)'
+              packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
+    
           - task: DotNetCoreCLI@2
             displayName: "dotnet build"
             inputs:
