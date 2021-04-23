@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace FileShareClient.Models
+namespace UKHO.FileShareClient.Models
 {
     public interface IBatchHandle
     {
@@ -20,7 +20,7 @@ namespace FileShareClient.Models
 
         internal void AddFile(string filename, string hash)
         {
-            FileDetails.Add(new FileDetail() {FileName = filename, Hash = hash});
+            FileDetails.Add(new FileDetail {FileName = filename, Hash = hash});
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FileShareClient.Models
+namespace UKHO.FileShareClient.Models
 {
     public class BatchStatusResponse
     {

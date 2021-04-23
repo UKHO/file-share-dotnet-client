@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace FileShareClient
+namespace UKHO.FileShareClient.Internal
 {
     internal static class Extensions
     {
@@ -16,12 +16,12 @@ namespace FileShareClient
         /// <returns></returns>
         public static async Task<T> ReadAsTypeAsync<T>(this HttpResponseMessage httpResponseMessage)
         {
-            string bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(bodyJson);
         }
     }
 
-    public static class Md5HashHelper
+    internal static class Md5HashHelper
     {
         public static byte[] CalculateMD5(this byte[] requestBytes)
         {

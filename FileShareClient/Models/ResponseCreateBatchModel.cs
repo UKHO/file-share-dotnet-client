@@ -1,4 +1,4 @@
-﻿namespace FileShareClient.Models
+﻿namespace UKHO.FileShareClient.Models
 {
     public class ResponseCreateBatchModel
     {
