@@ -43,9 +43,34 @@ namespace UKHO.FileShareClientTests
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
             var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
             Assert.IsNotNull(batchHandle);
-            Assert.IsNotEmpty(batchHandle.BatchId);
+            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestGetStatusOfNewBatch()
+        {
+            var expectedBatchId = Guid.NewGuid().ToString();
+            nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            Assert.IsNotNull(batchHandle);
+            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+
+
+            nextResponse = new BatchStatusResponse
+            {
+                BatchId = Guid.Parse(expectedBatchId),
+                Status = "Incomplete"
+            };
+            nextResponseStatusCode = HttpStatusCode.OK;
+            lastRequestUri = null;
+
+            var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchHandle);
+            Assert.AreEqual("Incomplete", batchStatusResponse.Status);
+            Assert.AreEqual(expectedBatchId, batchStatusResponse.BatchId.ToString());
+            // ReSharper disable once PossibleNullReferenceException - Will have been set during fileShareApiClient.GetBatchStatusAsync
+            Assert.AreEqual($"/batch/{expectedBatchId}/status", lastRequestUri.AbsolutePath);
         }
     }
 }
