@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace UKHO.FileShareClientTests
+namespace UKHO.FileShareClientTests.Helpers
 {
     public class FakeFssHttpClientFactory : DelegatingHandler, IHttpClientFactory
     {

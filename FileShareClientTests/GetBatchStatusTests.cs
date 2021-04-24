@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Models;
+using UKHO.FileShareClientTests.Helpers;
 
 namespace UKHO.FileShareClientTests
 {
-    public class BasicFileShareClientTests
+    public class GetBatchStatusTests
     {
         private object nextResponse = null;
         private FileShareApiClient fileShareApiClient;

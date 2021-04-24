@@ -4,7 +4,7 @@ namespace UKHO.FileShareClient.Models
 {
     public class BatchCommitModel
     {
-        public List<FileDetail> FileDetails { get; set; }
+        public List<FileDetail> FileDetails { get; set; } = new List<FileDetail>();
     }
 
     public class FileDetail
