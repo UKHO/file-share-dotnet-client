@@ -23,15 +23,6 @@ namespace UKHO.FileShareClient.Internal
 
     internal static class Md5HashHelper
     {
-        public static byte[] CalculateMD5(this byte[] requestBytes)
-        {
-            using (var md5 = MD5.Create())
-            {
-                var hash = md5.ComputeHash(requestBytes);
-                return hash;
-            }
-        }
-
         public static byte[] CalculateMD5(this Stream stream)
         {
             var position = stream.Position;

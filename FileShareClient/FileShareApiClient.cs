@@ -18,7 +18,6 @@ namespace UKHO.FileShareClient
         private readonly int maxFileBlockSize;
         private readonly IHttpClientFactory httpClientFactory;
 
-
         public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken,
             int maxFileBlockSize = 4194304)
         {
@@ -78,7 +77,7 @@ namespace UKHO.FileShareClient
         public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType)
         {
             if (!stream.CanSeek)
-                throw new Exception("The stream must be seekable.");
+                throw new ArgumentException("The stream must be seekable.", nameof(stream));
             stream.Seek(0, SeekOrigin.Begin);
 
             var fileUri = $"batch/{batchHandle.BatchId}/files/{fileName}";
@@ -186,39 +185,6 @@ namespace UKHO.FileShareClient
                     .SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
             }
-        }
-    }
-
-
-    public class LoggingHandler : DelegatingHandler
-    {
-        public LoggingHandler(HttpMessageHandler innerHandler)
-            : base(innerHandler)
-        {
-        }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-            CancellationToken cancellationToken)
-        {
-            Console.WriteLine("Request:");
-            Console.WriteLine(request.ToString());
-            if (request.Content != null)
-            {
-                var readAsString = await request.Content.ReadAsStringAsync();
-                Console.WriteLine(readAsString.Substring(0, Math.Min(1000, readAsString.Length)));
-            }
-
-            Console.WriteLine();
-
-            var response = await base.SendAsync(request, cancellationToken);
-
-            Console.WriteLine("Response:");
-            Console.WriteLine(response.ToString());
-            if (response.Content != null) Console.WriteLine(await response.Content.ReadAsStringAsync());
-
-            Console.WriteLine();
-
-            return response;
         }
     }
 }
