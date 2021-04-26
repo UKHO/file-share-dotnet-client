@@ -2,7 +2,7 @@
 
 namespace UKHO.FileShareClientTests.Helpers
 {
-    internal static class StringExtensions
+    public static class StringExtensions
     {
         /// <summary>
         /// Reads response body json as given type

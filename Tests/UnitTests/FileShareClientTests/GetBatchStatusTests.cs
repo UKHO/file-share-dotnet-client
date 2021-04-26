@@ -51,7 +51,7 @@ namespace UKHO.FileShareClientTests
 
             var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchId);
             Assert.AreEqual(expectedBatchStatus, batchStatusResponse.Status);
-            Assert.AreEqual($"/batch/{batchId}/status",lastRequestUri.AbsolutePath);
+            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
 
         [Test]
@@ -70,6 +70,7 @@ namespace UKHO.FileShareClientTests
             {
                 Assert.IsInstanceOf<HttpRequestException>(e);
             }
+
             Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
 
@@ -89,6 +90,7 @@ namespace UKHO.FileShareClientTests
             {
                 Assert.IsInstanceOf<HttpRequestException>(e);
             }
+
             Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
     }

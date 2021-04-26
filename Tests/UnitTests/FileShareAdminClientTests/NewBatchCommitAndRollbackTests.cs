@@ -6,16 +6,16 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using UKHO.FileShareClient;
-using UKHO.FileShareClient.Models;
+using UKHO.FileShareAdminClient;
+using UKHO.FileShareAdminClient.Models;
 using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareClientTests
+namespace UKHO.FileShareAdminClientTests
 {
     internal class NewBatchCommitAndRollbackTests
     {
         private object nextResponse = null;
-        private FileShareApiClient fileShareApiClient;
+        private FileShareApiAdminClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private List<(HttpMethod, Uri)> lastRequestUris;
         private List<string> lastRequestBodies;
@@ -46,7 +46,8 @@ namespace UKHO.FileShareClientTests
             };
 
             fileShareApiClient =
-                new FileShareApiClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken, MaxBlockSize);
+                new FileShareApiAdminClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken,
+                    MaxBlockSize);
         }
 
         [Test]

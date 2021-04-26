@@ -5,16 +5,17 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using NUnit.Framework;
-using UKHO.FileShareClient;
+using UKHO.FileShareAdminClient;
+using UKHO.FileShareAdminClient.Models;
 using UKHO.FileShareClient.Models;
 using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareClientTests
+namespace UKHO.FileShareAdminClientTests
 {
     public class CreateBatchTests
     {
         private object nextResponse = null;
-        private FileShareApiClient fileShareApiClient;
+        private FileShareApiAdminClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
         private List<string> lastRequestBodies;
@@ -43,7 +44,7 @@ namespace UKHO.FileShareClientTests
             };
 
             fileShareApiClient =
-                new FileShareApiClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
+                new FileShareApiAdminClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
         }
 
         [Test]
@@ -72,7 +73,7 @@ namespace UKHO.FileShareClientTests
                     ReadUsers = new List<string> {"userA", "userB"}
                 },
                 Attributes = new Dictionary<string, string> {{"Product", "AVCS"}, {"Week", "23"}}.ToList(),
-                ExpiryDate=DateTime.UtcNow
+                ExpiryDate = DateTime.UtcNow
             };
 
             var batchHandle = await fileShareApiClient.CreateBatchAsync(batchModel);

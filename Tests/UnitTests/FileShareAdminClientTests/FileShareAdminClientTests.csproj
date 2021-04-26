@@ -5,7 +5,7 @@
 
     <IsPackable>false</IsPackable>
 
-    <RootNamespace>UKHO.FileShareClientTests</RootNamespace>
+    <RootNamespace>UKHO.FileShareAdminClientTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FileShareClient\FileShareClient.csproj" />
+    <ProjectReference Include="..\..\..\FileShareAdminClient\FileShareAdminClient.csproj" />
+    <ProjectReference Include="..\FileShareClientTests\FileShareClientTests.csproj" />
   </ItemGroup>
 
 </Project>

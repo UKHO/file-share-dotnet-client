@@ -2,7 +2,7 @@
 
 namespace UKHO.FileShareClientTests.Helpers
 {
-    internal static class DateTimeExtensions
+    public static class DateTimeExtensions
     {
         public static DateTime TruncateToMilliseconds(this DateTime time)
         {

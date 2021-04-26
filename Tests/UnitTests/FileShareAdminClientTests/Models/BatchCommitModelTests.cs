@@ -1,9 +1,9 @@
 ﻿using System.Linq;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using UKHO.FileShareClient.Models;
+using UKHO.FileShareAdminClient.Models;
 
-namespace UKHO.FileShareClientTests.Models
+namespace UKHO.FileShareAdminClientTests.Models
 {
     internal class BatchCommitModelTests
     {
