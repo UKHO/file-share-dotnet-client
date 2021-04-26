@@ -50,12 +50,12 @@ stages:
               targetType: filePath
               filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
               arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
-
+          
           - task: UseDotNet@2
             displayName: 'Use .NET Core 3.1.x sdk'
             inputs:
               packageType: sdk
-              version: 3.1.x
+              useGlobalJson: true
 
           - task: DotNetCoreCLI@2
             displayName: ".Net Core - NuGet restore non-test projects"
@@ -140,7 +140,12 @@ stages:
       strategy:
         runOnce:
           deploy:
-            steps:
+            steps:              
+            - task: UseDotNet@2
+              displayName: 'Use .NET Core 3.1.x sdk'
+              inputs:
+                packageType: sdk
+                useGlobalJson: true
             - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
               env:
                 progetApiKey : $(progetApiKey)
@@ -156,6 +161,11 @@ stages:
           runOnce:
             deploy:
               steps:
+              - task: UseDotNet@2
+                displayName: 'Use .NET Core 3.1.x sdk'
+                inputs:
+                  packageType: sdk
+                  useGlobalJson: true
               - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true
                 env:
                   nugetApiKey : $(nugetApiKey)
