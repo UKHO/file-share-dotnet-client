@@ -131,3 +131,32 @@ stages:
             inputs:
               path: $(Build.ArtifactStagingDirectory)
               artifact: $(Build.DefinitionName)
+
+  - stage: Proget
+    jobs:
+    - deployment: Publish_To_ProGet
+      displayName: Publish To ProGet
+      environment: FileShareDotNetClient-ProGet
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(progetApiKey) -s $(progetFeed)
+              env:
+                progetApiKey : $(progetApiKey)
+              displayName: Publish Package
+            
+  - stage: Nuget
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: Publish_To_NuGet
+        displayName: Publish To NuGet
+        environment: FileShareDotNetClient-NuGet
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - powershell: dotnet nuget push "$(Pipeline.Workspace)/**/$("$(Build.BuildNumber)".replace('_','.')).nupkg" -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true
+                env:
+                  nugetApiKey : $(nugetApiKey)
+                displayName: Publish Package
