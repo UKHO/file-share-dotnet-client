@@ -116,3 +116,18 @@ stages:
               command: "test"
               projects: "**/*Tests.csproj"
               arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+          
+          - task: DotNetCoreCLI@2
+            displayName: Pack Project
+            inputs:
+              command: pack
+              projects: |
+                **/FileShareClient.csproj
+                **/FileShareAdminClient.csproj
+              arguments:  '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
+          - task: PublishPipelineArtifact@1
+            displayName: Publish Pipeline Atrifact
+            inputs:
+              path: $(Build.ArtifactStagingDirectory)
+              artifact: $(Build.DefinitionName)
