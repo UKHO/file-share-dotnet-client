@@ -3,6 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>UKHO.FileShareClient</RootNamespace>
+    <PackageProjectUrl>https://github.com/UKHO/file-share-dotnet-client</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>UK Hydrographic Office</Authors>
+    <Company>UK Hydrographic Office</Company>
+    <Description>The File Share Service is the single external place for external people to download files from the UK Hydrographic Office. This provides a .Net client to access the file share service.</Description>
+    <PackageId>UKHO.FileShareClient</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
