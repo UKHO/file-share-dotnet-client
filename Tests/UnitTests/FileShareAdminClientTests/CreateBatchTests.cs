@@ -14,7 +14,7 @@ namespace UKHO.FileShareAdminClientTests
 {
     public class CreateBatchTests
     {
-        private object nextResponse = null;
+        private object nextResponse;
         private FileShareApiAdminClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
@@ -107,15 +107,15 @@ namespace UKHO.FileShareAdminClientTests
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
             nextResponse = new BatchStatusResponse
             {
-                BatchId = Guid.Parse(expectedBatchId),
-                Status = "Incomplete"
+                BatchId = expectedBatchId,
+                Status = BatchStatusResponse.StatusEnum.Incomplete
             };
             nextResponseStatusCode = HttpStatusCode.OK;
             lastRequestUri = null;
 
             var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchHandle);
-            Assert.AreEqual("Incomplete", batchStatusResponse.Status);
-            Assert.AreEqual(expectedBatchId, batchStatusResponse.BatchId.ToString());
+            Assert.AreEqual(BatchStatusResponse.StatusEnum.Incomplete, batchStatusResponse.Status);
+            Assert.AreEqual(expectedBatchId, batchStatusResponse.BatchId);
 
             // ReSharper disable once PossibleNullReferenceException - Will have been set during fileShareApiClient.GetBatchStatusAsync
             Assert.AreEqual($"/batch/{expectedBatchId}/status", lastRequestUri.AbsolutePath);

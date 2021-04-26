@@ -39,5 +39,22 @@ namespace UKHO.FileShareClient
                 return status;
             }
         }
+
+        public async Task<BatchSearchResponse> Search(string searchQuery)
+        {
+            var uri = new UriBuilder
+            {
+                Path = "batch"
+            };
+            if (!string.IsNullOrEmpty(searchQuery)) uri.Query = "$filter=" + searchQuery;
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri.Uri))
+            {
+                var response = await httpClientFactory.CreateClient()
+                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+                var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
+                return searchResponse;
+            }
+        }
     }
 }

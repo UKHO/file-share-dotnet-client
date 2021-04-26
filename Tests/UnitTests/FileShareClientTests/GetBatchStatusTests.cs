@@ -42,10 +42,10 @@ namespace UKHO.FileShareClientTests
         public async Task TestBasicGetBatchStatus()
         {
             var batchId = "f382a514-aa1c-4709-aecd-ef06f1b963f5";
-            var expectedBatchStatus = "TestBatch";
-            nextResponse = new BatchStatusResponse()
+            var expectedBatchStatus = BatchStatusResponse.StatusEnum.Committed;
+            nextResponse = new BatchStatusResponse
             {
-                BatchId = Guid.Parse(batchId),
+                BatchId = batchId,
                 Status = expectedBatchStatus
             };
 
