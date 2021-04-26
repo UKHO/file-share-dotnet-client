@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace UKHO.FileShareClient.Models
+namespace UKHO.FileShareAdminClient.Models
 {
     public class BatchModel
     {
