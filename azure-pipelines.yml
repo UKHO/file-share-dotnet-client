@@ -20,7 +20,7 @@ variables:
   - name: UKHOAssemblyCompany
     value: "UK Hydrographic Office"
   - name: UKHOAssemblyVersionPrefix
-    value: "1.0."
+    value: "0.1."
   - name: UKHOAssemblyProduct
     value: "File Share Dotnet Client"
 
@@ -50,12 +50,12 @@ stages:
               targetType: filePath
               filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
               arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
-
+          
           - task: UseDotNet@2
             displayName: 'Use .NET Core 3.1.x sdk'
             inputs:
               packageType: sdk
-              version: 3.1.x
+              useGlobalJson: true
 
           - task: DotNetCoreCLI@2
             displayName: ".Net Core - NuGet restore non-test projects"
@@ -124,10 +124,60 @@ stages:
               projects: |
                 **/FileShareClient.csproj
                 **/FileShareAdminClient.csproj
-              arguments:  '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+              packDirectory: $(Build.ArtifactStagingDirectory)/packages
+              arguments:  '--configuration $(BuildConfiguration)'
 
           - task: PublishPipelineArtifact@1
             displayName: Publish Pipeline Atrifact
             inputs:
               path: $(Build.ArtifactStagingDirectory)
               artifact: $(Build.DefinitionName)
+          
+          - task: PublishPipelineArtifact@1
+            displayName: Publish NuGet Package Artifacts
+            inputs:
+              path: $(Build.ArtifactStagingDirectory)/packages
+              artifact: NuGetPackages
+
+  - stage: Proget
+    jobs:
+    - deployment: Publish_To_ProGet
+      displayName: Publish To ProGet
+      environment: FileShareDotNetClient-ProGet
+      strategy:
+        runOnce:
+          deploy:
+            steps:              
+            - task: UseDotNet@2
+              displayName: 'Use .NET Core 3.1.x sdk'
+              inputs:
+                packageType: sdk
+                useGlobalJson: true
+            - download: current
+              artifact: NuGetPackages
+            - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(progetApiKey) -s $(progetFeed)}
+              env:
+                progetApiKey : $(progetApiKey)
+              displayName: Publish Package
+            
+  - stage: Nuget
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: Publish_To_NuGet
+        displayName: Publish To NuGet
+        environment: FileShareDotNetClient-NuGet
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+              - task: UseDotNet@2
+                displayName: 'Use .NET Core 3.1.x sdk'
+                inputs:
+                  packageType: sdk
+                  useGlobalJson: true
+              - download: current
+                artifact: NuGetPackages
+              - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/UKHO.FileShareClient.*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true}
+                env:
+                  nugetApiKey : $(nugetApiKey)
+                displayName: Publish Package
