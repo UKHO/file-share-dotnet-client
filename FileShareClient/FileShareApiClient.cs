@@ -42,12 +42,10 @@ namespace UKHO.FileShareClient
 
         public async Task<BatchSearchResponse> Search(string searchQuery)
         {
-            var uri = new UriBuilder
-            {
-                Path = "batch"
-            };
-            if (!string.IsNullOrEmpty(searchQuery)) uri.Query = "$filter=" + searchQuery;
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri.Uri))
+            var uri = "batch";
+            if (!string.IsNullOrEmpty(searchQuery)) uri+= "?$filter=" + searchQuery;
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
                 var response = await httpClientFactory.CreateClient()
                     .SendAsync(httpRequestMessage, CancellationToken.None);

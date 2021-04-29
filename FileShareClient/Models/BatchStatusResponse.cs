@@ -36,7 +36,7 @@ namespace UKHO.FileShareClient.Models
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class InlineResponse2001 {\n");
+            sb.Append($"class  {GetType().Name}{{\n");
             sb.Append("  BatchId: ").Append(BatchId).Append("\n");
             sb.Append("  Status: ").Append(Status).Append("\n");
             sb.Append("}\n");

@@ -29,7 +29,7 @@ namespace UKHO.FileShareClientTests
 
             var config = new
             {
-                BaseAddress = @"https://fss-tests.net",
+                BaseAddress = @"https://fss-tests.net/basePath/",
                 AccessToken = "ACarefullyEncodedSecretAccessToken"
             };
 
@@ -51,7 +51,7 @@ namespace UKHO.FileShareClientTests
 
             var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchId);
             Assert.AreEqual(expectedBatchStatus, batchStatusResponse.Status);
-            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
+            Assert.AreEqual($"/basePath/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace UKHO.FileShareClientTests
                 Assert.IsInstanceOf<HttpRequestException>(e);
             }
 
-            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
+            Assert.AreEqual($"/basePath/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
 
         [Test]
@@ -91,7 +91,7 @@ namespace UKHO.FileShareClientTests
                 Assert.IsInstanceOf<HttpRequestException>(e);
             }
 
-            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
+            Assert.AreEqual($"/basePath/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace UKHO.FileShareClientTests
 
             var config = new
             {
-                BaseAddress = @"https://fss-tests.net",
+                BaseAddress = @"https://fss-tests.net/basePath/",
                 AccessToken = "ACarefullyEncodedSecretAccessToken"
             };
 
@@ -53,7 +53,7 @@ namespace UKHO.FileShareClientTests
             };
             nextResponse = expectedResponse;
             var response = await fileShareApiClient.Search("");
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("", lastRequestUri.Query, "Should be no query query string for an empty search");
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
@@ -76,7 +76,7 @@ namespace UKHO.FileShareClientTests
             nextResponse = expectedResponse;
 
             var response = await fileShareApiClient.Search("$batch(key) eq 'value'");
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20'value'", lastRequestUri.Query);
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
@@ -95,7 +95,7 @@ namespace UKHO.FileShareClientTests
             nextResponse = expectedResponse;
 
             var response = await fileShareApiClient.Search("$batch(key) eq 'value'");
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20'value'", lastRequestUri.Query);
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
