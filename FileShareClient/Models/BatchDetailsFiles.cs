@@ -10,7 +10,7 @@ namespace UKHO.FileShareClient.Models
     [DataContract]
     public class BatchDetailsFiles : IEquatable<BatchDetailsFiles>
     {
-        public BatchDetailsFiles(string filename = default, int? fileSize = default, string mimeType = default,
+        public BatchDetailsFiles(string filename = default, long? fileSize = default, string mimeType = default,
             string hash = default, List<BatchDetailsAttributes> attributes = default, BatchDetailsLinks links = default)
         {
             Filename = filename;
@@ -25,7 +25,7 @@ namespace UKHO.FileShareClient.Models
         public string Filename { get; set; }
 
         [DataMember(Name = "fileSize", EmitDefaultValue = false)]
-        public int? FileSize { get; set; }
+        public long? FileSize { get; set; }
 
         [DataMember(Name = "mimeType", EmitDefaultValue = false)]
         public string MimeType { get; set; }
