@@ -73,7 +73,7 @@ stages:
           - task: CmdLine@1
             displayName: "Run OWASP Dependency Checker"
             inputs:
-              filename: 'E:\encfilestore\tools\dependency-check\bin\dependency-check.bat'
+              filename: 'dependency-check.bat'
               arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
 
           - task: PublishBuildArtifacts@1
