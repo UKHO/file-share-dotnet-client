@@ -41,11 +41,11 @@ namespace UKHO.FileShareClientTests
         [Test]
         public async Task TestEmptySearchQuery()
         {
-            var expectedResponse = new BatchSearchResponse()
+            var expectedResponse = new BatchSearchResponse
             {
                 Count = 2,
                 Total = 2,
-                Entries = new List<BatchDetails>()
+                Entries = new List<BatchDetails>
                 {
                     new BatchDetails("batch1"), new BatchDetails("batch2")
                 },
@@ -63,11 +63,11 @@ namespace UKHO.FileShareClientTests
         [Test]
         public async Task TestSimpleSearchString()
         {
-            var expectedResponse = new BatchSearchResponse()
+            var expectedResponse = new BatchSearchResponse
             {
                 Count = 2,
                 Total = 2,
-                Entries = new List<BatchDetails>()
+                Entries = new List<BatchDetails>
                 {
                     new BatchDetails("batch1"), new BatchDetails("batch2")
                 },
@@ -77,15 +77,100 @@ namespace UKHO.FileShareClientTests
 
             var response = await fileShareApiClient.Search("$batch(key) eq 'value'");
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20'value'", lastRequestUri.Query);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
 
         [Test]
+        public async Task TestSimpleSearchWithDifferentPageSize()
+        {
+            var expectedResponse = new BatchSearchResponse
+            {
+                Count = 2,
+                Total = 2,
+                Entries = new List<BatchDetails>
+                {
+                    new BatchDetails("batch1"), new BatchDetails("batch2")
+                },
+                Links = new Links(new Link("self"))
+            };
+            nextResponse = expectedResponse;
+
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", 50);
+            Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&limit=50", lastRequestUri.Query);
+
+            CheckResponseMatchesExpectedResponse(expectedResponse, response);
+        }
+
+        [Test]
+        public async Task TestSimpleSearchStartingOnNextPage()
+        {
+            var expectedResponse = new BatchSearchResponse
+            {
+                Count = 2,
+                Total = 2,
+                Entries = new List<BatchDetails>
+                {
+                    new BatchDetails("batch1"), new BatchDetails("batch2")
+                },
+                Links = new Links(new Link("self"))
+            };
+            nextResponse = expectedResponse;
+
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", null, 20);
+            Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&start=20", lastRequestUri.Query);
+
+            CheckResponseMatchesExpectedResponse(expectedResponse, response);
+        }
+
+        [Test]
+        public async Task TestSimpleSearchWithPageSizeAndStartingOnNextPage()
+        {
+            var expectedResponse = new BatchSearchResponse
+            {
+                Count = 2,
+                Total = 2,
+                Entries = new List<BatchDetails>
+                {
+                    new BatchDetails("batch1"), new BatchDetails("batch2")
+                },
+                Links = new Links(new Link("self"))
+            };
+            nextResponse = expectedResponse;
+
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", 10, 20);
+            Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&limit=10&start=20", lastRequestUri.Query);
+
+            CheckResponseMatchesExpectedResponse(expectedResponse, response);
+        }
+
+        [TestCase(-10)]
+        [TestCase(0)]
+        public void TestSearchWithInvalidPageSizeThrowsArgumentException(int pageSize)
+        {
+            var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
+                await fileShareApiClient.Search("$batch(key) eq 'value'", pageSize, 20));
+
+            Assert.AreEqual("pageSize", exception!.ParamName);
+        }
+
+        [Test]
+        public void TestSearchWithInvalidPageStartThrowsArgumentException()
+        {
+            var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
+                await fileShareApiClient.Search("$batch(key) eq 'value'", -10, 20));
+
+            Assert.AreEqual("pageSize", exception!.ParamName);
+        }
+
+        [Test]
         public async Task TestSimpleSearchWithNoResults()
         {
-            var expectedResponse = new BatchSearchResponse()
+            var expectedResponse = new BatchSearchResponse
             {
                 Count = 0,
                 Total = 0,
@@ -96,7 +181,7 @@ namespace UKHO.FileShareClientTests
 
             var response = await fileShareApiClient.Search("$batch(key) eq 'value'");
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20'value'", lastRequestUri.Query);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
