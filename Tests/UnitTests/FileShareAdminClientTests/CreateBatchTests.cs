@@ -88,7 +88,7 @@ namespace UKHO.FileShareAdminClientTests
             CollectionAssert.AreEqual(batchModel.Attributes, actualRequest.Attributes);
             CollectionAssert.AreEqual(batchModel.Acl.ReadGroups, actualRequest.Acl.ReadGroups);
             CollectionAssert.AreEqual(batchModel.Acl.ReadUsers, actualRequest.Acl.ReadUsers);
-            Assert.AreEqual(batchModel.ExpiryDate.TruncateToMilliseconds(), actualRequest.ExpiryDate);
+            Assert.AreEqual(batchModel.ExpiryDate.Value.TruncateToMilliseconds(), actualRequest.ExpiryDate);
         }
 
         [Test]
