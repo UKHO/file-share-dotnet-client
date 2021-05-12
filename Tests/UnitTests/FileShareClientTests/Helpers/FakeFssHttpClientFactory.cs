@@ -26,7 +26,7 @@ namespace UKHO.FileShareClientTests.Helpers
             CancellationToken cancellationToken)
         {
             var responseData = httpMessageHandler(request);
-            var response = new HttpResponseMessage()
+            var response = new HttpResponseMessage
             {
                 StatusCode = responseData.Item1
             };

@@ -29,7 +29,7 @@ namespace UKHO.FileShareClientTests
 
             var config = new
             {
-                BaseAddress = @"https://fss-tests.net",
+                BaseAddress = @"https://fss-tests.net/basePath/",
                 AccessToken = "ACarefullyEncodedSecretAccessToken"
             };
 
@@ -42,16 +42,16 @@ namespace UKHO.FileShareClientTests
         public async Task TestBasicGetBatchStatus()
         {
             var batchId = "f382a514-aa1c-4709-aecd-ef06f1b963f5";
-            var expectedBatchStatus = "TestBatch";
-            nextResponse = new BatchStatusResponse()
+            var expectedBatchStatus = BatchStatusResponse.StatusEnum.Committed;
+            nextResponse = new BatchStatusResponse
             {
-                BatchId = Guid.Parse(batchId),
+                BatchId = batchId,
                 Status = expectedBatchStatus
             };
 
             var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchId);
             Assert.AreEqual(expectedBatchStatus, batchStatusResponse.Status);
-            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
+            Assert.AreEqual($"/basePath/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace UKHO.FileShareClientTests
                 Assert.IsInstanceOf<HttpRequestException>(e);
             }
 
-            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
+            Assert.AreEqual($"/basePath/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
 
         [Test]
@@ -91,7 +91,7 @@ namespace UKHO.FileShareClientTests
                 Assert.IsInstanceOf<HttpRequestException>(e);
             }
 
-            Assert.AreEqual($"/batch/{batchId}/status", lastRequestUri.AbsolutePath);
+            Assert.AreEqual($"/basePath/batch/{batchId}/status", lastRequestUri.AbsolutePath);
         }
     }
 }

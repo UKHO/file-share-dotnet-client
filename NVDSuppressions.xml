@@ -8,4 +8,13 @@
         ]]></notes>
         <cve>CVE-2014-9152</cve>
     </suppress>
+    <suppress>
+        <notes><![CDATA[
+            file name: System.Threading.Tasks.Extensions.dll
+            CVE references 
+                "Tasks" application version before 9.7.3 is affected by insecure permissions. The VoiceCommandActivity...
+            This is a false positive from a Tasks mobile application against the System.Threading.Tasks.Extensions.dll assembly
+        ]]></notes>
+        <cve>CVE-2020-22475</cve>
+    </suppress>
 </suppressions>

@@ -11,6 +11,6 @@ namespace UKHO.FileShareAdminClient.Models
 
         public IList<KeyValuePair<string, string>> Attributes { get; set; }
 
-        public DateTime ExpiryDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
     }
 }
