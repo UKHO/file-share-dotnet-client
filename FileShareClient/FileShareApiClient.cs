@@ -11,7 +11,13 @@ using UKHO.FileShareClient.Models;
 
 namespace UKHO.FileShareClient
 {
-    public class FileShareApiClient
+    public interface IFileShareApiClient
+    {
+        Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
+        Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
+    }
+
+    public class FileShareApiClient : IFileShareApiClient
     {
         protected readonly IHttpClientFactory httpClientFactory;
 
