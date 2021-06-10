@@ -15,7 +15,7 @@ namespace UKHO.FileShareAdminClientTests
     internal class NewBatchCommitAndRollbackTests
     {
         private object nextResponse = null;
-        private FileShareApiAdminClient fileShareApiClient;
+        private IFileShareApiAdminClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private List<(HttpMethod, Uri)> lastRequestUris;
         private List<string> lastRequestBodies;
