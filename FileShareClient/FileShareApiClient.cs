@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -15,6 +16,7 @@ namespace UKHO.FileShareClient
     {
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
+        Task<Stream> DownloadFileAsync(string batchId, string filename);
     }
 
     public class FileShareApiClient : IFileShareApiClient
@@ -33,7 +35,6 @@ namespace UKHO.FileShareClient
             this(new DefaultHttpClientFactory(), baseAddress, accessToken)
         {
         }
-
 
         public async Task<BatchStatusResponse> GetBatchStatusAsync(string batchId)
         {
@@ -79,6 +80,19 @@ namespace UKHO.FileShareClient
                 response.EnsureSuccessStatusCode();
                 var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
                 return searchResponse;
+            }
+        }
+
+        public async Task<Stream> DownloadFileAsync(string batchId, string filename)
+        {
+            var uri = $"batch/{batchId}/files/{filename}";
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
+            {
+                var response = await httpClientFactory.CreateClient()
+                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+                var downloadedFileStream = await response.Content.ReadAsStreamAsync();
+                return downloadedFileStream;
             }
         }
 
