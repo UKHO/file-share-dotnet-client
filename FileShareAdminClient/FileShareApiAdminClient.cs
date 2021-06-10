@@ -14,7 +14,15 @@ using UKHO.FileShareClient.Models;
 
 namespace UKHO.FileShareAdminClient
 {
-    public class FileShareApiAdminClient : FileShareApiClient
+    public interface IFileShareApiAdminClient : IFileShareApiClient
+    {
+        Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType);
+        Task CommitBatch(IBatchHandle batchHandle);
+        Task RollBackBatchAsync(IBatchHandle batchHandle);
+    }
+
+    public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
     {
         private readonly int maxFileBlockSize;
 
