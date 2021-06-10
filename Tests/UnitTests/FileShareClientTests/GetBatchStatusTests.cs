@@ -12,7 +12,7 @@ namespace UKHO.FileShareClientTests
     public class GetBatchStatusTests
     {
         private object nextResponse = null;
-        private FileShareApiClient fileShareApiClient;
+        private IFileShareApiClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
 

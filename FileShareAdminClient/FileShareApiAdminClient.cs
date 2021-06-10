@@ -17,6 +17,7 @@ namespace UKHO.FileShareAdminClient
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
+        Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType);
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);

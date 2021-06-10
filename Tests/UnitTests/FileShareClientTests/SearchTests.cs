@@ -12,7 +12,7 @@ namespace UKHO.FileShareClientTests
     public class SearchTests
     {
         private object nextResponse;
-        private FileShareApiClient fileShareApiClient;
+        private IFileShareApiClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
 

@@ -16,7 +16,7 @@ namespace UKHO.FileShareAdminClientTests
     internal class AddFilesToBatchTests
     {
         private object nextResponse = null;
-        private FileShareApiAdminClient fileShareApiClient;
+        private IFileShareApiAdminClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private List<(HttpMethod, Uri)> lastRequestUris;
         private List<string> lastRequestBodies;
