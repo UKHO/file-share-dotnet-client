@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -18,7 +19,10 @@ namespace UKHO.FileShareAdminClient
     {
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
-        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType);
+
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            params KeyValuePair<string, string>[] fileAttributes);
+
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
     }
@@ -67,7 +71,8 @@ namespace UKHO.FileShareAdminClient
         }
 
 
-        public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType)
+        public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            params KeyValuePair<string, string>[] fileAttributes)
         {
             if (!stream.CanSeek)
                 throw new ArgumentException("The stream must be seekable.", nameof(stream));
@@ -77,7 +82,8 @@ namespace UKHO.FileShareAdminClient
             var httpClient = httpClientFactory.CreateClient();
 
             {
-                var fileModel = new FileModel();
+                var fileModel = new FileModel()
+                    {Attributes = fileAttributes ?? Enumerable.Empty<KeyValuePair<string, string>>()};
 
                 var payloadJson = JsonConvert.SerializeObject(fileModel);
 
