@@ -109,6 +109,45 @@ namespace UKHO.FileShareAdminClientTests
         }
 
         [Test]
+        public async Task TestAddSmallFilesToBatchWithFileAttributes()
+        {
+            var expectedBatchId = Guid.NewGuid().ToString();
+            nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+
+            Stream stream1 = new MemoryStream(new byte[] {1, 2, 3, 4, 5});
+            Stream stream2 = new MemoryStream(new byte[] {2, 3, 4, 5, 6, 7, 8});
+            var filename1 = "File1.bin";
+            var filename2 = "File2.bin";
+            var mimeType1 = "application/octet-stream";
+            var mimeType2 = "application/octet-stream";
+
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1" ));
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2, new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
+
+
+            CollectionAssert.AreEqual(new[]
+            {
+                "POST:/batch",
+
+                $"POST:/batch/{expectedBatchId}/files/{filename1}",
+                $"PUT:/batch/{expectedBatchId}/files/{filename1}/00002",
+                $"PUT:/batch/{expectedBatchId}/files/{filename1}",
+
+                $"POST:/batch/{expectedBatchId}/files/{filename2}",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}/00002",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}"
+            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+
+
+            var addFile1Request  =lastRequestBodies[1];
+            var addFile2Request  =lastRequestBodies[4];
+            StringAssert.Contains("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\"", addFile1Request);
+            StringAssert.Contains("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\"", addFile2Request);
+        }
+
+        [Test]
         public async Task TestAddLargerFileToBatch()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
