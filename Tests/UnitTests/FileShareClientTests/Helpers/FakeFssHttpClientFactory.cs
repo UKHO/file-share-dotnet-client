@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -25,14 +26,24 @@ namespace UKHO.FileShareClientTests.Helpers
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var responseData = httpMessageHandler(request);
+            var (httpStatusCode, responseValue) = httpMessageHandler(request);
             var response = new HttpResponseMessage
             {
-                StatusCode = responseData.Item1
+                StatusCode = httpStatusCode
             };
-            if (responseData.Item2 != null)
-                response.Content = new StringContent(JsonConvert.SerializeObject(responseData.Item2), Encoding.UTF8,
-                    "application/json");
+
+            switch (responseValue)
+            {
+                case null:
+                    break;
+                case Stream stream:
+                    response.Content = new StreamContent(stream);
+                    break;
+                default:
+                    response.Content = new StringContent(JsonConvert.SerializeObject(responseValue), Encoding.UTF8,
+                        "application/json");
+                    break;
+            }
 
             return Task.FromResult(response);
         }
