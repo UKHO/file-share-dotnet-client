@@ -118,7 +118,7 @@ namespace UKHO.FileShareAdminClient
 
             var fileBlocks = new List<string>();
             var fileBlockId = 0;
-            var expectedTotalBlockCount = (int) (stream.Length / maxFileBlockSize);
+            var expectedTotalBlockCount = (int) Math.Ceiling(stream.Length / (double)maxFileBlockSize);
             progressUpdate((0, expectedTotalBlockCount));
 
             var buffer = new byte[maxFileBlockSize];

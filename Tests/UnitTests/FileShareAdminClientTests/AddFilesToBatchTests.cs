@@ -188,7 +188,7 @@ namespace UKHO.FileShareAdminClientTests
             var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
-            var stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
+            var stream1 = new MemoryStream(new byte[(MaxBlockSize * 3)-1]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
