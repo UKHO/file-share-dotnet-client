@@ -23,6 +23,10 @@ namespace UKHO.FileShareAdminClient
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
 
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
+            params KeyValuePair<string, string>[] fileAttributes);
+
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
     }
@@ -71,7 +75,14 @@ namespace UKHO.FileShareAdminClient
         }
 
 
+        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            params KeyValuePair<string, string>[] fileAttributes)
+        {
+            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, fileAttributes);
+        }
+
         public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
             params KeyValuePair<string, string>[] fileAttributes)
         {
             if (!stream.CanSeek)
@@ -106,7 +117,9 @@ namespace UKHO.FileShareAdminClient
             stream.Seek(0, SeekOrigin.Begin);
 
             var fileBlocks = new List<string>();
-            var fileBlockId = 1;
+            var fileBlockId = 0;
+            var expectedTotalBlockCount = (int) (stream.Length / maxFileBlockSize);
+            progressUpdate((0, expectedTotalBlockCount));
 
             var buffer = new byte[maxFileBlockSize];
             while (true)
@@ -137,6 +150,8 @@ namespace UKHO.FileShareAdminClient
 
                     var putFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     putFileResponse.EnsureSuccessStatusCode();
+
+                    progressUpdate((fileBlockId, expectedTotalBlockCount));
                 }
             }
 
