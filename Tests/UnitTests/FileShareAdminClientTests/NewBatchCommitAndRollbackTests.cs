@@ -75,14 +75,14 @@ namespace UKHO.FileShareAdminClientTests
                 "POST:/batch",
 
                 $"POST:/batch/{expectedBatchId}/files/{filename1}",
-                $"PUT:/batch/{expectedBatchId}/files/{filename1}/00002",
+                $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}",
 
                 $"POST:/batch/{expectedBatchId}/files/{filename2}",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}/00002",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}/00003",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}/00004",
-                $"PUT:/batch/{expectedBatchId}/files/{filename2}/00005",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}",
                 $"PUT:/batch/{expectedBatchId}"
             }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
