@@ -90,7 +90,6 @@ namespace UKHO.FileShareAdminClient
             stream.Seek(0, SeekOrigin.Begin);
 
             var fileUri = $"batch/{batchHandle.BatchId}/files/{fileName}";
-            var httpClient = httpClientFactory.CreateClient();
 
             {
                 var fileModel = new FileModel()
@@ -107,7 +106,7 @@ namespace UKHO.FileShareAdminClient
 
 
                     var createFileRecordResponse =
-                        await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                        await httpClientFactory.CreateClient().SendAsync(httpRequestMessage, CancellationToken.None);
                     createFileRecordResponse.EnsureSuccessStatusCode();
                 }
             }
@@ -148,7 +147,7 @@ namespace UKHO.FileShareAdminClient
                     httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
 
 
-                    var putFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var putFileResponse = await httpClientFactory.CreateClient().SendAsync(httpRequestMessage, CancellationToken.None);
                     putFileResponse.EnsureSuccessStatusCode();
 
                     progressUpdate((fileBlockId, expectedTotalBlockCount));
@@ -162,7 +161,7 @@ namespace UKHO.FileShareAdminClient
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
                     {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
                 {
-                    var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var writeFileResponse = await httpClientFactory.CreateClient().SendAsync(httpRequestMessage, CancellationToken.None);
                     writeFileResponse.EnsureSuccessStatusCode();
                 }
             }

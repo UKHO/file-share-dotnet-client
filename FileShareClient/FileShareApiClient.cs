@@ -24,11 +24,16 @@ namespace UKHO.FileShareClient
     {
         protected readonly IHttpClientFactory httpClientFactory;
 
-        public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken)
+        public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider)
         {
             this.httpClientFactory = new AddAuthenticationHeaderHttpClientFactory(
                 new SetBaseAddressHttpClientFactory(httpClientFactory, new Uri(baseAddress)),
-                new System.Net.Http.Headers.AuthenticationHeaderValue("bearer", accessToken));
+                authTokenProvider);
+        }
+
+        public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken)
+            :this(httpClientFactory, baseAddress, new DefaultAuthTokenProvider(accessToken))
+        {
         }
 
         [ExcludeFromCodeCoverage] //This constructor is intended for external use with a real HTTP Client.
