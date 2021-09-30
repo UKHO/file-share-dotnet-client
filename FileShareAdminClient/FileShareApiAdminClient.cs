@@ -47,6 +47,12 @@ namespace UKHO.FileShareAdminClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
+        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider,
+            int maxFileBlockSize = 4194304) : base(httpClientFactory, baseAddress, authTokenProvider)
+        {
+            this.maxFileBlockSize = maxFileBlockSize;
+        }
+
         public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
         {
             const string uri = "batch";
