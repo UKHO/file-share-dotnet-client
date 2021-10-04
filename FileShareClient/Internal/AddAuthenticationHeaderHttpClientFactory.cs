@@ -6,20 +6,19 @@ namespace UKHO.FileShareClient.Internal
     internal class AddAuthenticationHeaderHttpClientFactory : IHttpClientFactory
     {
         private readonly IHttpClientFactory httpClientFactoryImplementation;
-        private readonly IAuthTokenProvider authTokenProvider;
+        private readonly AuthenticationHeaderValue authenticationHeaderValue;
 
         public AddAuthenticationHeaderHttpClientFactory(IHttpClientFactory httpClientFactoryImplementation,
-            IAuthTokenProvider authTokenProvider)
+            AuthenticationHeaderValue authenticationHeaderValue)
         {
             this.httpClientFactoryImplementation = httpClientFactoryImplementation;
-            this.authTokenProvider = authTokenProvider;
+            this.authenticationHeaderValue = authenticationHeaderValue;
         }
 
         public HttpClient CreateClient(string name)
         {
             var httpClient = httpClientFactoryImplementation.CreateClient(name);
-            //Note: using "Result" of task here in absence of async support - need to revisit
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", authTokenProvider.GetToken().Result);
+            httpClient.DefaultRequestHeaders.Authorization = authenticationHeaderValue;
             return httpClient;
         }
     }

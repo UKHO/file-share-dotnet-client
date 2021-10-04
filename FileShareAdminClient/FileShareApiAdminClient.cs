@@ -64,8 +64,8 @@ namespace UKHO.FileShareAdminClient
                 Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
             })
             {
-                var response = await httpClientFactory.CreateClient()
-                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
 
                 var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
@@ -110,9 +110,8 @@ namespace UKHO.FileShareAdminClient
 
                     if (!string.IsNullOrEmpty(mimeType)) httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
 
-
-                    var createFileRecordResponse =
-                        await httpClientFactory.CreateClient().SendAsync(httpRequestMessage, CancellationToken.None);
+                    var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                    var createFileRecordResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     createFileRecordResponse.EnsureSuccessStatusCode();
                 }
             }
@@ -152,8 +151,8 @@ namespace UKHO.FileShareAdminClient
 
                     httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
 
-
-                    var putFileResponse = await httpClientFactory.CreateClient().SendAsync(httpRequestMessage, CancellationToken.None);
+                    var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                    var putFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     putFileResponse.EnsureSuccessStatusCode();
 
                     progressUpdate((fileBlockId, expectedTotalBlockCount));
@@ -167,7 +166,8 @@ namespace UKHO.FileShareAdminClient
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
                     {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
                 {
-                    var writeFileResponse = await httpClientFactory.CreateClient().SendAsync(httpRequestMessage, CancellationToken.None);
+                    var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                    var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     writeFileResponse.EnsureSuccessStatusCode();
                 }
             }
@@ -188,8 +188,8 @@ namespace UKHO.FileShareAdminClient
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
                 {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
             {
-                var response = await httpClientFactory.CreateClient()
-                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -200,8 +200,8 @@ namespace UKHO.FileShareAdminClient
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
             {
-                var response = await httpClientFactory.CreateClient()
-                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
             }
         }

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -18,6 +19,18 @@ namespace UKHO.FileShareClient.Internal
         {
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(bodyJson);
+        }
+
+        /// <summary>
+        /// Sets Authorization header
+        /// </summary>
+        /// <param name="httpClient"></param>
+        /// <param name="authTokenProvider"></param>
+        /// <returns></returns>
+        public static async Task<HttpClient> SetAuthenticationHeader(this HttpClient httpClient, IAuthTokenProvider authTokenProvider)
+        {
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", await authTokenProvider.GetToken());
+            return httpClient;
         }
     }
 

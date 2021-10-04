@@ -6,6 +6,7 @@ namespace UKHO.FileShareClient
     {
         Task<string> GetToken();
     }
+
     internal class DefaultAuthTokenProvider: IAuthTokenProvider
     {
         private readonly string accessToken;
