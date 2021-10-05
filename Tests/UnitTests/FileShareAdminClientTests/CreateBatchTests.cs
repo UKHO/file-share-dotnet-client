@@ -19,11 +19,13 @@ namespace UKHO.FileShareAdminClientTests
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
         private List<string> lastRequestBodies;
+        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            var fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
                 lastRequestUri = request.RequestUri;
                 if (request.Content is StringContent content && request.Content.Headers.ContentLength.HasValue)
@@ -40,7 +42,7 @@ namespace UKHO.FileShareAdminClientTests
             var config = new
             {
                 BaseAddress = @"https://fss-tests.net",
-                AccessToken = "ACarefullyEncodedSecretAccessToken"
+                AccessToken = DUMMY_ACCESS_TOKEN
             };
 
             fileShareApiClient =
@@ -119,6 +121,17 @@ namespace UKHO.FileShareAdminClientTests
 
             // ReSharper disable once PossibleNullReferenceException - Will have been set during fileShareApiClient.GetBatchStatusAsync
             Assert.AreEqual($"/batch/{expectedBatchId}/status", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestCreateNewBatchSetsAuthorizationHeader()
+        {
+            nextResponse = new CreateBatchResponseModel { BatchId = "newBatchId" };
+            await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
         }
     }
 }

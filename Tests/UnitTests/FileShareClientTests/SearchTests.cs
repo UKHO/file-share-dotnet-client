@@ -15,11 +15,13 @@ namespace UKHO.FileShareClientTests
         private IFileShareApiClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
+        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            var fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
                 lastRequestUri = request.RequestUri;
                 return (nextResponseStatusCode, nextResponse);
@@ -30,7 +32,7 @@ namespace UKHO.FileShareClientTests
             var config = new
             {
                 BaseAddress = @"https://fss-tests.net/basePath/",
-                AccessToken = "ACarefullyEncodedSecretAccessToken"
+                AccessToken = DUMMY_ACCESS_TOKEN
             };
 
 
@@ -184,6 +186,24 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
+        }
+
+        [Test]
+        public async Task SearchQuerySetsAuthorizationHeader()
+        {
+            nextResponse = new BatchSearchResponse
+            {
+                Count = 0,
+                Total = 0,
+                Entries = new List<BatchDetails>(),
+                Links = new Links(new Link("self"))
+            };
+            
+            await fileShareApiClient.Search("");
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
         }
 
         private void CheckResponseMatchesExpectedResponse(BatchSearchResponse expectedResponse,

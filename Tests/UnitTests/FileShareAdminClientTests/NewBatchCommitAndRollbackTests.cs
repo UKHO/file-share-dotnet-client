@@ -20,11 +20,13 @@ namespace UKHO.FileShareAdminClientTests
         private List<(HttpMethod, Uri)> lastRequestUris;
         private List<string> lastRequestBodies;
         private const int MaxBlockSize = 32;
+        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            var fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
                 lastRequestUris.Add((request.Method, request.RequestUri));
                 if (request.Content is StringContent content && request.Content.Headers.ContentLength.HasValue)
@@ -42,7 +44,7 @@ namespace UKHO.FileShareAdminClientTests
             var config = new
             {
                 BaseAddress = @"https://fss-tests.net",
-                AccessToken = "ACarefullyEncodedSecretAccessToken"
+                AccessToken = DUMMY_ACCESS_TOKEN
             };
 
             fileShareApiClient =
@@ -108,6 +110,34 @@ namespace UKHO.FileShareAdminClientTests
                 "POST:/batch",
                 $"DELETE:/batch/{expectedBatchId}"
             }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+        }
+
+        [Test]
+        public async Task TestCommitBatchSetsAuthorizationHeader()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            nextResponse = new CreateBatchResponseModel { BatchId = batchId };
+            var batchHandle = new BatchHandle(batchId);
+
+            await fileShareApiClient.CommitBatch(batchHandle);
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+        }
+
+        [Test]
+        public async Task TestRollBackBatchSetsAuthorizationHeader()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            nextResponse = new CreateBatchResponseModel { BatchId = batchId };
+            var batchHandle = new BatchHandle(batchId);
+
+            await fileShareApiClient.RollBackBatchAsync(batchHandle);
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
         }
     }
 }

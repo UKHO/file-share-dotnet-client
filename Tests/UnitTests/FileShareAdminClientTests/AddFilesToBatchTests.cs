@@ -21,11 +21,13 @@ namespace UKHO.FileShareAdminClientTests
         private List<(HttpMethod, Uri)> lastRequestUris;
         private List<string> lastRequestBodies;
         private const int MaxBlockSize = 32;
+        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            var fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
                 lastRequestUris.Add((request.Method, request.RequestUri));
                 if (request.Content is StringContent content && request.Content.Headers.ContentLength.HasValue)
@@ -42,7 +44,7 @@ namespace UKHO.FileShareAdminClientTests
             var config = new
             {
                 BaseAddress = @"https://fss-tests.net",
-                AccessToken = "ACarefullyEncodedSecretAccessToken"
+                AccessToken = DUMMY_ACCESS_TOKEN
             };
 
             fileShareApiClient =
@@ -200,6 +202,25 @@ namespace UKHO.FileShareAdminClientTests
             Assert.AreEqual(4, progressReports.Count);
             CollectionAssert.AreEqual(new[] {0, 1, 2, 3}, progressReports.Select(r => r.blocksComplete));
             CollectionAssert.AreEqual(new[] {3, 3, 3, 3}, progressReports.Select(r => r.totalBlockCount));
+        }
+
+        [Test]
+        public async Task TestAddFileToBatchSetsAuthorizationHeader()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            nextResponse = new CreateBatchResponseModel { BatchId = batchId };
+            var batchHandle = new BatchHandle(batchId);
+
+            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            var filename1 = "File1.bin";
+            var mimeType1 = "application/octet-stream";
+
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+
         }
     }
 }
