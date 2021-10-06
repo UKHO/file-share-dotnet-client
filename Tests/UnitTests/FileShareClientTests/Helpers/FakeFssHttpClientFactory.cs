@@ -12,15 +12,19 @@ namespace UKHO.FileShareClientTests.Helpers
     public class FakeFssHttpClientFactory : DelegatingHandler, IHttpClientFactory
     {
         private readonly Func<HttpRequestMessage, (HttpStatusCode, object)> httpMessageHandler;
+        private HttpClient _httpClient;
 
         public FakeFssHttpClientFactory(Func<HttpRequestMessage, (HttpStatusCode, object)> httpMessageHandler)
         {
             this.httpMessageHandler = httpMessageHandler;
         }
 
+        public HttpClient HttpClient { get => _httpClient; }
+
         public HttpClient CreateClient(string name)
         {
-            return new HttpClient(this);
+            _httpClient = new HttpClient(this);
+            return HttpClient;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,

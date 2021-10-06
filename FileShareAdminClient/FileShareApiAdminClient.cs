@@ -47,6 +47,12 @@ namespace UKHO.FileShareAdminClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
+        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider,
+            int maxFileBlockSize = 4194304) : base(httpClientFactory, baseAddress, authTokenProvider)
+        {
+            this.maxFileBlockSize = maxFileBlockSize;
+        }
+
         public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
         {
             const string uri = "batch";
@@ -58,8 +64,8 @@ namespace UKHO.FileShareAdminClient
                 Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
             })
             {
-                var response = await httpClientFactory.CreateClient()
-                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
 
                 var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
@@ -90,7 +96,6 @@ namespace UKHO.FileShareAdminClient
             stream.Seek(0, SeekOrigin.Begin);
 
             var fileUri = $"batch/{batchHandle.BatchId}/files/{fileName}";
-            var httpClient = httpClientFactory.CreateClient();
 
             {
                 var fileModel = new FileModel()
@@ -105,9 +110,8 @@ namespace UKHO.FileShareAdminClient
 
                     if (!string.IsNullOrEmpty(mimeType)) httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
 
-
-                    var createFileRecordResponse =
-                        await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var httpClient = await GetAuthenticationHeaderSetClient();
+                    var createFileRecordResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     createFileRecordResponse.EnsureSuccessStatusCode();
                 }
             }
@@ -147,7 +151,7 @@ namespace UKHO.FileShareAdminClient
 
                     httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
 
-
+                    var httpClient = await GetAuthenticationHeaderSetClient();
                     var putFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     putFileResponse.EnsureSuccessStatusCode();
 
@@ -162,6 +166,7 @@ namespace UKHO.FileShareAdminClient
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
                     {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
                 {
+                    var httpClient = await GetAuthenticationHeaderSetClient();
                     var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     writeFileResponse.EnsureSuccessStatusCode();
                 }
@@ -183,8 +188,8 @@ namespace UKHO.FileShareAdminClient
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
                 {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
             {
-                var response = await httpClientFactory.CreateClient()
-                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
             }
         }
@@ -195,8 +200,8 @@ namespace UKHO.FileShareAdminClient
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
             {
-                var response = await httpClientFactory.CreateClient()
-                    .SendAsync(httpRequestMessage, CancellationToken.None);
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
             }
         }

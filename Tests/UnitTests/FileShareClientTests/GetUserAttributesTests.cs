@@ -15,11 +15,13 @@ namespace UKHO.FileShareClientTests
         private IFileShareApiClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
+        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            var fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
                 lastRequestUri = request.RequestUri;
                 return (nextResponseStatusCode, nextResponse);
@@ -30,7 +32,7 @@ namespace UKHO.FileShareClientTests
             var config = new
             {
                 BaseAddress = @"https://fss-tests.net/basePath/",
-                AccessToken = "ACarefullyEncodedSecretAccessToken"
+                AccessToken = DUMMY_ACCESS_TOKEN
             };
 
 
@@ -68,6 +70,17 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual("", lastRequestUri.Query, "Should be no query query string for an empty search");
             Assert.AreEqual("Response status code does not indicate success: 503 (Service Unavailable).",
                 exception.Message);
+        }
+
+        [Test]
+        public async Task TestGetAttributesSetsAuthorizationHeader()
+        {
+            nextResponse = new List<string> { "One", "Two" };
+            await fileShareApiClient.GetUserAttributesAsync();
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
         }
     }
 }

@@ -16,11 +16,13 @@ namespace UKHO.FileShareClientTests
         private IFileShareApiClient fileShareApiClient;
         private HttpStatusCode nextResponseStatusCode;
         private Uri lastRequestUri;
+        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            var fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
                 lastRequestUri = request.RequestUri;
                 return (nextResponseStatusCode, nextResponse);
@@ -31,7 +33,7 @@ namespace UKHO.FileShareClientTests
             var config = new
             {
                 BaseAddress = @"https://fss-tests.net/basePath/",
-                AccessToken = "ACarefullyEncodedSecretAccessToken"
+                AccessToken = DUMMY_ACCESS_TOKEN
             };
 
 
@@ -109,6 +111,20 @@ namespace UKHO.FileShareClientTests
             }
 
             Assert.AreEqual($"/basePath/batch/{batchId}/files/AFile.txt", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestDownloadFileSetsAuthorizationHeader()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+
+            await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
+            
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
         }
     }
 }
