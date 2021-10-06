@@ -41,6 +41,10 @@ namespace UKHO.FileShareClient
             this(new DefaultHttpClientFactory(), baseAddress, accessToken)
         {
         }
+        protected Task<HttpClient> GetAuthenticationHeaderSetClient()
+        {
+            return httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+        }
 
         public async Task<BatchStatusResponse> GetBatchStatusAsync(string batchId)
         {
@@ -48,7 +52,7 @@ namespace UKHO.FileShareClient
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
-                var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
                 var status = await response.ReadAsTypeAsync<BatchStatusResponse>();
@@ -81,7 +85,7 @@ namespace UKHO.FileShareClient
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
-                var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
                 var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
@@ -94,7 +98,7 @@ namespace UKHO.FileShareClient
             var uri = $"batch/{batchId}/files/{filename}";
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
-                var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
                 var downloadedFileStream = await response.Content.ReadAsStreamAsync();
@@ -109,7 +113,7 @@ namespace UKHO.FileShareClient
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
-                var httpClient = await httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+                var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
                 var attributes = await response.ReadAsTypeAsync<List<string>>();
