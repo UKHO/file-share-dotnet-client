@@ -29,6 +29,7 @@ namespace UKHO.FileShareAdminClient
 
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
+        Task ReplaceAclAsync(IBatchHandle batchHandle, Acl acl);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -173,7 +174,7 @@ namespace UKHO.FileShareAdminClient
             }
             ((BatchHandle) batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
         }
-
+        
         public async Task CommitBatch(IBatchHandle batchHandle)
         {
             var uri = $"/batch/{batchHandle.BatchId}";
@@ -199,6 +200,21 @@ namespace UKHO.FileShareAdminClient
             var uri = $"batch/{batchHandle.BatchId}";
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task ReplaceAclAsync(IBatchHandle batchHandle, Acl acl)
+        {
+            var uri = $"/batch/{batchHandle.BatchId}/acl";
+            string payloadJson = JsonConvert.SerializeObject(acl);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
