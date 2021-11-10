@@ -29,7 +29,7 @@ namespace UKHO.FileShareAdminClient
 
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task ReplaceAclAsync(IBatchHandle batchHandle, Acl acl);
+        Task ReplaceAclAsync(string batchId, Acl acl);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -207,9 +207,9 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task ReplaceAclAsync(IBatchHandle batchHandle, Acl acl)
+        public async Task ReplaceAclAsync(string batchId, Acl acl)
         {
-            var uri = $"/batch/{batchHandle.BatchId}/acl";
+            var uri = $"/batch/{batchId}/acl";
             string payloadJson = JsonConvert.SerializeObject(acl);
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
