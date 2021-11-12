@@ -205,5 +205,21 @@ namespace UKHO.FileShareAdminClient
                 response.EnsureSuccessStatusCode();
             }
         }
+
+        public async Task AppendAclAsync(Acl acl, string batchId)
+        {
+            var uri = $"batch/{batchId}/acl";
+            var payloadJson = JsonConvert.SerializeObject(acl);
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+            {
+                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+            })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
     }
 }
