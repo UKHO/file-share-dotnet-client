@@ -30,7 +30,7 @@ namespace UKHO.FileShareAdminClient
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
 
-        Task SetExpiryDateAsync(string batchId, BatchExpiry batchExpiry);
+        Task SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
