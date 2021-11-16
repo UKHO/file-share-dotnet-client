@@ -210,19 +210,28 @@ namespace UKHO.FileShareAdminClient
         public async Task<string> ReplaceAclAsync(string batchId, Acl acl)
         {
             HttpResponseMessage response = new HttpResponseMessage();
+            string httpResponseBody = string.Empty;
+
             var uri = $"/batch/{batchId}/acl";
             string payloadJson = JsonConvert.SerializeObject(acl);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
-
+            try
             {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+                { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
 
-                return await response.Content.ReadAsStringAsync();
+                {
+                    var httpClient = await GetAuthenticationHeaderSetClient();
+                    response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    response.EnsureSuccessStatusCode();
+                    httpResponseBody = await response.Content.ReadAsStringAsync();
+                }
             }
+            catch (Exception ex)
+            {
+                httpResponseBody = string.Format("Error: {0}  Message: ", ex.HResult.ToString("X"), ex.Message);
+            }
+
+            return httpResponseBody;
         }
     }
 }
