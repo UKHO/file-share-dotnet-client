@@ -30,7 +30,7 @@ namespace UKHO.FileShareAdminClient
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
 
-        Task SetExpiryDate(string batchId, BatchExpiry batchExpiry);
+        Task SetExpiryDateAsync(string batchId, BatchExpiry batchExpiry);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -208,11 +208,11 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task SetExpiryDate(string batchId, BatchExpiry batchExpiry)
+        public async Task SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry)
         {
             var uri = $"batch/{batchId}/expiry";
 
-            var payloadJson = JsonConvert.SerializeObject(batchExpiry.ExpiryDate);
+            var payloadJson = JsonConvert.SerializeObject(batchExpiry);
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
             { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
