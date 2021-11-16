@@ -30,7 +30,7 @@ namespace UKHO.FileShareAdminClient
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
 
-        Task AppendAclAsync(Acl acl, string batchId);
+        Task<HttpResponseMessage> AppendAclAsync(Acl acl, string batchId);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -208,19 +208,34 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task AppendAclAsync(Acl acl, string batchId)
+        public async Task<string> AppendAclAsync(Acl acl, string batchId)
         {
+            HttpResponseMessage response = new HttpResponseMessage();
+            string httpResponseBody = string.Empty;
+
             var uri = $"batch/{batchId}/acl";
             var payloadJson = JsonConvert.SerializeObject(acl);
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+
+            try
             {
-                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-            })
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+                {
+                    Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+                })
+                {
+                    var httpClient = await GetAuthenticationHeaderSetClient();
+                    response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    response.EnsureSuccessStatusCode();
+                    httpResponseBody = await response.Content.ReadAsStringAsync();
+                }
             }
+            catch(Exception ex)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var errorMessage = JsonConvert.DeserializeObject<ErrorDescriptionModel>(content);
+                httpResponseBody = errorMessage.Errors.Select(e => e.Description).FirstOrDefault();
+            }
+            return httpResponseBody;
         }
 
     }
