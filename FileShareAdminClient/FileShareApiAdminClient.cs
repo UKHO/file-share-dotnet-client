@@ -210,7 +210,6 @@ namespace UKHO.FileShareAdminClient
         public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl)
         {
             HttpResponseMessage response = new HttpResponseMessage();
-            string httpResponseBody = string.Empty;
 
             var uri = $"/batch/{batchId}/acl";
             string payloadJson = JsonConvert.SerializeObject(acl);
