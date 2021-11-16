@@ -223,13 +223,13 @@ namespace UKHO.FileShareAdminClient
                     var httpClient = await GetAuthenticationHeaderSetClient();
                     response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     response.EnsureSuccessStatusCode();
-                    httpResponseBody = await response.Content.ReadAsStringAsync(); 
+                    httpResponseBody = await response.Content.ReadAsStringAsync();
                 }
             }
             catch (Exception ex)
             {
-                var error = await response.Content.ReadAsStringAsync();
-                   httpResponseBody = string.Format("Error: {0}  Message: ", response.StatusCode, error);
+                var errorMessage = await response.ReadAsTypeAsync<ErrorDescriptionModel>(); 
+                httpResponseBody = errorMessage.Errors.Select(e => e.Description).ToString();
             }
 
             return httpResponseBody;
