@@ -30,7 +30,7 @@ namespace UKHO.FileShareAdminClient
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
 
-        Task<HttpResponseMessage> AppendAclAsync(Acl acl, string batchId);
+        Task<string> AppendAclAsync(Acl acl, string batchId);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
