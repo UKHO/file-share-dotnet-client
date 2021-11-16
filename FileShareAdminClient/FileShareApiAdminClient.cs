@@ -29,7 +29,7 @@ namespace UKHO.FileShareAdminClient
 
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task<string> ReplaceAclAsync(string batchId, Acl acl);
+        Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -207,33 +207,21 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<string> ReplaceAclAsync(string batchId, Acl acl)
+        public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl)
         {
             HttpResponseMessage response = new HttpResponseMessage();
             string httpResponseBody = string.Empty;
 
             var uri = $"/batch/{batchId}/acl";
             string payloadJson = JsonConvert.SerializeObject(acl);
-            try
-            {
+           
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
                 { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
 
                 {
                     var httpClient = await GetAuthenticationHeaderSetClient();
-                    response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                    response.EnsureSuccessStatusCode();
-                    httpResponseBody = await response.Content.ReadAsStringAsync();
+                    return await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 }
-            }
-            catch (Exception ex)
-            {
-                var content = await response.Content.ReadAsStringAsync();
-                var errorMessage = JsonConvert.DeserializeObject<ErrorDescriptionModel>(content);
-                httpResponseBody = errorMessage.Errors.Select(e => e.Description).FirstOrDefault();
-            }
-           
-            return httpResponseBody;
         }
     }
 }
