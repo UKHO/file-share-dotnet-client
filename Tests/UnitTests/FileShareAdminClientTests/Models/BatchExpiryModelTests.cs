@@ -9,7 +9,7 @@ namespace UKHO.FileShareAdminClientTests.Models
     internal class BatchExpiryModelTests
     {
         [Test]
-        public void TestSerialiseAndDeserialiseBatchCommitModel()
+        public void TestSerialiseAndDeserialiseBatchExpiryModel()
         {
             var model = new BatchExpiryModel { ExpiryDate = DateTime.UtcNow.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture) };
 

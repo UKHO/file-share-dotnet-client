@@ -36,7 +36,7 @@ namespace UKHO.FileShareAdminClientTests
                 return (nextResponseStatusCode, nextResponse);
             });
             nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.Created;
+            nextResponseStatusCode = HttpStatusCode.NoContent;
             lastRequestUris = new List<(HttpMethod, Uri)>();
             lastRequestBodies = new List<string>();
 
@@ -56,8 +56,6 @@ namespace UKHO.FileShareAdminClientTests
         {
             var batchId = Guid.NewGuid().ToString();
 
-            nextResponseStatusCode = HttpStatusCode.NoContent;
-            nextResponse = null;
             await fileShareApiClient.SetExpiryDateAsync(batchId, new BatchExpiryModel { ExpiryDate = DateTime.UtcNow.AddDays(15).ToString() });
 
             CollectionAssert.AreEqual(new[]
@@ -67,6 +65,4 @@ namespace UKHO.FileShareAdminClientTests
             lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
         }
     }
-
-
 }
