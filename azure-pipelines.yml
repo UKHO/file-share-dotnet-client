@@ -140,6 +140,7 @@ stages:
               artifact: NuGetPackages
 
   - stage: Proget
+    condition: eq(1,2)         
     jobs:
     - deployment: Publish_To_ProGet
       displayName: Publish To ProGet
