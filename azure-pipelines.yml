@@ -108,7 +108,7 @@ stages:
             inputs:
               command: "build"
               projects: "**/*.csproj"
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) /p:SourceRevisionId=$(Build.SourceVersion)'
 
           - task: DotNetCoreCLI@2
             displayName: "dotnet test"
