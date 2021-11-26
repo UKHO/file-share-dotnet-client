@@ -30,7 +30,7 @@ namespace UKHO.FileShareAdminClient
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
 
-        Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry);
+        Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken cancellationToken);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -208,7 +208,8 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry)
+        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, 
+                    CancellationToken cancellationToken)
         {
             var uri = $"batch/{batchId}/expiry";
 
@@ -218,7 +219,7 @@ namespace UKHO.FileShareAdminClient
             { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                 return response;
             }
         }
