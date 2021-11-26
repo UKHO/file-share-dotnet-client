@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareAdminClient;
@@ -61,7 +62,7 @@ namespace UKHO.FileShareAdminClientTests
                 ReadUsers = new List<string> { "public" }
             };
 
-            await fileShareApiClient.ReplaceAclAsync(batchId, acl);
+            await fileShareApiClient.ReplaceAclAsync(batchId, acl, CancellationToken.None);
 
            CollectionAssert.AreEqual(new[]
            {
@@ -69,6 +70,10 @@ namespace UKHO.FileShareAdminClientTests
            },
            
            lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+
+            var replaceAclModel = lastRequestBodies.First().DeserialiseJson<Acl>();
+            CollectionAssert.AreEqual(acl.ReadGroups, replaceAclModel.ReadGroups);
+            CollectionAssert.AreEqual(acl.ReadUsers, replaceAclModel.ReadUsers);
         }
     }
 }

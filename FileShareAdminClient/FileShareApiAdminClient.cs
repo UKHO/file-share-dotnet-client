@@ -29,7 +29,7 @@ namespace UKHO.FileShareAdminClient
 
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl);
+        Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -207,7 +207,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl)
+        public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken)
         {
             var uri = $"/batch/{batchId}/acl";
             string payloadJson = JsonConvert.SerializeObject(acl);
@@ -217,7 +217,7 @@ namespace UKHO.FileShareAdminClient
 
                 {
                     var httpClient = await GetAuthenticationHeaderSetClient();
-                    return await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                 }
         }
     }
