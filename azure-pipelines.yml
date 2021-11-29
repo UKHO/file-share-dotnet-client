@@ -108,7 +108,7 @@ stages:
             inputs:
               command: "build"
               projects: "**/*.csproj"
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) /p:SourceRevisionId=$(Build.SourceVersion)'
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
 
           - task: DotNetCoreCLI@2
             displayName: "dotnet test"
@@ -125,7 +125,7 @@ stages:
                 **/FileShareClient.csproj
                 **/FileShareAdminClient.csproj
               packDirectory: $(Build.ArtifactStagingDirectory)/packages
-              arguments:  '--configuration $(BuildConfiguration)'
+              arguments:  '--configuration $(BuildConfiguration) /p:SourceRevisionId=$(Build.SourceVersion)'
 
           - task: PublishPipelineArtifact@1
             displayName: Publish Pipeline Atrifact
