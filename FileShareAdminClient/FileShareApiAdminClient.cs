@@ -28,8 +28,8 @@ namespace UKHO.FileShareAdminClient
             params KeyValuePair<string, string>[] fileAttributes);
 
         Task CommitBatch(IBatchHandle batchHandle);
+        Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-
         Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken cancellationToken);
     }
 
@@ -175,7 +175,7 @@ namespace UKHO.FileShareAdminClient
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
         }
-
+        
         public async Task CommitBatch(IBatchHandle batchHandle)
         {
             var uri = $"/batch/{batchHandle.BatchId}";
@@ -196,6 +196,20 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
+        public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken)
+        {
+            var uri = $"/batch/{batchId}/acl";
+            string payloadJson = JsonConvert.SerializeObject(acl);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+            }
+        }
+
         public async Task RollBackBatchAsync(IBatchHandle batchHandle)
         {
             var uri = $"batch/{batchHandle.BatchId}";
@@ -208,7 +222,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, 
+        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
                     CancellationToken cancellationToken)
         {
             var uri = $"batch/{batchId}/expiry";
