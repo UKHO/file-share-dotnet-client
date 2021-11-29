@@ -17,6 +17,7 @@ namespace UKHO.FileShareAdminClient
 {
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
+        Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
 
@@ -28,9 +29,9 @@ namespace UKHO.FileShareAdminClient
             params KeyValuePair<string, string>[] fileAttributes);
 
         Task CommitBatch(IBatchHandle batchHandle);
+        Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-
-        Task<HttpResponseMessage> AppendAclAsync(Acl acl, string batchId,CancellationToken cancellationToken);
+        Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken cancellationToken);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -55,11 +56,26 @@ namespace UKHO.FileShareAdminClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
+        public async Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken)
+        {
+            var uri = $"batch/{batchId}/acl";
+            var payloadJson = JsonConvert.SerializeObject(acl);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+            {
+                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+            })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+            }
+        }
+
         public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
         {
             const string uri = "batch";
             var payloadJson = JsonConvert.SerializeObject(batchModel,
-                new IsoDateTimeConverter {DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK"});
+                new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
             {
@@ -101,12 +117,12 @@ namespace UKHO.FileShareAdminClient
 
             {
                 var fileModel = new FileModel()
-                    {Attributes = fileAttributes ?? Enumerable.Empty<KeyValuePair<string, string>>()};
+                { Attributes = fileAttributes ?? Enumerable.Empty<KeyValuePair<string, string>>() };
 
                 var payloadJson = JsonConvert.SerializeObject(fileModel);
 
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, fileUri)
-                    {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
+                { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
                 {
                     httpRequestMessage.Headers.Add("X-Content-Size", "" + stream.Length);
 
@@ -124,7 +140,7 @@ namespace UKHO.FileShareAdminClient
 
             var fileBlocks = new List<string>();
             var fileBlockId = 0;
-            var expectedTotalBlockCount = (int) Math.Ceiling(stream.Length / (double)maxFileBlockSize);
+            var expectedTotalBlockCount = (int)Math.Ceiling(stream.Length / (double)maxFileBlockSize);
             progressUpdate((0, expectedTotalBlockCount));
 
             var buffer = new byte[maxFileBlockSize];
@@ -146,7 +162,7 @@ namespace UKHO.FileShareAdminClient
                 var blockMD5 = ms.CalculateMD5();
 
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, putFileUri)
-                    {Content = new StreamContent(ms)})
+                { Content = new StreamContent(ms) })
                 {
                     httpRequestMessage.Content.Headers.ContentType =
                         new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
@@ -162,37 +178,51 @@ namespace UKHO.FileShareAdminClient
             }
 
             {
-                var writeBlockFileModel = new WriteBlockFileModel {BlockIds = fileBlocks};
+                var writeBlockFileModel = new WriteBlockFileModel { BlockIds = fileBlocks };
                 var payloadJson = JsonConvert.SerializeObject(writeBlockFileModel);
 
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
-                    {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
+                { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
                 {
                     var httpClient = await GetAuthenticationHeaderSetClient();
                     var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                     writeFileResponse.EnsureSuccessStatusCode();
                 }
             }
-            ((BatchHandle) batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
+            ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
         }
-
+        
         public async Task CommitBatch(IBatchHandle batchHandle)
         {
             var uri = $"/batch/{batchHandle.BatchId}";
             var batchCommitModel = new BatchCommitModel
             {
-                FileDetails = ((BatchHandle) batchHandle).FileDetails
+                FileDetails = ((BatchHandle)batchHandle).FileDetails
             };
 
 
             var payloadJson = JsonConvert.SerializeObject(batchCommitModel.FileDetails);
 
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-                {Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")})
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken)
+        {
+            var uri = $"/batch/{batchId}/acl";
+            string payloadJson = JsonConvert.SerializeObject(acl);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
             }
         }
 
@@ -208,20 +238,20 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<HttpResponseMessage> AppendAclAsync(Acl acl, string batchId,CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
+                    CancellationToken cancellationToken)
         {
-            var uri = $"batch/{batchId}/acl";
-            var payloadJson = JsonConvert.SerializeObject(acl);
-       
-                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
-                {
-                    Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-                })
-                {
-                    var httpClient = await GetAuthenticationHeaderSetClient();
-                    return await httpClient.SendAsync(httpRequestMessage, cancellationToken);                   
-                }          
-        }
+            var uri = $"batch/{batchId}/expiry";
 
+            var payloadJson = JsonConvert.SerializeObject(batchExpiry);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                return response;
+            }
+        }
     }
 }

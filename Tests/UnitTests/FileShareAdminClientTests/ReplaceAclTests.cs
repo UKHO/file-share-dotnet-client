@@ -12,7 +12,7 @@ using UKHO.FileShareClientTests.Helpers;
 
 namespace UKHO.FileShareAdminClientTests
 {
-    internal class AppendAclTests
+    internal class ReplaceAclTests
     {
         private object nextResponse = null;
         private IFileShareApiAdminClient fileShareApiClient;
@@ -22,6 +22,7 @@ namespace UKHO.FileShareAdminClientTests
         private const int MaxBlockSize = 32;
         private FakeFssHttpClientFactory fakeHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
+
 
         [SetUp]
         public void Setup()
@@ -33,11 +34,10 @@ namespace UKHO.FileShareAdminClientTests
                     lastRequestBodies.Add(content.ReadAsStringAsync().Result);
                 else
                     lastRequestBodies.Add(null);
-
                 return (nextResponseStatusCode, nextResponse);
             });
             nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.NoContent;
+            nextResponseStatusCode = HttpStatusCode.Created;
             lastRequestUris = new List<(HttpMethod, Uri)>();
             lastRequestBodies = new List<string>();
 
@@ -53,26 +53,27 @@ namespace UKHO.FileShareAdminClientTests
         }
 
         [Test]
-        public async Task TestAppendAcl()
+        public async Task TestReplaceAcl()
         {
             var batchId = Guid.NewGuid().ToString();
             var acl = new Acl
             {
-                ReadGroups=new List<string> { "AppendAclTest"},
+                ReadGroups = new List<string> { "ReplaceTest" },
                 ReadUsers = new List<string> { "public" }
             };
 
-            await fileShareApiClient.AppendAclAsync(batchId, acl, CancellationToken.None);
+            await fileShareApiClient.ReplaceAclAsync(batchId, acl, CancellationToken.None);
 
-            CollectionAssert.AreEqual(new[]
-            {
-                $"POST:/batch/{batchId}/acl"
-            },
-            lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+           CollectionAssert.AreEqual(new[]
+           {
+                $"PUT:/batch/{batchId}/acl"
+           },
+           
+           lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
 
-            var AppendAcl = lastRequestBodies.First().DeserialiseJson<Acl>();
-            CollectionAssert.AreEqual(acl.ReadGroups, AppendAcl.ReadGroups);
-            CollectionAssert.AreEqual(acl.ReadUsers, AppendAcl.ReadUsers);
+            var replaceAclModel = lastRequestBodies.First().DeserialiseJson<Acl>();
+            CollectionAssert.AreEqual(acl.ReadGroups, replaceAclModel.ReadGroups);
+            CollectionAssert.AreEqual(acl.ReadUsers, replaceAclModel.ReadUsers);
         }
     }
 }

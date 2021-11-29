@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,7 +13,7 @@ using UKHO.FileShareClientTests.Helpers;
 
 namespace UKHO.FileShareAdminClientTests
 {
-    internal class AppendAclTests
+    internal class SetExpiryDateTests
     {
         private object nextResponse = null;
         private IFileShareApiAdminClient fileShareApiClient;
@@ -53,26 +54,24 @@ namespace UKHO.FileShareAdminClientTests
         }
 
         [Test]
-        public async Task TestAppendAcl()
+        public async Task TestSetExpiryDate()
         {
-            var batchId = Guid.NewGuid().ToString();
-            var acl = new Acl
-            {
-                ReadGroups=new List<string> { "AppendAclTest"},
-                ReadUsers = new List<string> { "public" }
-            };
+            string dateTime = DateTime.UtcNow.AddDays(15).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
 
-            await fileShareApiClient.AppendAclAsync(batchId, acl, CancellationToken.None);
+            var batchId = Guid.NewGuid().ToString();
+
+            await fileShareApiClient.SetExpiryDateAsync(batchId, 
+                new BatchExpiryModel { ExpiryDate = dateTime }, 
+                CancellationToken.None);
 
             CollectionAssert.AreEqual(new[]
             {
-                $"POST:/batch/{batchId}/acl"
+                $"PUT:/batch/{batchId}/expiry"
             },
             lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
 
-            var AppendAcl = lastRequestBodies.First().DeserialiseJson<Acl>();
-            CollectionAssert.AreEqual(acl.ReadGroups, AppendAcl.ReadGroups);
-            CollectionAssert.AreEqual(acl.ReadUsers, AppendAcl.ReadUsers);
+            var expiryDate = lastRequestBodies.First().DeserialiseJson<BatchExpiryModel>();
+            Assert.AreEqual(dateTime, expiryDate.ExpiryDate);
         }
     }
 }
