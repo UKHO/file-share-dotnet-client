@@ -17,6 +17,7 @@ namespace UKHO.FileShareAdminClient
 {
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
+        Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
 
@@ -53,6 +54,21 @@ namespace UKHO.FileShareAdminClient
             int maxFileBlockSize = 4194304) : base(httpClientFactory, baseAddress, authTokenProvider)
         {
             this.maxFileBlockSize = maxFileBlockSize;
+        }
+
+        public async Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken)
+        {
+            var uri = $"batch/{batchId}/acl";
+            var payloadJson = JsonConvert.SerializeObject(acl);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+            {
+                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+            })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+            }
         }
 
         public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
