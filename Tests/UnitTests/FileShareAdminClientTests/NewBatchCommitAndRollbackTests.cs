@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareAdminClient;
@@ -57,7 +58,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             nextResponse = null;
@@ -67,8 +68,8 @@ namespace UKHO.FileShareAdminClientTests
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType1);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType1, CancellationToken.None);
 
             await fileShareApiClient.CommitBatch(batchHandle);
 
@@ -98,7 +99,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             nextResponseStatusCode = HttpStatusCode.NoContent;
