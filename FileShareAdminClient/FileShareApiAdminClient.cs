@@ -129,7 +129,7 @@ namespace UKHO.FileShareAdminClient
                     if (!string.IsNullOrEmpty(mimeType)) httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
 
                     var httpClient = await GetAuthenticationHeaderSetClient();
-                    var createFileRecordResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var createFileRecordResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                     createFileRecordResponse.EnsureSuccessStatusCode();
                 }
             }
@@ -170,7 +170,7 @@ namespace UKHO.FileShareAdminClient
                     httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
 
                     var httpClient = await GetAuthenticationHeaderSetClient();
-                    var putFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                     putFileResponse.EnsureSuccessStatusCode();
 
                     progressUpdate((fileBlockId, expectedTotalBlockCount));
@@ -185,7 +185,7 @@ namespace UKHO.FileShareAdminClient
                 { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
                 {
                     var httpClient = await GetAuthenticationHeaderSetClient();
-                    var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                     writeFileResponse.EnsureSuccessStatusCode();
                 }
             }
