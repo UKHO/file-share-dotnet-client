@@ -18,14 +18,14 @@ namespace UKHO.FileShareAdminClient
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
         Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
-        Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
+        Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
 
-        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes);
 
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes);
 
         Task CommitBatch(IBatchHandle batchHandle);
@@ -71,7 +71,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
+        public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken)
         {
             const string uri = "batch";
             var payloadJson = JsonConvert.SerializeObject(batchModel,
@@ -83,7 +83,7 @@ namespace UKHO.FileShareAdminClient
             })
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                 response.EnsureSuccessStatusCode();
 
                 var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
@@ -99,14 +99,14 @@ namespace UKHO.FileShareAdminClient
         }
 
 
-        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
-            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, fileAttributes);
+            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, cancellationToken, fileAttributes);
         }
 
         public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
             if (!stream.CanSeek)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareAdminClient;
@@ -54,7 +55,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = "newBatchId";
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.IsNotNull(batchHandle);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
@@ -78,7 +79,7 @@ namespace UKHO.FileShareAdminClientTests
                 ExpiryDate = DateTime.UtcNow
             };
 
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(batchModel);
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(batchModel, CancellationToken.None);
 
             Assert.IsNotNull(batchHandle);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
@@ -103,7 +104,7 @@ namespace UKHO.FileShareAdminClientTests
             };
 
             var batchHandle =
-                await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+                await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
 
             Assert.IsNotNull(batchHandle);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
@@ -127,7 +128,7 @@ namespace UKHO.FileShareAdminClientTests
         public async Task TestCreateNewBatchSetsAuthorizationHeader()
         {
             nextResponse = new CreateBatchResponseModel { BatchId = "newBatchId" };
-            await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
             
             Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
