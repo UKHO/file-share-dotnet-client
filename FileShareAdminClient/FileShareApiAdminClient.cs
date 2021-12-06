@@ -17,21 +17,28 @@ namespace UKHO.FileShareAdminClient
 {
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
-        Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
-        Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken);
+        Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
+        Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken? cancellationToken = null);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
 
-        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken,
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            params KeyValuePair<string, string>[] fileAttributes);
+
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken? cancellationToken = null,
             params KeyValuePair<string, string>[] fileAttributes);
 
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
+            params KeyValuePair<string, string>[] fileAttributes);
+
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken? cancellationToken = null,
             params KeyValuePair<string, string>[] fileAttributes);
 
         Task CommitBatch(IBatchHandle batchHandle);
-        Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken);
+        Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken cancellationToken);
+        Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -56,8 +63,10 @@ namespace UKHO.FileShareAdminClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
-        public async Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken)
+        public async Task<HttpResponseMessage> AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
         {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
             var uri = $"batch/{batchId}/acl";
             var payloadJson = JsonConvert.SerializeObject(acl);
 
@@ -67,12 +76,14 @@ namespace UKHO.FileShareAdminClient
             })
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
-                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
             }
         }
 
-        public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken)
+        public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken? cancellationToken = null)
         {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
             const string uri = "batch";
             var payloadJson = JsonConvert.SerializeObject(batchModel,
                 new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
@@ -83,7 +94,7 @@ namespace UKHO.FileShareAdminClient
             })
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
                 response.EnsureSuccessStatusCode();
 
                 var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
@@ -98,14 +109,104 @@ namespace UKHO.FileShareAdminClient
             return GetBatchStatusAsync(batchHandle.BatchId);
         }
 
-
-        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken,
+        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes)
         {
-            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, cancellationToken, fileAttributes);
+            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, CancellationToken.None, fileAttributes);
+        }
+
+        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken? cancellationToken = null,
+            params KeyValuePair<string, string>[] fileAttributes)
+        {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
+            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, cancellationToken.Value, fileAttributes);
         }
 
         public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
+            params KeyValuePair<string, string>[] fileAttributes)
+        {
+            await AddFile(batchHandle, stream, fileName, mimeType, progressUpdate, CancellationToken.None, fileAttributes);
+        }
+
+        public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken? cancellationToken = null,
+            params KeyValuePair<string, string>[] fileAttributes)
+        {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
+            await AddFile(batchHandle, stream, fileName, mimeType, progressUpdate, cancellationToken.Value, fileAttributes);
+        }
+
+        public async Task CommitBatch(IBatchHandle batchHandle)
+        {
+            var uri = $"/batch/{batchHandle.BatchId}";
+            var batchCommitModel = new BatchCommitModel
+            {
+                FileDetails = ((BatchHandle)batchHandle).FileDetails
+            };
+
+
+            var payloadJson = JsonConvert.SerializeObject(batchCommitModel.FileDetails);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
+        {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
+            var uri = $"/batch/{batchId}/acl";
+            string payloadJson = JsonConvert.SerializeObject(acl);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
+            }
+        }
+
+        public async Task RollBackBatchAsync(IBatchHandle batchHandle)
+        {
+            var uri = $"batch/{batchHandle.BatchId}";
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                response.EnsureSuccessStatusCode();
+            }
+        }
+
+        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
+                    CancellationToken? cancellationToken = null)
+        {
+            cancellationToken = cancellationToken ?? CancellationToken.None;
+
+            var uri = $"batch/{batchId}/expiry";
+
+            var payloadJson = JsonConvert.SerializeObject(batchExpiry);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
+                return response;
+            }
+        }
+
+
+        private async Task AddFile(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
@@ -190,68 +291,6 @@ namespace UKHO.FileShareAdminClient
                 }
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
-        }
-        
-        public async Task CommitBatch(IBatchHandle batchHandle)
-        {
-            var uri = $"/batch/{batchHandle.BatchId}";
-            var batchCommitModel = new BatchCommitModel
-            {
-                FileDetails = ((BatchHandle)batchHandle).FileDetails
-            };
-
-
-            var payloadJson = JsonConvert.SerializeObject(batchCommitModel.FileDetails);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
-            }
-        }
-
-        public async Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken)
-        {
-            var uri = $"/batch/{batchId}/acl";
-            string payloadJson = JsonConvert.SerializeObject(acl);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
-
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-            }
-        }
-
-        public async Task RollBackBatchAsync(IBatchHandle batchHandle)
-        {
-            var uri = $"batch/{batchHandle.BatchId}";
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
-            }
-        }
-
-        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
-                    CancellationToken cancellationToken)
-        {
-            var uri = $"batch/{batchId}/expiry";
-
-            var payloadJson = JsonConvert.SerializeObject(batchExpiry);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                return response;
-            }
         }
     }
 }
