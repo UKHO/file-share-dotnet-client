@@ -2,7 +2,7 @@
 
 namespace UKHO.FileShareAdminClient.Models.DTO
 {
-    public class SetExpiryDateResponse : IBatchHandle
+    public class ReplaceAclResponse : IBatchHandle
     {
         public string BatchId { get; set; }
 
@@ -10,7 +10,7 @@ namespace UKHO.FileShareAdminClient.Models.DTO
 
         public List<Error> Errors { get; set; } = new List<Error>();
 
-        public SetExpiryDateResponse(string batchId)
+        public ReplaceAclResponse(string batchId)
         {
             BatchId = batchId;
         }

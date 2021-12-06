@@ -17,8 +17,31 @@ namespace UKHO.FileShareClient.Internal
         /// <returns></returns>
         public static async Task<T> ReadAsTypeAsync<T>(this HttpResponseMessage httpResponseMessage)
         {
-            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            var bodyJson = await httpResponseMessage.Content?.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(bodyJson);
+        }
+
+        /// <summary>
+        /// Reads response body json as given type
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="httpResponseMessage"></param>
+        /// <returns></returns>
+        public static async Task<T> ReadAsTypeAsync1<T>(this HttpResponseMessage httpResponseMessage, string batchId)
+        {
+            string bodyJson = string.Empty;
+
+            typeof(T).GetProperty("BatchId").SetValue("BatchId", batchId);
+            typeof(T).GetProperty("IsSuccess").SetValue("IsSuccess", httpResponseMessage.IsSuccessStatusCode);
+
+
+            if (httpResponseMessage.Content != null)
+            {
+                bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            }
+
+            return JsonConvert.DeserializeObject<T>(bodyJson);
+
         }
 
         /// <summary>

@@ -37,7 +37,7 @@ namespace UKHO.FileShareAdminClientTests
                 return (nextResponseStatusCode, nextResponse);
             });
             nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.Created;
+            nextResponseStatusCode = HttpStatusCode.NoContent;
             lastRequestUris = new List<(HttpMethod, Uri)>();
             lastRequestBodies = new List<string>();
 
