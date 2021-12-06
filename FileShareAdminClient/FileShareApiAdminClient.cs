@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UKHO.FileShareAdminClient.Models;
+using UKHO.FileShareAdminClient.Models.DTO;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Internal;
 using UKHO.FileShareClient.Models;
@@ -38,7 +39,7 @@ namespace UKHO.FileShareAdminClient
         Task CommitBatch(IBatchHandle batchHandle);
         Task<HttpResponseMessage> ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
+        Task<SetExpiryDateResponse> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -187,7 +188,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<HttpResponseMessage> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
+        public async Task<SetExpiryDateResponse> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
                     CancellationToken? cancellationToken = null)
         {
             cancellationToken = cancellationToken ?? CancellationToken.None;
@@ -201,11 +202,14 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-                return response;
+
+                var data = await response.ReadAsTypeAsync<SetExpiryDateResponse>();
+
+                return data;
             }
         }
 
-
+        #region Private methods
         private async Task AddFile(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
@@ -292,5 +296,6 @@ namespace UKHO.FileShareAdminClient
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
         }
+        #endregion
     }
 }

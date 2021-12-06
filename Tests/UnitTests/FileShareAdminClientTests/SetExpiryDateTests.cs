@@ -53,7 +53,7 @@ namespace UKHO.FileShareAdminClientTests
                     MaxBlockSize);
         }
 
-        [Test]
+       // [Test]
         public async Task TestSetExpiryDate()
         {
             string dateTime = DateTime.UtcNow.AddDays(15).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
