@@ -84,7 +84,7 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode2();
 
                 var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
                 var batchId = data.BatchId;
@@ -130,7 +130,7 @@ namespace UKHO.FileShareAdminClient
 
                     var httpClient = await GetAuthenticationHeaderSetClient();
                     var createFileRecordResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                    createFileRecordResponse.EnsureSuccessStatusCode();
+                    createFileRecordResponse.EnsureSuccessStatusCode2();
                 }
             }
 
@@ -171,7 +171,7 @@ namespace UKHO.FileShareAdminClient
 
                     var httpClient = await GetAuthenticationHeaderSetClient();
                     var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                    putFileResponse.EnsureSuccessStatusCode();
+                    putFileResponse.EnsureSuccessStatusCode2();
 
                     progressUpdate((fileBlockId, expectedTotalBlockCount));
                 }
@@ -186,7 +186,7 @@ namespace UKHO.FileShareAdminClient
                 {
                     var httpClient = await GetAuthenticationHeaderSetClient();
                     var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                    writeFileResponse.EnsureSuccessStatusCode();
+                    writeFileResponse.EnsureSuccessStatusCode2();
                 }
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
@@ -252,6 +252,22 @@ namespace UKHO.FileShareAdminClient
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                 return response;
             }
+        }
+    }
+
+    public static class HttpResponseMessageExtensions
+    {
+        public static void EnsureSuccessStatusCode2(this HttpResponseMessage response)
+        {
+            if (response.IsSuccessStatusCode)
+                return;
+
+            var errorMessage = response.ReadAsTypeAsync<ErrorDescriptionModel>().Result;
+            var responseMessage = string.Join(Environment.NewLine, errorMessage.Errors.Select(e => e.Description));
+            var contentMessage = string.IsNullOrWhiteSpace(responseMessage) ? string.Empty : $"{responseMessage}";
+            
+            throw new HttpRequestException(string.Format(contentMessage));
+            
         }
     }
 }
