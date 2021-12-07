@@ -208,7 +208,7 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode2();
             }
         }
 
@@ -234,7 +234,7 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
+                response.EnsureSuccessStatusCode2();
             }
         }
 
@@ -259,15 +259,19 @@ namespace UKHO.FileShareAdminClient
     {
         public static void EnsureSuccessStatusCode2(this HttpResponseMessage response)
         {
-            if (response.IsSuccessStatusCode)
-                return;
+            try
+            {
+                if (response.IsSuccessStatusCode)
+                    return;
+            }
+            catch
+            {
+                var errorMessage = response.ReadAsTypeAsync<ErrorDescriptionModel>().Result;
+                var responseMessage = string.Join(Environment.NewLine, errorMessage.Errors.Select(e => e.Description));
+                var contentMessage = string.IsNullOrWhiteSpace(responseMessage) ? string.Empty : $"{responseMessage}";
 
-            var errorMessage = response.ReadAsTypeAsync<ErrorDescriptionModel>().Result;
-            var responseMessage = string.Join(Environment.NewLine, errorMessage.Errors.Select(e => e.Description));
-            var contentMessage = string.IsNullOrWhiteSpace(responseMessage) ? string.Empty : $"{responseMessage}";
-            
-            throw new HttpRequestException(string.Format(contentMessage));
-            
+                throw new HttpRequestException(string.Format(contentMessage));
+            }
         }
     }
 }
