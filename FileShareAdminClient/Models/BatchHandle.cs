@@ -20,7 +20,7 @@ namespace UKHO.FileShareAdminClient.Models
 
         internal void AddFile(string filename, string hash)
         {
-            FileDetails.Add(new FileDetail { FileName = filename, Hash = hash });
+            FileDetails.Add(new FileDetail {FileName = filename, Hash = hash});
         }
     }
 }
