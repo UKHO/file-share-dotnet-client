@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -10,7 +9,6 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UKHO.FileShareAdminClient.Models;
-using UKHO.FileShareAdminClient.Models.DTO;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Internal;
 using UKHO.FileShareClient.Models;
@@ -19,28 +17,23 @@ namespace UKHO.FileShareAdminClient
 {
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
-        Task<IBatchHandle> AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken? cancellationToken = null);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
-
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
-
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken? cancellationToken = null,
             params KeyValuePair<string, string>[] fileAttributes);
-
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
             params KeyValuePair<string, string>[] fileAttributes);
-
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken? cancellationToken = null,
             params KeyValuePair<string, string>[] fileAttributes);
-
         Task CommitBatch(IBatchHandle batchHandle);
-        Task<IBatchHandle> ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task<IBatchHandle> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
+        Task AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
+        Task ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
+        Task SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -65,7 +58,7 @@ namespace UKHO.FileShareAdminClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
-        public async Task<IBatchHandle> AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
+        public async Task AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
         {
             cancellationToken = cancellationToken ?? CancellationToken.None;
 
@@ -79,9 +72,7 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-                var data = await ParseResponse(response, new AppendAclResponse(batchId));
-
-                return data;
+                response.EnsureSuccessStatusCode();
             }
         }
 
@@ -164,7 +155,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IBatchHandle> ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
+        public async Task ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
         {
             cancellationToken = cancellationToken ?? CancellationToken.None;
 
@@ -177,9 +168,7 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-                var data = await ParseResponse(response, new ReplaceAclResponse(batchId));
-
-                return data;
+                response.EnsureSuccessStatusCode();
             }
         }
 
@@ -195,7 +184,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IBatchHandle> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
+        public async Task SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
                     CancellationToken? cancellationToken = null)
         {
             cancellationToken = cancellationToken ?? CancellationToken.None;
@@ -209,10 +198,7 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-
-                var data = await ParseResponse(response, new SetExpiryDateResponse(batchId));
-
-                return data;
+                response.EnsureSuccessStatusCode();
             }
         }
 
@@ -245,7 +231,6 @@ namespace UKHO.FileShareAdminClient
                     createFileRecordResponse.EnsureSuccessStatusCode();
                 }
             }
-
 
             var md5Hash = stream.CalculateMD5();
             stream.Seek(0, SeekOrigin.Begin);
@@ -302,33 +287,6 @@ namespace UKHO.FileShareAdminClient
                 }
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
-        }
-
-        private async Task<IBatchHandle> ParseResponse(HttpResponseMessage response, IBatchHandle batchHandle)
-        {
-            batchHandle.IsSuccess = response.IsSuccessStatusCode;
-
-            if (!response.IsSuccessStatusCode && response.StatusCode != HttpStatusCode.BadRequest)
-            {
-                Error error = new Error
-                {
-                    StatusCode = (int)response.StatusCode,
-                    Description = "Something went wrong. Please contact system administrator.",
-                    Source = response.ReasonPhrase
-                };
-
-                batchHandle.Errors.Add(error);
-
-                return batchHandle;
-            }
-
-            if (response.StatusCode != HttpStatusCode.NoContent)
-            {
-                var data = await response.ReadAsTypeAsync<IBatchHandle>();
-                batchHandle.Errors = data.Errors;
-            }
-
-            return batchHandle;
         }
         #endregion
     }
