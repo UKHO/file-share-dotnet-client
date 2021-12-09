@@ -203,12 +203,7 @@ namespace UKHO.FileShareAdminClient
 
                 SetExpiryDateResponse setExpiryDateResponse = new SetExpiryDateResponse();
 
-                //if (!setExpiryDateResponse.IsSuccess)
-                //{
-                    _ = await setExpiryDateResponse.GetResponse(response, setExpiryDateResponse);
-                //}
-
-                return setExpiryDateResponse;
+                return await setExpiryDateResponse.GetResponse(response);
             }
         }
 

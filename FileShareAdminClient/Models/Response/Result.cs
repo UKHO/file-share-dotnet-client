@@ -26,7 +26,7 @@ namespace UKHO.FileShareAdminClient.Models.Response
 
         public List<Error> Errors { get; set; } = new List<Error>();
 
-        public async Task<T> GetResponse(HttpResponseMessage response, T data)
+        public async Task<T> GetResponse(HttpResponseMessage response)
         {
             //T data = default(T);
 
@@ -34,12 +34,7 @@ namespace UKHO.FileShareAdminClient.Models.Response
 
             StatusCode = (int)response.StatusCode;
 
-            if (response.Content != null)
-            { 
-                data = await response.ReadAsTypeAsync<T>();
-            }
-
-            return  data;
+            return await response.ReadAsTypeAsync<T>();
         }
     }
 }
