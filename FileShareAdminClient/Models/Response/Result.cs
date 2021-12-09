@@ -13,9 +13,12 @@ namespace UKHO.FileShareAdminClient.Models.Response
 
         public List<Error> Errors { get; set; } = new List<Error>();
 
+        //public T Response { get; set; }
+
         public async Task<T> GetResponse(HttpResponseMessage response)
         {
             return await response.ReadAsTypeAsync<T>();
+
         }
     }
 }
