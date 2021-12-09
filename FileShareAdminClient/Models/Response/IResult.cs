@@ -9,7 +9,7 @@ namespace UKHO.FileShareAdminClient.Models.Response
         bool IsSuccess { get; }
         int StatusCode { get; }
         List<Error> Errors { get; set; }
-        T Property { get; }
-        Task<T> GetResponseData();
+        T Property { get; set; }
+      //  Task<T> GetResponseData();
     }
 }
