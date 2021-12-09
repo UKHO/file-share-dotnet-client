@@ -1,9 +1,6 @@
-﻿using System.Net.Http;
-
-namespace UKHO.FileShareAdminClient.Models.Response
+﻿namespace UKHO.FileShareAdminClient.Models.Response
 {
-    public class SetExpiryDateResponse : Result<SetExpiryDateResponse>
+    public class SetExpiryDateResponse
     {
-        public string ID { get; set; }
     }
 }
