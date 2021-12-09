@@ -203,9 +203,7 @@ namespace UKHO.FileShareAdminClient
 
                 Result<SetExpiryDateResponse> setExpiryDateResponse = new Result<SetExpiryDateResponse>();
 
-                return await setExpiryDateResponse.GetResponseData1(response);
-
-                //return setExpiryDateResponse;
+                return await setExpiryDateResponse.GetResponseData(response);
             }
         }
 
