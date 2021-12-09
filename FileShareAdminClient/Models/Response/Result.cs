@@ -15,13 +15,7 @@ namespace UKHO.FileShareAdminClient.Models.Response
 
         public async Task<T> GetResponse(HttpResponseMessage response)
         {
-            var result = await response.ReadAsTypeAsync<T>();
-
-            IsSuccess = response.IsSuccessStatusCode;
-
-            StatusCode = (int)response.StatusCode;
-
-            return result;
+            return await response.ReadAsTypeAsync<T>();
         }
     }
 }
