@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using UKHO.FileShareAdminClient.Models;
+using UKHO.FileShareAdminClient.Models.Response;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Internal;
 using UKHO.FileShareClient.Models;
@@ -33,7 +34,7 @@ namespace UKHO.FileShareAdminClient
         Task RollBackBatchAsync(IBatchHandle batchHandle);
         Task AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
         Task ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
-        Task SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
+        Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -184,7 +185,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
+        public async Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
                     CancellationToken? cancellationToken = null)
         {
             cancellationToken = cancellationToken ?? CancellationToken.None;
@@ -197,8 +198,16 @@ namespace UKHO.FileShareAdminClient
             { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
+
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-                response.EnsureSuccessStatusCode();
+
+                SetExpiryDateResponse setExpiryDateResponse = new SetExpiryDateResponse(response);
+
+                if(setExpiryDateResponse.IsSuccess)
+                {
+                    _ = await setExpiryDateResponse.GetResponse(setExpiryDateResponse);
+                }
+                return setExpiryDateResponse;
             }
         }
 
