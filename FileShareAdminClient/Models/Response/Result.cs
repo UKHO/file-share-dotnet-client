@@ -21,9 +21,9 @@ namespace UKHO.FileShareAdminClient.Models.Response
 
         public int StatusCode { get; set; }
 
-      //  public T TypeProperties { get; private set; }
+        //  public T TypeProperties { get; private set; }
 
-        public List<Error> Errors { get; set; }
+        public List<Error> Errors { get; set; } = new List<Error>();
 
         public async Task<T> GetResponse(T data)
         {
