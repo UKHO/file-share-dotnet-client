@@ -53,25 +53,25 @@ namespace UKHO.FileShareAdminClientTests
                     MaxBlockSize);
         }
 
-        [Test]
-        public async Task TestSetExpiryDate()
-        {
-            string dateTime = DateTime.UtcNow.AddDays(15).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
+        //[Test]
+        //public async Task TestSetExpiryDate()
+        //{
+        //    string dateTime = DateTime.UtcNow.AddDays(15).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
 
-            var batchId = Guid.NewGuid().ToString();
+        //    var batchId = Guid.NewGuid().ToString();
 
-            await fileShareApiClient.SetExpiryDateAsync(batchId, 
-                new BatchExpiryModel { ExpiryDate = dateTime }, 
-                CancellationToken.None);
+        //    var t = await fileShareApiClient.SetExpiryDateAsync(batchId, 
+        //        new BatchExpiryModel { ExpiryDate = dateTime }, 
+        //        CancellationToken.None);
 
-            CollectionAssert.AreEqual(new[]
-            {
-                $"PUT:/batch/{batchId}/expiry"
-            },
-            lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+        //    CollectionAssert.AreEqual(new[]
+        //    {
+        //        $"PUT:/batch/{batchId}/expiry"
+        //    },
+        //    lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
 
-            var expiryDate = lastRequestBodies.First().DeserialiseJson<BatchExpiryModel>();
-            Assert.AreEqual(dateTime, expiryDate.ExpiryDate);
-        }
+        //    var expiryDate = lastRequestBodies.First().DeserialiseJson<BatchExpiryModel>();
+        //    Assert.AreEqual(dateTime, expiryDate.ExpiryDate);
+        //}
     }
 }
