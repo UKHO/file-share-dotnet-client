@@ -7,16 +7,17 @@ namespace UKHO.FileShareAdminClient.Models.Response
 {
     public class Result<T> : IResult<T>
     {
-        private readonly HttpResponseMessage response;
+        //private readonly HttpResponseMessage response;
 
-        public Result(HttpResponseMessage response)
-        {
-            this.response = response;
+        //public Result(HttpResponseMessage response)
+        //{
+            
+        //    this.response = response;
 
-            IsSuccess = response.IsSuccessStatusCode;
+        //    IsSuccess = response.IsSuccessStatusCode;
 
-            StatusCode = (int)response.StatusCode;
-        }
+        //    StatusCode = (int)response.StatusCode;
+        //}
         public bool IsSuccess { get; set; }
 
         public int StatusCode { get; set; }
@@ -25,13 +26,13 @@ namespace UKHO.FileShareAdminClient.Models.Response
 
         public List<Error> Errors { get; set; } = new List<Error>();
 
-        public async Task<T> GetResponse(T data)
+        public async Task<T> GetResponse(HttpResponseMessage response, T data)
         {
             //T data = default(T);
 
-            //IsSuccess = response.IsSuccessStatusCode;
+            IsSuccess = response.IsSuccessStatusCode;
 
-            //StatusCode = (int)response.StatusCode;
+            StatusCode = (int)response.StatusCode;
 
             if (response.Content != null)
             { 

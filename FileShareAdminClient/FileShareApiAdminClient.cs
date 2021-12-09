@@ -201,12 +201,12 @@ namespace UKHO.FileShareAdminClient
 
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
 
-                SetExpiryDateResponse setExpiryDateResponse = new SetExpiryDateResponse(response);
+                SetExpiryDateResponse setExpiryDateResponse = new SetExpiryDateResponse();
 
-                if(!setExpiryDateResponse.IsSuccess)
-                {
-                    _ = await setExpiryDateResponse.GetResponse(setExpiryDateResponse);
-                }
+                //if (!setExpiryDateResponse.IsSuccess)
+                //{
+                    _ = await setExpiryDateResponse.GetResponse(response, setExpiryDateResponse);
+                //}
 
                 return setExpiryDateResponse;
             }
