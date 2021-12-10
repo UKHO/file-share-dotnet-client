@@ -1,8 +1,16 @@
-﻿namespace UKHO.FileShareAdminClient.Models.Response
+﻿using System.Collections.Generic;
+
+namespace UKHO.FileShareAdminClient.Models.Response
 {
     public class Error
     {
         public string Source { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+    }
+
+    public class ErrorResponseModel
+    {
+        public string correlationId { get; set; }
+        public List<Error> Errors { get; set; } = new List<Error>();
     }
 }

@@ -30,8 +30,11 @@ namespace UKHO.FileShareAdminClient.Models.Response
                 }
                 else
                 {
-                    var errorResponse = await response.ReadAsTypeAsync<Error[]>();
-                    Errors = errorResponse.ToList();
+                    var errorResponse = await response.ReadAsTypeAsync<ErrorResponseModel>();
+                    if(errorResponse != null)
+                    {
+                        Errors = errorResponse.Errors;
+                    }                    
                 }
             }
         }
