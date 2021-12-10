@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -29,7 +30,8 @@ namespace UKHO.FileShareAdminClient.Models.Response
                 }
                 else
                 {
-                    Errors = await response.ReadAsTypeAsync<List<Error>>();
+                    var errorResponse = await response.ReadAsTypeAsync<Error[]>();
+                    Errors = errorResponse.ToList();
                 }
             }
         }
