@@ -2,7 +2,7 @@
 
 namespace UKHO.FileShareAdminClient.Models.Response
 {
-    public class ErrorResponseModel
+    internal class ErrorResponseModel
     {
         public string CorrelationId { get; set; }
         public List<Error> Errors { get; set; } = new List<Error>();
