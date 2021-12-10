@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -32,8 +33,8 @@ namespace UKHO.FileShareAdminClient
             params KeyValuePair<string, string>[] fileAttributes);
         Task CommitBatch(IBatchHandle batchHandle);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
-        Task ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
+        Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
+        Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null);
         Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken? cancellationToken = null);
     }
 
@@ -59,7 +60,7 @@ namespace UKHO.FileShareAdminClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
-        public async Task AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
+        public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
         {
             cancellationToken = cancellationToken ?? CancellationToken.None;
 
@@ -73,7 +74,12 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-                response.EnsureSuccessStatusCode();
+
+                Result<AppendAclResponse> appendAclResponse = new Result<AppendAclResponse>();
+
+                await appendAclResponse.ProcessHttpResponse(HttpStatusCode.NoContent, response);
+
+                return appendAclResponse;
             }
         }
 
@@ -156,7 +162,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
+        public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl, CancellationToken? cancellationToken = null)
         {
             cancellationToken = cancellationToken ?? CancellationToken.None;
 
@@ -169,7 +175,12 @@ namespace UKHO.FileShareAdminClient
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
-                response.EnsureSuccessStatusCode();
+
+                Result<ReplaceAclResponse> replaceAclResponse = new Result<ReplaceAclResponse>();
+
+                await replaceAclResponse.ProcessHttpResponse(HttpStatusCode.NoContent, response);
+
+                return replaceAclResponse;
             }
         }
 
@@ -201,9 +212,11 @@ namespace UKHO.FileShareAdminClient
 
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken.Value);
 
-                SetExpiryDateResponse setExpiryDateResponse = new SetExpiryDateResponse();
+                Result<SetExpiryDateResponse> setExpiryDateResponse = new Result<SetExpiryDateResponse>();
 
-                return await setExpiryDateResponse.GetResponse(response);
+                await setExpiryDateResponse.ProcessHttpResponse(HttpStatusCode.NoContent, response);
+
+                return setExpiryDateResponse;
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace UKHO.FileShareAdminClient.Models.Response
 {
-    public class SetExpiryDateResponse 
+    public class ReplaceAclResponse
     {
     }
 }
