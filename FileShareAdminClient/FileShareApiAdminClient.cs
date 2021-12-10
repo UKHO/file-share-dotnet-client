@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -203,7 +204,9 @@ namespace UKHO.FileShareAdminClient
 
                 Result<SetExpiryDateResponse> setExpiryDateResponse = new Result<SetExpiryDateResponse>();
 
-                return await setExpiryDateResponse.GetResponseData(response);
+                await setExpiryDateResponse.ProcessHttpResponse(HttpStatusCode.NoContent, response);
+
+                return setExpiryDateResponse;
             }
         }
 

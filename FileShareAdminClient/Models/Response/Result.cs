@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using UKHO.FileShareClient.Internal;
@@ -15,28 +16,22 @@ namespace UKHO.FileShareAdminClient.Models.Response
 
         public T Data { get; set; }
 
-        //public async Task<T> GetResponseData(HttpResponseMessage response)
-        //{
-        //    return await response.ReadAsTypeAsync<T>();
-        //}
-
-        public async Task<T> GetResponseData1(HttpResponseMessage response)
+        public async Task ProcessHttpResponse(HttpStatusCode successCode,  HttpResponseMessage response)
         {
-            return await response.ReadAsTypeAsync<T>();
-        }
+            IsSuccess = response.IsSuccessStatusCode;
+            StatusCode = (int)response.StatusCode;
 
-        public async Task<IResult<T>> GetResponseData(HttpResponseMessage response)
-        {
-            //return await response.ReadAsTypeAsync<Result<T>>();
-
-            var data = await response.ReadAsTypeAsync<Result<T>>();
-
-            data = data ?? new Result<T>();
-
-            data.IsSuccess = response.IsSuccessStatusCode;
-            data.StatusCode = (int)response.StatusCode;
-
-            return data;
+            if(response.Content != null)
+            {
+                if (response.StatusCode == successCode)
+                {
+                    Data = await response.ReadAsTypeAsync<T>();
+                }
+                else
+                {
+                    Errors = await response.ReadAsTypeAsync<List<Error>>();
+                }
+            }
         }
     }
 }

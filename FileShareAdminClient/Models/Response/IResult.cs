@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -10,6 +11,6 @@ namespace UKHO.FileShareAdminClient.Models.Response
         int StatusCode { get; }
         List<Error> Errors { get; set; }
         T Data { get; set; }
-      //  Task<T> GetResponseData();
+        Task ProcessHttpResponse(HttpStatusCode successCode, HttpResponseMessage response);
     }
 }
