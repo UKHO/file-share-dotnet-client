@@ -60,27 +60,6 @@ namespace UKHO.FileShareAdminClient
             this.maxFileBlockSize = maxFileBlockSize;
         }
 
-        public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default)
-        {
-            var uri = $"batch/{batchId}/acl";
-            var payloadJson = JsonConvert.SerializeObject(acl);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
-            {
-                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-            })
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-
-                Result<AppendAclResponse> appendAclResponse = new Result<AppendAclResponse>();
-
-                await appendAclResponse.ProcessHttpResponse(HttpStatusCode.NoContent, response);
-
-                return appendAclResponse;
-            }
-        }
-
         public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
         {
             const string uri = "batch";
@@ -154,26 +133,6 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default)
-        {
-            var uri = $"/batch/{batchId}/acl";
-            string payloadJson = JsonConvert.SerializeObject(acl);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
-
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-
-                Result<ReplaceAclResponse> replaceAclResponse = new Result<ReplaceAclResponse>();
-
-                await replaceAclResponse.ProcessHttpResponse(HttpStatusCode.NoContent, response);
-
-                return replaceAclResponse;
-            }
-        }
-
         public async Task RollBackBatchAsync(IBatchHandle batchHandle)
         {
             var uri = $"batch/{batchHandle.BatchId}";
@@ -186,27 +145,19 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
+        public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, 
+            CancellationToken cancellationToken = default)
+                => await SendResult<Acl, AppendAclResponse>($"batch/{batchId}/acl", HttpMethod.Post, acl, cancellationToken);
+
+        public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl,
+            CancellationToken cancellationToken = default)
+                => await SendResult<Acl, ReplaceAclResponse>($"batch/{batchId}/acl", HttpMethod.Put, acl, cancellationToken);
+
         public async Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
-                    CancellationToken cancellationToken = default)
-        {
-            var uri = $"batch/{batchId}/expiry";
+             CancellationToken cancellationToken = default)
+                => await SendResult<BatchExpiryModel, SetExpiryDateResponse>($"batch/{batchId}/expiry", 
+                                                        HttpMethod.Put, batchExpiry, cancellationToken);
 
-            var payloadJson = JsonConvert.SerializeObject(batchExpiry);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-
-                Result<SetExpiryDateResponse> setExpiryDateResponse = new Result<SetExpiryDateResponse>();
-
-                await setExpiryDateResponse.ProcessHttpResponse(HttpStatusCode.NoContent, response);
-
-                return setExpiryDateResponse;
-            }
-        }
 
         #region Private methods
         private async Task AddFile(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
@@ -294,6 +245,24 @@ namespace UKHO.FileShareAdminClient
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
         }
+
+        private async Task<IResult<TResponse>> SendResult<TRequest, TResponse>(string uri, HttpMethod httpMethod,
+            TRequest request, CancellationToken cancellationToken)
+        {
+            var payloadJson = JsonConvert.SerializeObject(request);
+            using (var httpRequestMessage = new HttpRequestMessage(httpMethod, uri)
+            {
+                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+            })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                var result = new Result<TResponse>();
+                await result.ProcessHttpResponse(HttpStatusCode.NoContent, response);
+                return result;
+            }
+        }
+
         #endregion
     }
 }
