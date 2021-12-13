@@ -19,10 +19,10 @@ namespace UKHO.FileShareAdminClient.Models.Response
         /// <summary>
         /// Deserialize the response data.
         /// </summary>
-        /// <param name="successCode">HttpStatusCode</param>
+        /// <param name="successCode">Expected HttpStatusCode</param>
         /// <param name="response">API response</param>
         /// <returns></returns>
-        public async Task ProcessHttpResponse(HttpStatusCode successCode, HttpResponseMessage response)
+        internal async Task ProcessHttpResponse(HttpStatusCode successCode, HttpResponseMessage response)
         {
             IsSuccess = response.IsSuccessStatusCode;
             StatusCode = (int)response.StatusCode;
