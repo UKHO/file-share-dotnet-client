@@ -71,10 +71,10 @@ namespace UKHO.FileShareAdminClientTests
                 await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
-            catch (ArgumentException e)
+            catch (ArgumentException ex)
             {
-                Assert.AreEqual("stream", e.ParamName);
-                Assert.AreEqual("The stream must be seekable. (Parameter 'stream')", e.Message);
+                Assert.AreEqual("stream", ex.ParamName);
+                Assert.AreEqual("The stream must be seekable. (Parameter 'stream')", ex.Message);
             }
         }
 
