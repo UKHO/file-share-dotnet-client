@@ -19,6 +19,7 @@ namespace UKHO.FileShareAdminClient
 {
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
+        Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default);
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
@@ -32,9 +33,8 @@ namespace UKHO.FileShareAdminClient
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken = default,
             params KeyValuePair<string, string>[] fileAttributes);
         Task CommitBatch(IBatchHandle batchHandle);
-        Task RollBackBatchAsync(IBatchHandle batchHandle);
-        Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default);
         Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default);
+        Task RollBackBatchAsync(IBatchHandle batchHandle);
         Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken cancellationToken = default);
     }
 
@@ -59,6 +59,10 @@ namespace UKHO.FileShareAdminClient
         {
             this.maxFileBlockSize = maxFileBlockSize;
         }
+
+        public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl,
+            CancellationToken cancellationToken = default)
+                => await SendResult<Acl, AppendAclResponse>($"batch/{batchId}/acl", HttpMethod.Post, acl, cancellationToken);
 
         public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
         {
@@ -133,6 +137,10 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
+        public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl,
+            CancellationToken cancellationToken = default)
+                => await SendResult<Acl, ReplaceAclResponse>($"batch/{batchId}/acl", HttpMethod.Put, acl, cancellationToken);
+
         public async Task RollBackBatchAsync(IBatchHandle batchHandle)
         {
             var uri = $"batch/{batchHandle.BatchId}";
@@ -144,14 +152,6 @@ namespace UKHO.FileShareAdminClient
                 response.EnsureSuccessStatusCode();
             }
         }
-
-        public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, 
-            CancellationToken cancellationToken = default)
-                => await SendResult<Acl, AppendAclResponse>($"batch/{batchId}/acl", HttpMethod.Post, acl, cancellationToken);
-
-        public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl,
-            CancellationToken cancellationToken = default)
-                => await SendResult<Acl, ReplaceAclResponse>($"batch/{batchId}/acl", HttpMethod.Put, acl, cancellationToken);
 
         public async Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
              CancellationToken cancellationToken = default)
