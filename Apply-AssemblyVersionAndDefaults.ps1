@@ -4,7 +4,8 @@ param (
     [Parameter(Mandatory = $true)] [string] $UKHOAssemblyCompany,
     [Parameter(Mandatory = $true)] [string] $UKHOAssemblyCopyright,
     [Parameter(Mandatory = $true)] [string] $UKHOAssemblyVersionPrefix,
-    [Parameter(Mandatory = $true)] [string] $UKHOAssemblyProduct
+    [Parameter(Mandatory = $true)] [string] $UKHOAssemblyProduct,
+    [Parameter(Mandatory = $true)] [string] $SourceRevisionId
 )
 
 #UKHO.file-share-dotnet-client_merge_20210428.5
@@ -28,6 +29,7 @@ $assemblyValues = @{
     "AssemblyVersion" = $versionToApply;
     "FileVersion"     = $versionToApply;
     "Version"         = $versionToApply;
+    "SourceRevisionId" = $SourceRevisionId;
 }
 
 function UpdateOrAddAttribute($xmlContent, $assemblyKey, $newValue, $namespace) {
