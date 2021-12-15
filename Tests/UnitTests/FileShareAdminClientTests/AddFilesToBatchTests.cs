@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using FakeItEasy;
 using NUnit.Framework;
@@ -57,7 +58,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             var stream1 = A.Fake<Stream>();
@@ -67,13 +68,13 @@ namespace UKHO.FileShareAdminClientTests
 
             try
             {
-                await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+                await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
-            catch (ArgumentException e)
+            catch (ArgumentException ex)
             {
-                Assert.AreEqual("stream", e.ParamName);
-                Assert.AreEqual("The stream must be seekable. (Parameter 'stream')", e.Message);
+                Assert.AreEqual("stream", ex.ParamName);
+                Assert.AreEqual("The stream must be seekable. (Parameter 'stream')", ex.Message);
             }
         }
 
@@ -82,7 +83,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             Stream stream1 = new MemoryStream(new byte[] {1, 2, 3, 4, 5});
@@ -92,8 +93,8 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2, CancellationToken.None);
 
 
             CollectionAssert.AreEqual(new[]
@@ -115,7 +116,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             Stream stream1 = new MemoryStream(new byte[] {1, 2, 3, 4, 5});
@@ -125,9 +126,9 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1,
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None,
                 new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2,
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2, CancellationToken.None,
                 new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
 
@@ -156,14 +157,14 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             Stream stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
 
 
             CollectionAssert.AreEqual(new[]
@@ -187,7 +188,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             var stream1 = new MemoryStream(new byte[(MaxBlockSize * 3)-1]);
@@ -197,7 +198,7 @@ namespace UKHO.FileShareAdminClientTests
             IList<(int blocksComplete, int totalBlockCount)> progressReports =
                 new List<(int blocksComplete, int totalBlockCount)>();
             await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1,
-                progressUpdate => { progressReports.Add(progressUpdate); });
+                progressUpdate => { progressReports.Add(progressUpdate); }, CancellationToken.None);
 
             Assert.AreEqual(4, progressReports.Count);
             CollectionAssert.AreEqual(new[] {0, 1, 2, 3}, progressReports.Select(r => r.blocksComplete));
@@ -215,7 +216,7 @@ namespace UKHO.FileShareAdminClientTests
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
 
             Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
