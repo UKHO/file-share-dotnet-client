@@ -22,14 +22,14 @@ $buildRevisionNumber = $Matches.2 + "." + $Matches.3
 $versionToApply = $UKHOAssemblyVersionPrefix + $buildRevisionNumber
 
 $assemblyValues = @{
-    "Company"         = $UKHOAssemblyCompany;
-    "Copyright"       = $UKHOAssemblyCopyright;
-    "Description"     = $UKHOAssemblyProduct;
-    "Product"         = $UKHOAssemblyProduct;
-    "AssemblyVersion" = $versionToApply;
-    "FileVersion"     = $versionToApply;
-    "Version"         = $versionToApply;
-    "SourceRevisionId" = $SourceRevisionId;
+    "Company"           = $UKHOAssemblyCompany;
+    "Copyright"         = $UKHOAssemblyCopyright;
+    "Description"       = $UKHOAssemblyProduct;
+    "Product"           = $UKHOAssemblyProduct;
+    "AssemblyVersion"   = $versionToApply;
+    "FileVersion"       = $versionToApply;
+    "Version"           = $versionToApply;
+    "SourceRevisionId"  = $SourceRevisionId;
 }
 
 function UpdateOrAddAttribute($xmlContent, $assemblyKey, $newValue, $namespace) {
