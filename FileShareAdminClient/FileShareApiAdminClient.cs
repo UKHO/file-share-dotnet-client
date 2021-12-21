@@ -20,8 +20,8 @@ namespace UKHO.FileShareAdminClient
     public interface IFileShareApiAdminClient : IFileShareApiClient
     {
         Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default);
-        Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
-        Task<IResult<IBatchHandle>> CreateNewBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
+        Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
+        Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
@@ -67,7 +67,7 @@ namespace UKHO.FileShareAdminClient
             CancellationToken cancellationToken = default)
                 => await SendResult<Acl, AppendAclResponse>($"batch/{batchId}/acl", HttpMethod.Post, acl, cancellationToken);
 
-        public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
+        public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
         {
             const string uri = "batch";
             var payloadJson = JsonConvert.SerializeObject(batchModel,
@@ -79,7 +79,7 @@ namespace UKHO.FileShareAdminClient
             })
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                var response = await httpClient.SendAsync(httpRequestMessage);
                 response.EnsureSuccessStatusCode();
 
                 var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
@@ -89,24 +89,9 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<IBatchHandle>> CreateNewBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
-        {
-            const string uri = "batch";
-            var payloadJson = JsonConvert.SerializeObject(batchModel,
-                new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
-            {
-                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-            })
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                var result = new Result<IBatchHandle>();
-                await result.ProcessHttpResponse(HttpStatusCode.NoContent, response);
-                return result;
-            }
-        }                
+        public async Task<IResult<CreateBatchResponse>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
+            => await SendResult<BatchModel, CreateBatchResponse>($"batch",
+                                                        HttpMethod.Post, batchModel, cancellationToken);
 
         public Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle)
         {
@@ -197,22 +182,13 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<RollBackBatchResponse>> RollBackBatchAsync(IResult<IBatchHandle> batchHandle, CancellationToken cancellationToken = default)
-        {
-            var uri = $"batch/{batchHandle.Data.BatchId}";
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                var result = new Result<RollBackBatchResponse>();
-                await result.ProcessHttpResponse(HttpStatusCode.NoContent, response);
-                return result;
-            }
-        }
+        public async Task<IResult<RollBackBatchResponse>> RollBackBatchAsync(CreateBatchResponse createBatchResponse, CancellationToken cancellationToken = default)
+            => await SendResult<CreateBatchResponse, RollBackBatchResponse>($"batch/{createBatchResponse.BatchId}",
+                                                        HttpMethod.Delete, null, cancellationToken);
 
         public async Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
              CancellationToken cancellationToken = default)
-                => await SendResult<BatchExpiryModel, SetExpiryDateResponse>($"batch/{batchId}/expiry", 
+                => await SendResult<BatchExpiryModel, SetExpiryDateResponse>($"batch/{batchId}/expiry",
                                                         HttpMethod.Put, batchExpiry, cancellationToken);
 
 
@@ -306,17 +282,33 @@ namespace UKHO.FileShareAdminClient
         private async Task<IResult<TResponse>> SendResult<TRequest, TResponse>(string uri, HttpMethod httpMethod,
             TRequest request, CancellationToken cancellationToken)
         {
-            var payloadJson = JsonConvert.SerializeObject(request);
-            using (var httpRequestMessage = new HttpRequestMessage(httpMethod, uri)
+            if (request != null)
             {
-                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-            })
+                var payloadJson = JsonConvert.SerializeObject(request,
+                    new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
+
+                using (var httpRequestMessage = new HttpRequestMessage(httpMethod, uri)
+                {
+                    Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+                })
+                {
+                    var httpClient = await GetAuthenticationHeaderSetClient();
+                    var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                    var result = new Result<TResponse>();
+                    await result.ProcessHttpResponse(HttpStatusCode.NoContent, response);
+                    return result;
+                }
+            }
+            else
             {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                var result = new Result<TResponse>();
-                await result.ProcessHttpResponse(HttpStatusCode.NoContent, response);
-                return result;
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
+                {
+                    var httpClient = await GetAuthenticationHeaderSetClient();
+                    var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var result = new Result<TResponse>();
+                    await result.ProcessHttpResponse(HttpStatusCode.NoContent, response);
+                    return result;
+                }
             }
         }
 
