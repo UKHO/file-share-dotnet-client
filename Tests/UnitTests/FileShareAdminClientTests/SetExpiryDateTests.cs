@@ -56,7 +56,7 @@ namespace UKHO.FileShareAdminClientTests
         [Test]
         public async Task TestSetExpiryDate()
         {
-            string dateTime = DateTime.UtcNow.AddDays(15).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
+            DateTime dateTime = DateTime.UtcNow.AddDays(15);
 
             var batchId = Guid.NewGuid().ToString();
 
