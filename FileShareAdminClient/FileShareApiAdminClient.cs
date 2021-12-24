@@ -22,7 +22,7 @@ namespace UKHO.FileShareAdminClient
     {
         Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default);
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
-        Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
+        Task<IResult<CreateBatchResponse>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
@@ -90,8 +90,9 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
-            => await SendResult<BatchModel, IBatchHandle>($"batch", HttpMethod.Post, batchModel, cancellationToken, HttpStatusCode.Created);
+        public async Task<IResult<CreateBatchResponse>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
+            => await SendResult<BatchModel, CreateBatchResponse>($"batch", HttpMethod.Post, batchModel, cancellationToken, HttpStatusCode.Created);
+
 
         public Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle)
         {
@@ -275,7 +276,6 @@ namespace UKHO.FileShareAdminClient
                 throw new ArgumentException("The stream must be seekable.", nameof(stream));
             stream.Seek(0, SeekOrigin.Begin);
 
-             //= null;//=new IResult<AddFileToBatchResponse>();
             var fileUri = $"batch/{batchHandle.BatchId}/files/{fileName}";
             {
                 var fileModel = new FileModel()
