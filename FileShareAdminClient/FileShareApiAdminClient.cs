@@ -22,7 +22,7 @@ namespace UKHO.FileShareAdminClient
     {
         Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default);
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
-        Task<IResult<CreateBatchResponse>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
+        Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
@@ -90,9 +90,20 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<CreateBatchResponse>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
-            => await SendResult<BatchModel, CreateBatchResponse>($"batch", HttpMethod.Post, batchModel, cancellationToken, HttpStatusCode.Created);
-
+        public async Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
+        {
+            //error1 - cant create instance of IBatchHandle. type is interface and cant be instantiated. other methods returns class not interface
+            //return await SendResult<BatchModel, IBatchHandle>($"batch", HttpMethod.Post, batchModel, cancellationToken, HttpStatusCode.Created);
+            var result = await SendResult<BatchModel, BatchHandle>($"batch", HttpMethod.Post, batchModel, cancellationToken, HttpStatusCode.Created);
+            var mappedResult = new Result<IBatchHandle>
+            {
+                Data = result.Data,
+                Errors = result.Errors,
+                IsSuccess = result.IsSuccess,
+                StatusCode = result.StatusCode
+            };
+            return mappedResult;
+        }
 
         public Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle)
         {
