@@ -340,14 +340,15 @@ namespace UKHO.FileShareAdminClient
                             var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                             ////putFileResponse.EnsureSuccessStatusCode();
 
-                            var result1 = new Result<AddFileToBatchResponse>();
-                            await result1.ProcessHttpResponse(HttpStatusCode.Created, putFileResponse);
+                            var resultUploadBlocks = new Result<AddFileToBatchResponse>();
+                            await resultUploadBlocks.ProcessHttpResponse(HttpStatusCode.Created, putFileResponse);
 
                             //var result = await SendResult<MemoryStream, AddFileToBatchResponse>(putFileUri,
                             //                                HttpMethod.Put, ms, cancellationToken, HttpStatusCode.Created, true, null, httpRequestMessage.Content.Headers);
-                            if (result1.Errors != null && result1.Errors.Any())
+                            if (resultUploadBlocks.Errors != null && resultUploadBlocks.Errors.Any())
                             {
-                                mappedResult = MapResult(result1, mappedResult);                                
+                                mappedResult = MapResult(resultUploadBlocks, mappedResult);
+                                break;
                             }
                             else
                             {
@@ -357,17 +358,18 @@ namespace UKHO.FileShareAdminClient
                                     writeBlockFileModel, cancellationToken, HttpStatusCode.NoContent);
                                 if (result.Errors != null && result.Errors.Any())
                                 {
-                                    mappedResult = MapResult(result, mappedResult);                                    
+                                    mappedResult = MapResult(result, mappedResult);
+                                    break;
                                 }
                                 else
                                 {
                                     ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
-                                }                               
+                                    return result;
+                                }
                             }
-                        }                        
+                        }
                     }
-                    return result;
-                }                
+                }
             }
             return mappedResult;
         }
