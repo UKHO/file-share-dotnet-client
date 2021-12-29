@@ -338,8 +338,7 @@ namespace UKHO.FileShareAdminClient
 
                             var httpClient = await GetAuthenticationHeaderSetClient();
                             var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                            ////putFileResponse.EnsureSuccessStatusCode();
-
+                            progressUpdate((fileBlockId, expectedTotalBlockCount));
                             var resultUploadBlocks = new Result<AddFileToBatchResponse>();
                             await resultUploadBlocks.ProcessHttpResponse(HttpStatusCode.Created, putFileResponse);
 
@@ -350,23 +349,21 @@ namespace UKHO.FileShareAdminClient
                                 mappedResult = MapResult(resultUploadBlocks, mappedResult);
                                 break;
                             }
-                            else
-                            {
-                                progressUpdate((fileBlockId, expectedTotalBlockCount));
-                                var writeBlockFileModel = new WriteBlockFileModel { BlockIds = fileBlocks };
-                                result = await SendResult<WriteBlockFileModel, AddFileToBatchResponse>(fileUri, HttpMethod.Put,
-                                    writeBlockFileModel, cancellationToken, HttpStatusCode.NoContent);
-                                if (result.Errors != null && result.Errors.Any())
-                                {
-                                    mappedResult = MapResult(result, mappedResult);
-                                    break;
-                                }
-                                else
-                                {
-                                    ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
-                                    return result;
-                                }
-                            }
+                        }
+                    }
+                    if (!(mappedResult.Errors != null && mappedResult.Errors.Any()))
+                    {
+                        var writeBlockFileModel = new WriteBlockFileModel { BlockIds = fileBlocks };
+                        result = await SendResult<WriteBlockFileModel, AddFileToBatchResponse>(fileUri, HttpMethod.Put,
+                            writeBlockFileModel, cancellationToken, HttpStatusCode.NoContent);
+                        if (result.Errors != null && result.Errors.Any())
+                        {
+                            mappedResult = MapResult(result, mappedResult);
+                        }
+                        else
+                        {
+                            ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
+                            return result;
                         }
                     }
                 }
