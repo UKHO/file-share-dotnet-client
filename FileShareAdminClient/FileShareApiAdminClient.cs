@@ -299,7 +299,7 @@ namespace UKHO.FileShareAdminClient
                     HttpStatusCode.Created, false, requestHeaders);
                 if (result.Errors != null && result.Errors.Any())
                 {
-                    mappedResult = MapResult(result, mappedResult);
+                    mappedResult = (Result<AddFileToBatchResponse>)result;
                 }
                 else
                 {
@@ -335,18 +335,13 @@ namespace UKHO.FileShareAdminClient
                                 new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
                             httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
-
-                            var httpClient = await GetAuthenticationHeaderSetClient();
-                            var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                             progressUpdate((fileBlockId, expectedTotalBlockCount));
-                            var resultUploadBlocks = new Result<AddFileToBatchResponse>();
-                            await resultUploadBlocks.ProcessHttpResponse(HttpStatusCode.Created, putFileResponse);
 
-                            //var result = await SendResult<MemoryStream, AddFileToBatchResponse>(putFileUri,
-                            //                                HttpMethod.Put, ms, cancellationToken, HttpStatusCode.Created, true, null, httpRequestMessage.Content.Headers);
-                            if (resultUploadBlocks.Errors != null && resultUploadBlocks.Errors.Any())
+                            result = await SendResult<MemoryStream, AddFileToBatchResponse>(putFileUri,
+                                                           HttpMethod.Put, ms, cancellationToken, HttpStatusCode.Created, true, null, httpRequestMessage.Content.Headers);
+                            if (result.Errors != null && result.Errors.Any())
                             {
-                                mappedResult = MapResult(resultUploadBlocks, mappedResult);
+                                mappedResult = (Result<AddFileToBatchResponse>)result;
                                 break;
                             }
                         }
@@ -358,7 +353,7 @@ namespace UKHO.FileShareAdminClient
                             writeBlockFileModel, cancellationToken, HttpStatusCode.NoContent);
                         if (result.Errors != null && result.Errors.Any())
                         {
-                            mappedResult = MapResult(result, mappedResult);
+                            mappedResult = (Result<AddFileToBatchResponse>)result;
                         }
                         else
                         {
@@ -371,20 +366,10 @@ namespace UKHO.FileShareAdminClient
             return mappedResult;
         }
 
-        private Result<AddFileToBatchResponse> MapResult(IResult<AddFileToBatchResponse> result, Result<AddFileToBatchResponse> mappedResult)
-        {
-            mappedResult.Errors = result.Errors;
-            mappedResult.IsSuccess = result.IsSuccess;
-            mappedResult.StatusCode = result.StatusCode;
-            mappedResult.Data = result.Data;
-            return mappedResult;
-        }
-
         private async Task<IResult<TResponse>> SendResult<TRequest, TResponse>(string uri, HttpMethod httpMethod,
             TRequest request, CancellationToken cancellationToken, HttpStatusCode successCode, bool isRequestContentStream = default, Dictionary<string, string> requestHeaders = default, HttpContentHeaders contentHeaders = default)
         {
             string payloadJson;
-            var httpRequestMessage = new HttpRequestMessage();
             HttpContent httpContent = null;
             if (request != null && !isRequestContentStream)
             {
@@ -395,13 +380,20 @@ namespace UKHO.FileShareAdminClient
             else if (isRequestContentStream)//scenario - AddFileToBatch - when uploads a block of byte data
             {
                 httpContent = new StreamContent(request as MemoryStream);
+                if (contentHeaders != null && contentHeaders.Any())
+                {
+                    foreach (var contentHeader in contentHeaders)
+                    {
+                        httpContent.Headers.Add(contentHeader.Key, contentHeader.Value);
+                    }
+                }
             }
-            using (httpRequestMessage = new HttpRequestMessage(httpMethod, uri)
+            using (var httpRequestMessage = new HttpRequestMessage(httpMethod, uri)
             {
                 Content = httpContent
             })
             {
-                if (requestHeaders != null && requestHeaders.Count() > 0)
+                if (requestHeaders != null && requestHeaders.Any())
                 {
                     foreach (var requestHeader in requestHeaders)
                     {
