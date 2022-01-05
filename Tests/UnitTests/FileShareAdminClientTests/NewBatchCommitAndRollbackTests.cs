@@ -112,7 +112,7 @@ namespace UKHO.FileShareAdminClientTests
             await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
             await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType1, CancellationToken.None);
 
-            await fileShareApiClient.CommitBatch(batchHandle.Data);
+            await fileShareApiClient.CommitBatch(batchHandle.Data, CancellationToken.None);
 
             CollectionAssert.AreEqual(new[]
             {
@@ -164,7 +164,7 @@ namespace UKHO.FileShareAdminClientTests
 
             nextResponseStatusCode = HttpStatusCode.NoContent;
             nextResponse = null;
-            await fileShareApiClient.RollBackBatchAsync(batchHandle.Data);
+            await fileShareApiClient.RollBackBatchAsync(batchHandle.Data, CancellationToken.None);
 
             CollectionAssert.AreEqual(new[]
             {
