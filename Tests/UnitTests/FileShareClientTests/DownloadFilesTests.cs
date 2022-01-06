@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareClient;
@@ -125,6 +126,70 @@ namespace UKHO.FileShareClientTests
             Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
             Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+        }
+
+
+        [Test]
+        public async Task TestBasicDownloadFileWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var downldLocation = @"D";
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", downldLocation, 10, CancellationToken.None);
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+
+        [Test]
+        public async Task TestDownloadFileSetsAuthorizationHeaderWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var downldLocation = @"D";
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", downldLocation, 10, CancellationToken.None);
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+        }
+
+
+        [Test]
+        public async Task TestDownloadFilesForABatchThatDoesNotExistWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            nextResponseStatusCode = HttpStatusCode.BadRequest;
+            var downldLocation = @"D";       
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", downldLocation, 10, CancellationToken.None);
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+
+        [Test]
+        public async Task TestDownloadFilesForABatchWithAFileThatDoesNotExistWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            nextResponseStatusCode = HttpStatusCode.NotFound;
+            var downldLocation = @"D";
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", downldLocation, 10, CancellationToken.None);
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestGetBatchStatusForABatchThatHasBeenDeletedWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            nextResponseStatusCode = HttpStatusCode.Gone;
+
+            var downldLocation = @"D";
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", downldLocation, 10, CancellationToken.None);
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
         }
     }
 }
