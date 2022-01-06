@@ -134,7 +134,7 @@ namespace UKHO.FileShareClient
                         httpStatusCode = HttpStatusCode.PartialContent;
                     }
 
-                    var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
 
                     await result.ProcessHttpResponse(httpStatusCode, response, true);
                     if (!result.IsSuccess) return result;
