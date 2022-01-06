@@ -21,14 +21,21 @@ namespace UKHO.FileShareClient.Models
         /// </summary>
         /// <param name="successCode">Expected HttpStatusCode</param>
         /// <param name="response">API response</param>
+        /// <param name="isResponseContentStream">Optional parameter for API response content is Stream</param>
         /// <returns></returns>
-        internal async Task ProcessHttpResponse(HttpStatusCode successCode, HttpResponseMessage response)
+        internal async Task ProcessHttpResponse(HttpStatusCode successCode, HttpResponseMessage response, bool isResponseContentStream = false)
         {
             IsSuccess = response.IsSuccessStatusCode;
             StatusCode = (int)response.StatusCode;
 
             if (response.Content != null)
             {
+                if(IsSuccess && isResponseContentStream)
+                {
+                   await response.ReadAsStreamAsync();
+                    return;
+                }
+
                 if (response.StatusCode.CompareTo(successCode) == 0)
                 {
                     Data = await response.ReadAsTypeAsync<T>();

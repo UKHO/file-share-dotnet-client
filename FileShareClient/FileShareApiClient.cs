@@ -117,6 +117,7 @@ namespace UKHO.FileShareClient
             long startByte = 0;
             long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes;
             var result = new Result<DownloadFileResponse>();
+            HttpStatusCode httpStatusCode = HttpStatusCode.OK;
 
             while (startByte <= endByte)
             {
@@ -130,9 +131,13 @@ namespace UKHO.FileShareClient
                     if (fileSizeInBytes != 0 && rangeHeader != null)
                     {
                         httpRequestMessage.Headers.Add("Range", rangeHeader);
+                        httpStatusCode = HttpStatusCode.PartialContent;
                     }
 
                     var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+
+                    await result.ProcessHttpResponse(httpStatusCode, response, true);
+                    if (!result.IsSuccess) return result;
 
                     using (var contentStream = await response.Content.ReadAsStreamAsync())
                     {
@@ -190,7 +195,7 @@ namespace UKHO.FileShareClient
 
         private async Task ProcessContentStream(Stream contentStream, string fileDownloadLocation)
         {
-            using (var fileStream = new FileStream(fileDownloadLocation, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            using (var fileStream =  new FileStream(fileDownloadLocation, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             {
                 contentStream.CopyTo(fileStream);
                 fileStream.Close();
