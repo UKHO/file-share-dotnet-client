@@ -83,6 +83,7 @@ namespace UKHO.FileShareAdminClientTests
             Assert.IsNull(createBatchResult.Data);
             Assert.AreEqual(createBatchResult.StatusCode, (int)nextResponseStatusCode);
             Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+            Assert.AreEqual(createBatchResult.Errors[0].Description, "Business Unit is invalid");
         }
 
         [Test]

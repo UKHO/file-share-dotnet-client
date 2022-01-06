@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,13 +25,12 @@ namespace UKHO.FileShareAdminClient
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
-        Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken = default,
-            params KeyValuePair<string, string>[] fileAttributes);
-        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
-            params KeyValuePair<string, string>[] fileAttributes);
         Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken = default,
+            CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes);
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, params KeyValuePair<string, string>[] fileAttributes);
+        Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken, 
             params KeyValuePair<string, string>[] fileAttributes);
         Task CommitBatch(IBatchHandle batchHandle);
         Task<IResult<CommitBatchResponse>> CommitBatch(IBatchHandle batchHandle, CancellationToken cancellationToken);
@@ -90,7 +88,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken = default)
+        public async Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken)
         {
             var result = await SendResult<BatchModel, BatchHandle>($"batch", HttpMethod.Post, batchModel, cancellationToken, HttpStatusCode.Created);
             var mappedResult = new Result<IBatchHandle>
@@ -114,7 +112,7 @@ namespace UKHO.FileShareAdminClient
             return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, CancellationToken.None, fileAttributes);
         }
 
-        public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken = default,
+        public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
             return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, cancellationToken, fileAttributes);
@@ -128,7 +126,7 @@ namespace UKHO.FileShareAdminClient
         }
 
         public async Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken = default,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
             return await AddFiles(batchHandle, stream, fileName, mimeType, progressUpdate, cancellationToken, fileAttributes);
@@ -153,7 +151,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<CommitBatchResponse>> CommitBatch(IBatchHandle batchHandle, CancellationToken cancellationToken = default)
+        public async Task<IResult<CommitBatchResponse>> CommitBatch(IBatchHandle batchHandle, CancellationToken cancellationToken)
         {
             var uri = $"/batch/{batchHandle.BatchId}";
             var batchCommitModel = new BatchCommitModel
@@ -180,7 +178,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<RollBackBatchResponse>> RollBackBatchAsync(IBatchHandle batchHandle, CancellationToken cancellationToken = default)
+        public async Task<IResult<RollBackBatchResponse>> RollBackBatchAsync(IBatchHandle batchHandle, CancellationToken cancellationToken)
             => await SendResult<IBatchHandle, RollBackBatchResponse>($"batch/{batchHandle.BatchId}", HttpMethod.Delete, null,
                 cancellationToken, HttpStatusCode.NoContent);
 
@@ -296,7 +294,7 @@ namespace UKHO.FileShareAdminClient
                 if (!string.IsNullOrEmpty(mimeType)) requestHeaders.Add("X-MIME-Type", mimeType);
 
                 var result = await SendResult<FileModel, AddFileToBatchResponse>(fileUri, HttpMethod.Post, fileModel, cancellationToken,
-                    HttpStatusCode.Created, false, requestHeaders);
+                    HttpStatusCode.Created, requestHeaders);
                 if (result.Errors != null && result.Errors.Any())
                 {
                     mappedResult = (Result<AddFileToBatchResponse>)result;
@@ -337,8 +335,7 @@ namespace UKHO.FileShareAdminClient
                             httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
                             progressUpdate((fileBlockId, expectedTotalBlockCount));
 
-                            result = await SendResult<MemoryStream, AddFileToBatchResponse>(putFileUri,
-                                                           HttpMethod.Put, ms, cancellationToken, HttpStatusCode.Created, true, null, httpRequestMessage.Content.Headers);
+                            result = await SendMessageResult<AddFileToBatchResponse>(httpRequestMessage, cancellationToken, HttpStatusCode.Created);
                             if (result.Errors != null && result.Errors.Any())
                             {
                                 mappedResult = (Result<AddFileToBatchResponse>)result;
@@ -367,45 +364,34 @@ namespace UKHO.FileShareAdminClient
         }
 
         private async Task<IResult<TResponse>> SendResult<TRequest, TResponse>(string uri, HttpMethod httpMethod,
-            TRequest request, CancellationToken cancellationToken, HttpStatusCode successCode, bool isRequestContentStream = default, Dictionary<string, string> requestHeaders = default, HttpContentHeaders contentHeaders = default)
+            TRequest request, CancellationToken cancellationToken, HttpStatusCode successCode, Dictionary<string, string> requestHeaders = default)
+            => await SendObjectResult<TResponse>(uri, httpMethod, request, cancellationToken, successCode, requestHeaders);
+
+        private async Task<IResult<TResponse>> SendObjectResult<TResponse>(string uri, HttpMethod httpMethod,
+            object request, CancellationToken cancellationToken, HttpStatusCode successCode, Dictionary<string, string> requestHeaders = default)
         {
-            string payloadJson;
-            HttpContent httpContent = null;
-            if (request != null && !isRequestContentStream)
+            var payloadJson = JsonConvert.SerializeObject(request, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
+            var httpContent = new StringContent(payloadJson, Encoding.UTF8, "application/json");
+
+            using (var httpRequestMessage = new HttpRequestMessage(httpMethod, uri) { Content = httpContent })
             {
-                payloadJson = JsonConvert.SerializeObject(request,
-                    new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
-                httpContent = new StringContent(payloadJson, Encoding.UTF8, "application/json");
-            }
-            else if (isRequestContentStream)//scenario - AddFileToBatch - when uploads a block of byte data
-            {
-                httpContent = new StreamContent(request as MemoryStream);
-                if (contentHeaders != null && contentHeaders.Any())
+                foreach (var requestHeader in requestHeaders ?? new Dictionary<string, string>())
                 {
-                    foreach (var contentHeader in contentHeaders)
-                    {
-                        httpContent.Headers.Add(contentHeader.Key, contentHeader.Value);
-                    }
+                    httpRequestMessage.Headers.Add(requestHeader.Key, requestHeader.Value);
                 }
+
+                return await SendMessageResult<TResponse>(httpRequestMessage, cancellationToken, successCode);
             }
-            using (var httpRequestMessage = new HttpRequestMessage(httpMethod, uri)
-            {
-                Content = httpContent
-            })
-            {
-                if (requestHeaders != null && requestHeaders.Any())
-                {
-                    foreach (var requestHeader in requestHeaders)
-                    {
-                        httpRequestMessage.Headers.Add(requestHeader.Key, requestHeader.Value);
-                    }
-                }
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                var result = new Result<TResponse>();
-                await result.ProcessHttpResponse(successCode, response);
-                return result;
-            }
+        }
+
+        private async Task<IResult<TResponse>> SendMessageResult<TResponse>(HttpRequestMessage messageToSend,
+            CancellationToken cancellationToken, HttpStatusCode successCode)
+        {
+            var httpClient = await GetAuthenticationHeaderSetClient();
+            var response = await httpClient.SendAsync(messageToSend, cancellationToken);
+            var result = new Result<TResponse>();
+            await result.ProcessHttpResponse(successCode, response);
+            return result;
         }
         #endregion
     }

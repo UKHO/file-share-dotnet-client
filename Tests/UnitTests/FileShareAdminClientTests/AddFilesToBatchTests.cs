@@ -118,8 +118,8 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2);
 
 
             CollectionAssert.AreEqual(new[]
@@ -184,9 +184,9 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None,
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1,
                 new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2, CancellationToken.None,
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2,
                 new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
 
