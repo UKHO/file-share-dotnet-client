@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -18,7 +19,7 @@ namespace UKHO.FileShareClient
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
-        Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, string downldLocation, CancellationToken cancellationToken = default);
+        Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, string downldLocation, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<string>> GetUserAttributesAsync();
     }
@@ -111,12 +112,11 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, string downldLocation, CancellationToken cancellationToken = default)
+        public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, string downldLocation, long fileSizeInBytes = 0, CancellationToken cancellationToken = default)
         {
-            long fileSizeInBytes = 0;
             long startByte = 0;
-            long endByte = maxDownloadBytes;
-
+            long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes;
+            var result = new Result<DownloadFileResponse>();
 
             while (startByte <= endByte)
             {
@@ -127,18 +127,12 @@ namespace UKHO.FileShareClient
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
                 {
                     var httpClient = await GetAuthenticationHeaderSetClient();
-                    if (rangeHeader != null)
+                    if (fileSizeInBytes != 0 && rangeHeader != null)
                     {
                         httpRequestMessage.Headers.Add("Range", rangeHeader);
                     }
 
                     var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-
-                    var result = new Result<DownloadFileResponse>();
-                    await result.ProcessHttpResponse(HttpStatusCode.PartialContent, response);
-                    if (!result.IsSuccess) return result;
-                    
-                    fileSizeInBytes = (long)response.Content.Headers.ContentRange.Length;
 
                     using (var contentStream = await response.Content.ReadAsStreamAsync())
                     {
@@ -154,7 +148,7 @@ namespace UKHO.FileShareClient
                 }
 
             }
-            return null;
+            return result;
         }
 
 
@@ -196,9 +190,10 @@ namespace UKHO.FileShareClient
 
         private async Task ProcessContentStream(Stream contentStream, string fileDownloadLocation)
         {
-            using (var fileStream = new FileStream(fileDownloadLocation, FileMode.Create, FileAccess.Write, FileShare.ReadWrite ))
+            using (var fileStream = new FileStream(fileDownloadLocation, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             {
                 contentStream.CopyTo(fileStream);
+                fileStream.Close();
             }
         }
 
