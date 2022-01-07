@@ -1,10 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace UKHO.FileShareAdminClient.Models
 {
     [ExcludeFromCodeCoverage]
     public class BatchExpiryModel
     {
-        public string ExpiryDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
     }
 }

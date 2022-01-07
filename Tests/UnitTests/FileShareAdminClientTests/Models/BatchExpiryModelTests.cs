@@ -11,7 +11,7 @@ namespace UKHO.FileShareAdminClientTests.Models
         [Test]
         public void TestSerialiseAndDeserialiseBatchExpiryModel()
         {
-            var model = new BatchExpiryModel { ExpiryDate = DateTime.UtcNow.AddDays(10).ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture) };
+            var model = new BatchExpiryModel { ExpiryDate = DateTime.UtcNow.AddDays(10) };
 
             var json = JsonConvert.SerializeObject(model);
             var deserialisedModel = JsonConvert.DeserializeObject<BatchExpiryModel>(json);

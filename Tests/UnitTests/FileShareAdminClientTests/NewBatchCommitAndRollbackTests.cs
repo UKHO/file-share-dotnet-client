@@ -58,7 +58,7 @@ namespace UKHO.FileShareAdminClientTests
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             nextResponse = null;
@@ -68,8 +68,8 @@ namespace UKHO.FileShareAdminClientTests
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType1);
 
             await fileShareApiClient.CommitBatch(batchHandle);
 
@@ -95,16 +95,76 @@ namespace UKHO.FileShareAdminClientTests
         }
 
         [Test]
+        public async Task TestCommitNewBatchWithCancellationToken()
+        {
+            var expectedBatchId = Guid.NewGuid().ToString();
+            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
+
+            nextResponse = null;
+            Stream stream1 = new MemoryStream(new byte[MaxBlockSize]);
+            Stream stream2 = new MemoryStream(new byte[MaxBlockSize * 4]);
+            var filename1 = "File1.bin";
+            var filename2 = "File2.bin";
+            var mimeType1 = "application/octet-stream";
+
+            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType1, CancellationToken.None);
+
+            await fileShareApiClient.CommitBatch(batchHandle.Data, CancellationToken.None);
+
+            CollectionAssert.AreEqual(new[]
+            {
+                "POST:/batch",
+
+                $"POST:/batch/{expectedBatchId}/files/{filename1}",
+                $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
+                $"PUT:/batch/{expectedBatchId}/files/{filename1}",
+
+                $"POST:/batch/{expectedBatchId}/files/{filename2}",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}/00001",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}/00002",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}/00003",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}/00004",
+                $"PUT:/batch/{expectedBatchId}/files/{filename2}",
+                $"PUT:/batch/{expectedBatchId}"
+            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+
+            var batchCommitModel = lastRequestBodies.Last().DeserialiseJson<List<FileDetail>>();
+            CollectionAssert.AreEqual(new object[] { filename1, filename2 }, batchCommitModel.Select(f => f.FileName));
+        }
+
+        [Test]
         public async Task TestRollback()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"}, CancellationToken.None);
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
             Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
 
             nextResponseStatusCode = HttpStatusCode.NoContent;
             nextResponse = null;
             await fileShareApiClient.RollBackBatchAsync(batchHandle);
+
+            CollectionAssert.AreEqual(new[]
+            {
+                "POST:/batch",
+                $"DELETE:/batch/{expectedBatchId}"
+            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+        }
+
+        [Test]
+        public async Task TestRollbackWithCancellationToken()
+        {
+            var expectedBatchId = Guid.NewGuid().ToString();
+            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
+
+            nextResponseStatusCode = HttpStatusCode.NoContent;
+            nextResponse = null;
+            await fileShareApiClient.RollBackBatchAsync(batchHandle.Data, CancellationToken.None);
 
             CollectionAssert.AreEqual(new[]
             {
