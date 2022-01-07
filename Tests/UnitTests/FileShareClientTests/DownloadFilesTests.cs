@@ -133,7 +133,6 @@ namespace UKHO.FileShareClientTests
         public async Task TestBasicDownloadFileWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
-            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
@@ -149,7 +148,6 @@ namespace UKHO.FileShareClientTests
         public async Task TestDownloadFileSetsAuthorizationHeaderWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
-            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
@@ -166,7 +164,6 @@ namespace UKHO.FileShareClientTests
         public async Task TestDownloadFilesForABatchThatDoesNotExistWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
-            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
@@ -182,7 +179,6 @@ namespace UKHO.FileShareClientTests
         public async Task TestDownloadFilesForABatchWithAFileThatDoesNotExistWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
-            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
@@ -197,7 +193,6 @@ namespace UKHO.FileShareClientTests
         public async Task TestGetBatchStatusForABatchThatHasBeenDeletedWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
-            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
@@ -212,7 +207,6 @@ namespace UKHO.FileShareClientTests
         public async Task TestForDownloadFilesWhenFileSizeIsGreaterThanMaxDownlodBytes()
         {
             var batchId = Guid.NewGuid().ToString();
-            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             nextResponseStatusCode = HttpStatusCode.PartialContent;
             byte[] expectedBytes = new byte[10585760];
             nextResponse = new MemoryStream(expectedBytes); 
@@ -230,7 +224,6 @@ namespace UKHO.FileShareClientTests
         public async Task TestForDownloadedFilesbytesIsEqualToExpectedFileBytes()
         {
             var batchId = Guid.NewGuid().ToString();
-            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
