@@ -4,3 +4,7 @@
 # We can set the severity for compiler warnings or analyzer rules in an EditorConfig file with the following syntax:
 # dotnet_diagnostic.<rule ID>.severity = <severity>
 # for more details please refer https://docs.microsoft.com/en-us/visualstudio/code-quality/use-roslyn-analyzers?view=vs-2019
+
+
+# RS0016: Add public types and members to the declared API
+dotnet_diagnostic.RS0016.severity = silent

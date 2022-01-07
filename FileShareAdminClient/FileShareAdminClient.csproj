@@ -12,12 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Models\Response\ErrorResponseModel.cs" />
-    <Compile Remove="Models\Response\IResult.cs" />
-    <Compile Remove="Models\Response\Result.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.3.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 
