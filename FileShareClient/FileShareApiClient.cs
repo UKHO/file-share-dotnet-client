@@ -19,7 +19,7 @@ namespace UKHO.FileShareClient
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
-        Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, FileStream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
+        Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<string>> GetUserAttributesAsync();
     }
@@ -112,10 +112,10 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, FileStream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default)
+        public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default)
         {
             long startByte = 0;
-            long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes;
+            long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes-1;
             var result = new Result<DownloadFileResponse>();
             HttpStatusCode httpStatusCode = HttpStatusCode.OK;
 
@@ -145,7 +145,7 @@ namespace UKHO.FileShareClient
                     }
                 }
                 startByte = endByte + 1;
-                endByte += maxDownloadBytes;
+                endByte += maxDownloadBytes-1;
 
                 if (endByte > fileSizeInBytes - 1)
                 {
@@ -153,7 +153,7 @@ namespace UKHO.FileShareClient
                 }
 
             }
-            destinationStream.Close();
+            
             return result;
         }
 
