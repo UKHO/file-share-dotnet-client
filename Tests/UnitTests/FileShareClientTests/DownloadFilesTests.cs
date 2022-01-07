@@ -19,7 +19,7 @@ namespace UKHO.FileShareClientTests
         private Uri lastRequestUri;
         private FakeFssHttpClientFactory fakeHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
-
+        
         [SetUp]
         public void Setup()
         {
@@ -133,10 +133,13 @@ namespace UKHO.FileShareClientTests
         public async Task TestBasicDownloadFileWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
-            var destStream = new FileStream(@"D", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
+            var destStream = new FileStream(destDownldLocation, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
+            
             var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10, CancellationToken.None);
+            
             Assert.IsTrue(result.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
         }
@@ -146,9 +149,11 @@ namespace UKHO.FileShareClientTests
         public async Task TestDownloadFileSetsAuthorizationHeaderWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
-            var destStream = new FileStream(@"D", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
+            var destStream = new FileStream(destDownldLocation, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
+            
             var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10, CancellationToken.None);
 
             Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
@@ -161,9 +166,12 @@ namespace UKHO.FileShareClientTests
         public async Task TestDownloadFilesForABatchThatDoesNotExistWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
+            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             nextResponseStatusCode = HttpStatusCode.BadRequest;
-            var destStream = new FileStream(@"D", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            var destStream = new FileStream(destDownldLocation, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+           
             var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10, CancellationToken.None);
+            
             Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
             Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
         }
@@ -174,8 +182,11 @@ namespace UKHO.FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             nextResponseStatusCode = HttpStatusCode.NotFound;
-            var destStream = new FileStream(@"D", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
+            var destStream = new FileStream(destDownldLocation, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            
             var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10, CancellationToken.None);
+            
             Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
             Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
         }
@@ -184,9 +195,12 @@ namespace UKHO.FileShareClientTests
         public async Task TestGetBatchStatusForABatchThatHasBeenDeletedWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
+            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             nextResponseStatusCode = HttpStatusCode.Gone;
-            var destStream = new FileStream(@"D", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            var destStream = new FileStream(destDownldLocation, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            
             var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10, CancellationToken.None);
+            
             Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
             Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
         }
@@ -195,14 +209,33 @@ namespace UKHO.FileShareClientTests
         public async Task TestForDownloadFilesWhenFileSizeIsGreaterThanMaxDownlodBytes()
         {
             var batchId = Guid.NewGuid().ToString();
+            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
             nextResponseStatusCode = HttpStatusCode.PartialContent;
-            var destStream = new FileStream(@"D", FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            var destStream = new FileStream(destDownldLocation, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
             nextResponse = new MemoryStream(10585760);
 
             var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10585760, CancellationToken.None);
           
             Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
             Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+
+        [Test]
+        public async Task TestForDownloadedFilesbytesIsEqualToExpectedFileBytes()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            string destDownldLocation = Path.Combine(Environment.CurrentDirectory, "AFilename.txt");
+            var destStream = new FileStream(destDownldLocation, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+            nextResponseStatusCode = HttpStatusCode.PartialContent;
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+           
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10, CancellationToken.None);
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+
+            var dwnldStream = new FileStream(@"D:/AFilename.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite); 
+            Assert.AreEqual(expectedBytes.Length, dwnldStream.Length);
         }
 
     }
