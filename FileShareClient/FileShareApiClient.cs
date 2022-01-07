@@ -19,7 +19,7 @@ namespace UKHO.FileShareClient
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
-        Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, string downldLocation, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
+        Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, FileStream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<string>> GetUserAttributesAsync();
     }
@@ -112,7 +112,7 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, string downldLocation, long fileSizeInBytes = 0, CancellationToken cancellationToken = default)
+        public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, FileStream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default)
         {
             long startByte = 0;
             long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes;
@@ -141,7 +141,7 @@ namespace UKHO.FileShareClient
 
                     using (var contentStream = await response.Content.ReadAsStreamAsync())
                     {
-                        await ProcessContentStream(contentStream, downldLocation);
+                        contentStream.CopyTo(destinationStream);
                     }
                 }
                 startByte = endByte + 1;
@@ -153,6 +153,7 @@ namespace UKHO.FileShareClient
                 }
 
             }
+            destinationStream.Close();
             return result;
         }
 
@@ -192,16 +193,6 @@ namespace UKHO.FileShareClient
 
             return sb.ToString();
         }
-
-        private async Task ProcessContentStream(Stream contentStream, string fileDownloadLocation)
-        {
-            using (var fileStream =  new FileStream(fileDownloadLocation, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-            {
-                contentStream.CopyTo(fileStream);
-                fileStream.Close();
-            }
-        }
-
         #endregion
     }
 }
