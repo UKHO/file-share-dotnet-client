@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareClient;
@@ -18,7 +19,7 @@ namespace UKHO.FileShareClientTests
         private Uri lastRequestUri;
         private FakeFssHttpClientFactory fakeHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
-
+        
         [SetUp]
         public void Setup()
         {
@@ -126,5 +127,112 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
             Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
         }
+
+
+        [Test]
+        public async Task TestBasicDownloadFileWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var destStream = new MemoryStream();
+            
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            
+            Assert.IsTrue(result.IsSuccess);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+
+        [Test]
+        public async Task TestDownloadFileSetsAuthorizationHeaderWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var destStream = new MemoryStream();
+
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+        }
+
+
+        [Test]
+        public async Task TestDownloadFilesForABatchThatDoesNotExistWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var destStream = new MemoryStream();
+
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+
+        [Test]
+        public async Task TestDownloadFilesForABatchWithAFileThatDoesNotExistWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var destStream = new MemoryStream();
+
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestGetBatchStatusForABatchThatHasBeenDeletedWithCancellationToken()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var destStream = new MemoryStream();
+
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestForDownloadFilesWhenFileSizeIsGreaterThanMaxDownlodBytes()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            nextResponseStatusCode = HttpStatusCode.PartialContent;
+            byte[] expectedBytes = new byte[10585760];
+            nextResponse = new MemoryStream(expectedBytes); 
+            var destStream = new MemoryStream();
+
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            Assert.AreEqual(expectedBytes.Length, destStream.Length);
+            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+        }
+
+
+        [Test]
+        public async Task TestForDownloadedFilesbytesIsEqualToExpectedFileBytes()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+            var destStream = new MemoryStream();
+
+            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+
+            Assert.AreEqual(expectedBytes.Length, destStream.Length);
+        }
+
     }
 }

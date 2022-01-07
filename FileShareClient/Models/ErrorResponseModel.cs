@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UKHO.FileShareAdminClient.Models.Response
+namespace UKHO.FileShareClient.Models
 {
     internal class ErrorResponseModel
     {

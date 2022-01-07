@@ -17,8 +17,13 @@ namespace UKHO.FileShareClient.Internal
         /// <returns></returns>
         public static async Task<T> ReadAsTypeAsync<T>(this HttpResponseMessage httpResponseMessage)
         {
-            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(); 
             return JsonConvert.DeserializeObject<T>(bodyJson);
+        }
+
+        public static async Task<Stream> ReadAsStreamAsync(this HttpResponseMessage httpResponseMessage)
+        {
+          return await httpResponseMessage.Content.ReadAsStreamAsync();
         }
 
         /// <summary>

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -17,6 +19,8 @@ namespace UKHO.FileShareClient
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
+        Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
+
         Task<IEnumerable<string>> GetUserAttributesAsync();
     }
 
@@ -24,6 +28,8 @@ namespace UKHO.FileShareClient
     {
         protected readonly IHttpClientFactory httpClientFactory;
         protected readonly IAuthTokenProvider authTokenProvider;
+        
+        private int maxDownloadBytes = 10485760;
 
         public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider)
         {
@@ -106,6 +112,51 @@ namespace UKHO.FileShareClient
             }
         }
 
+        public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default)
+        {
+            long startByte = 0;
+            long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes-1;
+            var result = new Result<DownloadFileResponse>();
+            HttpStatusCode httpStatusCode = HttpStatusCode.OK;
+
+            while (startByte <= endByte)
+            {
+                string rangeHeader = $"bytes={startByte}-{endByte}";
+
+                var uri = $"batch/{batchId}/files/{fileName}";
+
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
+                {
+                    var httpClient = await GetAuthenticationHeaderSetClient();
+                    if (fileSizeInBytes != 0 && rangeHeader != null)
+                    {
+                        httpRequestMessage.Headers.Add("Range", rangeHeader);
+                        httpStatusCode = HttpStatusCode.PartialContent;
+                    }
+
+                    var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+
+                    await result.ProcessHttpResponse(httpStatusCode, response, true);
+                    if (!result.IsSuccess) return result;
+
+                    using (var contentStream = await response.Content.ReadAsStreamAsync())
+                    {
+                        contentStream.CopyTo(destinationStream);
+                    }
+                }
+                startByte = endByte + 1;
+                endByte += maxDownloadBytes-1;
+
+                if (endByte > fileSizeInBytes - 1)
+                {
+                    endByte = fileSizeInBytes - 1;
+                }
+
+            }
+            
+            return result;
+        }
+
 
         public async Task<IEnumerable<string>> GetUserAttributesAsync()
         {
@@ -121,9 +172,8 @@ namespace UKHO.FileShareClient
             }
         }
 
-        private static string AddQueryString(
-            string uri,
-            IEnumerable<KeyValuePair<string, string>> queryString)
+        #region private methods
+        private static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, string>> queryString)
         {
             var uriToBeAppended = uri;
 
@@ -143,5 +193,6 @@ namespace UKHO.FileShareClient
 
             return sb.ToString();
         }
+        #endregion
     }
 }
