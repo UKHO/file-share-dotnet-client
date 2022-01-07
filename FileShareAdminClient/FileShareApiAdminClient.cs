@@ -44,6 +44,7 @@ namespace UKHO.FileShareAdminClient
     {
         private readonly int maxFileBlockSize;
 
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
         public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken,
             int maxFileBlockSize = 4194304) : base(httpClientFactory, baseAddress, accessToken)
         {
@@ -61,6 +62,7 @@ namespace UKHO.FileShareAdminClient
         {
             this.maxFileBlockSize = maxFileBlockSize;
         }
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
 
         public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl,
             CancellationToken cancellationToken = default)
