@@ -234,7 +234,7 @@ namespace UKHO.FileShareClientTests
             var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, 10, CancellationToken.None);
             Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
 
-            var dwnldStream = new FileStream(@"D:/AFilename.txt", FileMode.Open, FileAccess.Read, FileShare.ReadWrite); 
+            var dwnldStream = new FileStream(destDownldLocation, FileMode.Open, FileAccess.Read, FileShare.ReadWrite); 
             Assert.AreEqual(expectedBytes.Length, dwnldStream.Length);
         }
 
