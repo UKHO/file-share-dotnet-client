@@ -5,6 +5,8 @@ namespace UKHO.FileShareAdminClient.Models
     public interface IBatchHandle
     {
         string BatchId { get; }
+        List<FileDetail> FileDetails { get; }
+        void AddFile(string filename, string hash);
     }
 
     internal class BatchHandle : IBatchHandle
@@ -18,9 +20,9 @@ namespace UKHO.FileShareAdminClient.Models
             BatchId = batchId;
         }
 
-        internal void AddFile(string filename, string hash)
+        public void AddFile(string filename, string hash)
         {
-            FileDetails.Add(new FileDetail {FileName = filename, Hash = hash});
+            FileDetails.Add(new FileDetail { FileName = filename, Hash = hash });
         }
     }
 }

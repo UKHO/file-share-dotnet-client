@@ -139,7 +139,7 @@ namespace UKHO.FileShareAdminClient
             var uri = $"/batch/{batchHandle.BatchId}";
             var batchCommitModel = new BatchCommitModel
             {
-                FileDetails = ((BatchHandle)batchHandle).FileDetails
+                FileDetails = batchHandle.FileDetails
             };
 
             var payloadJson = JsonConvert.SerializeObject(batchCommitModel.FileDetails);
@@ -158,7 +158,7 @@ namespace UKHO.FileShareAdminClient
             var uri = $"/batch/{batchHandle.BatchId}";
             var batchCommitModel = new BatchCommitModel
             {
-                FileDetails = ((BatchHandle)batchHandle).FileDetails
+                FileDetails = batchHandle.FileDetails
             };
             return await SendResult<List<FileDetail>, CommitBatchResponse>(uri, HttpMethod.Put, batchCommitModel.FileDetails, cancellationToken,
                 HttpStatusCode.Accepted);
@@ -275,7 +275,7 @@ namespace UKHO.FileShareAdminClient
                     writeFileResponse.EnsureSuccessStatusCode();
                 }
             }
-            ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
+            batchHandle.AddFile(fileName, Convert.ToBase64String(md5Hash));
         }
         private async Task<IResult<AddFileToBatchResponse>> AddFiles(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
@@ -356,7 +356,7 @@ namespace UKHO.FileShareAdminClient
                         }
                         else
                         {
-                            ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
+                            batchHandle.AddFile(fileName, Convert.ToBase64String(md5Hash));
                             return result;
                         }
                     }
