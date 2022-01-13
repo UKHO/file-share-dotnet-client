@@ -15,3 +15,14 @@ If you have any minor improvements (fixing a typo, adding a unit test case, etc)
 ## Change
 
 If you would like to make changes (bug fixes, additional features and feature enhancements) the best approach is to open an issue with the details/ideas so we can discuss the changes before a pull request is made. If no issue is made before a pull request we will still consider it, however there is chance the your effort is wasted if we don't accept your pull request in.
+
+## Versioning and breaking changes
+
+The File Share dotnet client major version numbers are defined in azure-pipelines.yml 
+
+  - name: UKHOAssemblyVersionPrefix
+    value: "1.0."
+	
+For version 1.0 and beyond we are going to use Semantic Versioning so please only bump the major version on breaking changes.
+
+Moreover breaking changes should be avoided if possible. Only introduce breaking changes after careful consideration. 
