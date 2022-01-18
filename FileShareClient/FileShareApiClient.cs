@@ -18,6 +18,7 @@ namespace UKHO.FileShareClient
     {
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
+        Task<IResult<BatchSearchResponse>> Search(string searchQuery, CancellationToken cancellationToken, int? pageSize = null, int? start = null);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
@@ -97,6 +98,40 @@ namespace UKHO.FileShareClient
                 var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
                 return searchResponse;
             }
+        }
+
+        public async Task<IResult<BatchSearchResponse>> Search(string searchQuery, CancellationToken cancellationToken, int? pageSize = null, int? start = null)
+        {
+            var result = new Result<BatchSearchResponse>();
+            HttpStatusCode httpStatusCode = HttpStatusCode.OK;
+            var uri = "batch";
+
+            var query = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(searchQuery))
+                query["$filter"] = searchQuery;
+            if (pageSize.HasValue)
+            {
+                if (pageSize <= 0)
+                    throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+                query["limit"] = pageSize.Value + "";
+            }
+
+            if (start.HasValue)
+            {
+                if (start < 0)
+                    throw new ArgumentException("Start cannot be less than zero.", nameof(start));
+                query["start"] = start.Value + "";
+            }
+
+            uri = AddQueryString(uri, query);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);              
+                await result.ProcessHttpResponse(httpStatusCode, response);              
+            }
+            return result;
         }
 
         public async Task<Stream> DownloadFileAsync(string batchId, string filename)
