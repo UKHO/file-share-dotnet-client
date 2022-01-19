@@ -18,7 +18,7 @@ namespace UKHO.FileShareClient
     {
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
-        Task<IResult<BatchSearchResponse>> Search(string searchQuery, CancellationToken cancellationToken, int? pageSize = null, int? start = null);
+        Task<IResult<BatchSearchResponse>> Search(string searchQuery, CancellationToken cancellationToken, int? pageSize, int? start);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
@@ -69,70 +69,50 @@ namespace UKHO.FileShareClient
 
         public async Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null)
         {
-            var uri = "batch";
-
-            var query = new Dictionary<string, string>();
-            if (!string.IsNullOrEmpty(searchQuery))
-                query["$filter"] = searchQuery;
-            if (pageSize.HasValue)
-            {
-                if (pageSize <= 0)
-                    throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
-                query["limit"] = pageSize.Value + "";
-            }
-
-            if (start.HasValue)
-            {
-                if (start < 0)
-                    throw new ArgumentException("Start cannot be less than zero.", nameof(start));
-                query["start"] = start.Value + "";
-            }
-
-            uri = AddQueryString(uri, query);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
-                var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
-                return searchResponse;
-            }
+            var response = await SearchResponse(searchQuery, CancellationToken.None, pageSize, start);
+            response.EnsureSuccessStatusCode();
+            var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
+            return searchResponse;
         }
 
-        public async Task<IResult<BatchSearchResponse>> Search(string searchQuery, CancellationToken cancellationToken, int? pageSize = null, int? start = null)
+        public async Task<IResult<BatchSearchResponse>> Search(string searchQuery, CancellationToken cancellationToken, int? pageSize, int? start )
         {
+            var response = await SearchResponse(searchQuery, cancellationToken, pageSize, start);
             var result = new Result<BatchSearchResponse>();
-            HttpStatusCode httpStatusCode = HttpStatusCode.OK;
-            var uri = "batch";
-
-            var query = new Dictionary<string, string>();
-            if (!string.IsNullOrEmpty(searchQuery))
-                query["$filter"] = searchQuery;
-            if (pageSize.HasValue)
-            {
-                if (pageSize <= 0)
-                    throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
-                query["limit"] = pageSize.Value + "";
-            }
-
-            if (start.HasValue)
-            {
-                if (start < 0)
-                    throw new ArgumentException("Start cannot be less than zero.", nameof(start));
-                query["start"] = start.Value + "";
-            }
-
-            uri = AddQueryString(uri, query);
-
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
-            {
-                var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);              
-                await result.ProcessHttpResponse(httpStatusCode, response);              
-            }
+            await result.ProcessHttpResponse(HttpStatusCode.OK, response);
             return result;
         }
+
+        private async Task<HttpResponseMessage> SearchResponse(string searchQuery, CancellationToken cancellationToken, int? pageSize, int? start)
+        {
+            var uri = "batch";
+
+            var query = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(searchQuery))
+                query["$filter"] = searchQuery;
+            if (pageSize.HasValue)
+            {
+                if (pageSize <= 0)
+                    throw new ArgumentException("Page size must be greater than zero.", nameof(pageSize));
+                query["limit"] = pageSize.Value + "";
+            }
+
+            if (start.HasValue)
+            {
+                if (start < 0)
+                    throw new ArgumentException("Start cannot be less than zero.", nameof(start));
+                query["start"] = start.Value + "";
+            }
+
+            uri = AddQueryString(uri, query);
+
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+            }
+        }
+
 
         public async Task<Stream> DownloadFileAsync(string batchId, string filename)
         {
