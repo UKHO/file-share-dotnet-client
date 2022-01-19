@@ -18,6 +18,7 @@ namespace UKHO.FileShareClient
     {
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
+        Task<IResult<BatchSearchResponse>> Search(string searchQuery , int? pageSize, int? start , CancellationToken cancellationToken);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
@@ -68,6 +69,22 @@ namespace UKHO.FileShareClient
 
         public async Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null)
         {
+            var response = await SearchResponse(searchQuery, pageSize, start, CancellationToken.None);
+            response.EnsureSuccessStatusCode();
+            var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
+            return searchResponse;
+        }
+
+        public async Task<IResult<BatchSearchResponse>> Search(string searchQuery, int? pageSize, int? start, CancellationToken cancellationToken )
+        {
+            var response = await SearchResponse(searchQuery, pageSize, start, cancellationToken);
+            var result = new Result<BatchSearchResponse>();
+            await result.ProcessHttpResponse(HttpStatusCode.OK, response);
+            return result;
+        }
+
+        private async Task<HttpResponseMessage> SearchResponse(string searchQuery, int? pageSize, int? start , CancellationToken cancellationToken)
+        {
             var uri = "batch";
 
             var query = new Dictionary<string, string>();
@@ -92,12 +109,10 @@ namespace UKHO.FileShareClient
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
                 var httpClient = await GetAuthenticationHeaderSetClient();
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
-                var searchResponse = await response.ReadAsTypeAsync<BatchSearchResponse>();
-                return searchResponse;
+                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
             }
         }
+
 
         public async Task<Stream> DownloadFileAsync(string batchId, string filename)
         {
