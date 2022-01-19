@@ -232,7 +232,7 @@ namespace UKHO.FileShareClientTests
                
             };
             nextResponse = expectedResponse;
-            var response = await fileShareApiClient.Search("" ,cancellationToken: CancellationToken.None,null,null);
+            var response = await fileShareApiClient.Search("",null,null,cancellationToken:CancellationToken.None);
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("", lastRequestUri.Query, "Should be no query query string for an empty search");
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
@@ -256,7 +256,7 @@ namespace UKHO.FileShareClientTests
             };
             nextResponse = expectedResponse;
 
-            var response = await fileShareApiClient.Search("$batch(key) eq 'value'",cancellationToken:CancellationToken.None,null,null);
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'",null,null, cancellationToken: CancellationToken.None);
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
@@ -280,7 +280,7 @@ namespace UKHO.FileShareClientTests
             };
             nextResponse = expectedResponse;
 
-            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", cancellationToken: CancellationToken.None, 50, null);
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", 50, null , cancellationToken: CancellationToken.None);
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&limit=50", lastRequestUri.Query);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
@@ -304,7 +304,7 @@ namespace UKHO.FileShareClientTests
             };
             nextResponse = expectedResponse;
 
-            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", cancellationToken: CancellationToken.None, null, 20);
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'",null, 20 , cancellationToken: CancellationToken.None);
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&start=20", lastRequestUri.Query);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
@@ -318,7 +318,7 @@ namespace UKHO.FileShareClientTests
         public void TestSearchWithInvalidPageSizeThrowsArgumentExceptionAndCancellationn(int pageSize)
         {
             var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
-                await fileShareApiClient.Search("$batch(key) eq 'value'", cancellationToken: CancellationToken.None, pageSize, 20));
+                await fileShareApiClient.Search("$batch(key) eq 'value'", pageSize, 20 , cancellationToken: CancellationToken.None));
 
             Assert.AreEqual("pageSize", exception!.ParamName);
         }
@@ -327,7 +327,7 @@ namespace UKHO.FileShareClientTests
         public void TestSearchWithInvalidPageStartThrowsArgumentExceptionAndCancellation()
         {
             var exception = Assert.ThrowsAsync<ArgumentException>(async () =>
-                await fileShareApiClient.Search("$batch(key) eq 'value'",cancellationToken:CancellationToken.None, -10, 20));
+                await fileShareApiClient.Search("$batch(key) eq 'value'", -10, 20, cancellationToken: CancellationToken.None));
 
             Assert.AreEqual("pageSize", exception!.ParamName);
         }
@@ -344,7 +344,7 @@ namespace UKHO.FileShareClientTests
             };
             nextResponse = expectedResponse;
 
-            var response = await fileShareApiClient.Search("$batch(key) eq 'value'",cancellationToken: CancellationToken.None,null,null);
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'",null,null, cancellationToken: CancellationToken.None);
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
@@ -364,7 +364,7 @@ namespace UKHO.FileShareClientTests
                 Links = new Links(new Link("self"))
             };
 
-            await fileShareApiClient.Search("",cancellationToken:CancellationToken.None,null,null);
+            await fileShareApiClient.Search("",null,null, cancellationToken: CancellationToken.None);
 
             Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
@@ -376,7 +376,7 @@ namespace UKHO.FileShareClientTests
         {
             nextResponseStatusCode = HttpStatusCode.BadRequest;
          
-            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", cancellationToken: CancellationToken.None,null,null);
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'",null,null, cancellationToken: CancellationToken.None);
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
@@ -388,7 +388,7 @@ namespace UKHO.FileShareClientTests
         {
             nextResponseStatusCode = HttpStatusCode.InternalServerError;
 
-            var response = await fileShareApiClient.Search("$batch(key) eq 'value'", cancellationToken: CancellationToken.None,null,null);
+            var response = await fileShareApiClient.Search("$batch(key) eq 'value'",null,null, cancellationToken: CancellationToken.None);
             Assert.AreEqual("/basePath/batch", lastRequestUri.AbsolutePath);
             Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
