@@ -74,12 +74,14 @@ namespace UKHO.FileShareAdminClient
             var payloadJson = JsonConvert.SerializeObject(batchModel,
                 new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
 
-            using (var httpClient = await GetAuthenticationHeaderSetClient())
+            
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
             {
-                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
-                {
-                    Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-                })
+                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+            })
+            {
+                var httpClient = await GetAuthenticationHeaderSetClient();
+                try
                 {
                     var response = await httpClient.SendAsync(httpRequestMessage);
                     response.EnsureSuccessStatusCode();
@@ -89,7 +91,12 @@ namespace UKHO.FileShareAdminClient
 
                     return new BatchHandle(batchId);
                 }
+                finally
+                {
+                    httpClient.Dispose();
+                }
             }
+            
         }
 
         public async Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken)
