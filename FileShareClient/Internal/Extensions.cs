@@ -32,10 +32,10 @@ namespace UKHO.FileShareClient.Internal
         /// <param name="httpClient"></param>
         /// <param name="authTokenProvider"></param>
         /// <returns></returns>
-        public static async Task<HttpClient> SetAuthenticationHeader(this HttpClient httpClient, IAuthTokenProvider authTokenProvider)
+        public static async Task SetAuthenticationHeader(this HttpClient httpClient, IAuthTokenProvider authTokenProvider)
         {
-            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", await authTokenProvider.GetToken());
-            return httpClient;
+            var token = await authTokenProvider.GetToken();
+            httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         }
     }
 
