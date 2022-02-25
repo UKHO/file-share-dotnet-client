@@ -48,9 +48,11 @@ namespace UKHO.FileShareClient
             this(new DefaultHttpClientFactory(), baseAddress, accessToken)
         {
         }
-        protected Task<HttpClient> GetAuthenticationHeaderSetClient()
+        protected async Task<HttpClient> GetAuthenticationHeaderSetClient()
         {
-            return httpClientFactory.CreateClient().SetAuthenticationHeader(authTokenProvider);
+            var httpClient = httpClientFactory.CreateClient();
+            await httpClient.SetAuthenticationHeader(authTokenProvider);
+            return httpClient;
         }
 
         public async Task<BatchStatusResponse> GetBatchStatusAsync(string batchId)
