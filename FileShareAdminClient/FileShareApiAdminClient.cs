@@ -75,18 +75,20 @@ namespace UKHO.FileShareAdminClient
                 new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
 
             using (var httpClient = await GetAuthenticationHeaderSetClient())
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
             {
-                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-            })
-            {
-                var response = await httpClient.SendAsync(httpRequestMessage);
-                response.EnsureSuccessStatusCode();
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+                {
+                    Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+                })
+                {
+                    var response = await httpClient.SendAsync(httpRequestMessage);
+                    response.EnsureSuccessStatusCode();
 
-                var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
-                var batchId = data.BatchId;
+                    var data = await response.ReadAsTypeAsync<CreateBatchResponseModel>();
+                    var batchId = data.BatchId;
 
-                return new BatchHandle(batchId);
+                    return new BatchHandle(batchId);
+                }
             }
         }
 
@@ -145,11 +147,13 @@ namespace UKHO.FileShareAdminClient
             var payloadJson = JsonConvert.SerializeObject(batchCommitModel.FileDetails);
 
             using (var httpClient = await GetAuthenticationHeaderSetClient())
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
             {
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
+                { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+                {
+                    var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    response.EnsureSuccessStatusCode();
+                }
             }
         }
 
@@ -173,10 +177,12 @@ namespace UKHO.FileShareAdminClient
             var uri = $"batch/{batchHandle.BatchId}";
 
             using (var httpClient = await GetAuthenticationHeaderSetClient())
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
-            {                
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
-                response.EnsureSuccessStatusCode();
+            {
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Delete, uri))
+                {
+                    var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                    response.EnsureSuccessStatusCode();
+                }
             }
         }
 
@@ -209,15 +215,17 @@ namespace UKHO.FileShareAdminClient
                 var payloadJson = JsonConvert.SerializeObject(fileModel);
 
                 using (var httpClient = await GetAuthenticationHeaderSetClient())
-                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, fileUri)
-                { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
                 {
-                    httpRequestMessage.Headers.Add("X-Content-Size", "" + stream.Length);
+                    using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, fileUri)
+                    { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+                    {
+                        httpRequestMessage.Headers.Add("X-Content-Size", "" + stream.Length);
 
-                    if (!string.IsNullOrEmpty(mimeType)) httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
-                                        
-                    var createFileRecordResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                    createFileRecordResponse.EnsureSuccessStatusCode();
+                        if (!string.IsNullOrEmpty(mimeType)) httpRequestMessage.Headers.Add("X-MIME-Type", mimeType);
+
+                        var createFileRecordResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                        createFileRecordResponse.EnsureSuccessStatusCode();
+                    }
                 }
             }
 
@@ -248,18 +256,20 @@ namespace UKHO.FileShareAdminClient
                 var blockMD5 = ms.CalculateMD5();
 
                 using (var httpClient = await GetAuthenticationHeaderSetClient())
-                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, putFileUri)
-                { Content = new StreamContent(ms) })
                 {
-                    httpRequestMessage.Content.Headers.ContentType =
-                        new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+                    using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, putFileUri)
+                    { Content = new StreamContent(ms) })
+                    {
+                        httpRequestMessage.Content.Headers.ContentType =
+                            new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
-                    httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
-                                        
-                    var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                    putFileResponse.EnsureSuccessStatusCode();
+                        httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
 
-                    progressUpdate((fileBlockId, expectedTotalBlockCount));
+                        var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                        putFileResponse.EnsureSuccessStatusCode();
+
+                        progressUpdate((fileBlockId, expectedTotalBlockCount));
+                    }
                 }
             }
 
@@ -268,11 +278,13 @@ namespace UKHO.FileShareAdminClient
                 var payloadJson = JsonConvert.SerializeObject(writeBlockFileModel);
 
                 using (var httpClient = await GetAuthenticationHeaderSetClient())
-                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
-                { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
                 {
-                    var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                    writeFileResponse.EnsureSuccessStatusCode();
+                    using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
+                    { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+                    {
+                        var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                        writeFileResponse.EnsureSuccessStatusCode();
+                    }
                 }
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
