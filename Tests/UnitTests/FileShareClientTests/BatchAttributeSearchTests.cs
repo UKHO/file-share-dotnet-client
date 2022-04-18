@@ -11,7 +11,7 @@ using UKHO.FileShareClientTests.Helpers;
 
 namespace UKHO.FileShareClientTests
 {
-    public class AttributeSearchTests
+    public class BatchAttributeSearchTests
     {
         private object nextResponse;
         private IFileShareApiClient fileShareApiClient;
