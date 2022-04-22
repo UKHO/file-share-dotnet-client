@@ -7,9 +7,9 @@ using System.Text;
 namespace UKHO.FileShareClient.Models
 {
     [DataContract]
-    public class BatchAttributesSearchResponse : IEquatable<BatchAttributesSearchResponse>
+    public class BatchAttributesSearchResponse
     {
-        public BatchAttributesSearchResponse(int searchBatchCount = default, List<Attributes> batchAttributes = default)
+        public BatchAttributesSearchResponse(int searchBatchCount = default, List<SearchBatchAttribute> batchAttributes = default)
         {
             SearchBatchCount = searchBatchCount;
             BatchAttributes = batchAttributes;
@@ -19,58 +19,16 @@ namespace UKHO.FileShareClient.Models
         public int? SearchBatchCount { get; set; }
 
         [DataMember(Name = "batchAttributes", EmitDefaultValue = false)]
-        public List<Attributes> BatchAttributes { get; set; }
+        public List<SearchBatchAttribute> BatchAttributes { get; set; }
 
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append("class BatchAttributesSearchResponse {\n");
-            sb.Append("  SearchBatchCount: ").Append(SearchBatchCount).Append("\n");
-            sb.Append("  BatchAttributes: ").Append(BatchAttributes).Append("\n");
+            sb.Append($"class {nameof(BatchAttributesSearchResponse)} {"{"}\n");
+            sb.Append($"{nameof(SearchBatchCount)}: {(SearchBatchCount)}\n");
+            sb.Append($"{nameof(BatchAttributes)}: {string.Join(", ", BatchAttributes)}\n");
             sb.Append("}\n");
             return sb.ToString();
-        }
-
-        public virtual string ToJson()
-        {
-            return JsonConvert.SerializeObject(this, Formatting.None);
-        }
-
-        public override bool Equals(object input)
-        {
-            return Equals(input as BatchAttributesSearchResponse);
-        }
-
-        public bool Equals(BatchAttributesSearchResponse input)
-        {
-            if (input == null)
-                return false;
-
-            return
-                (
-                    SearchBatchCount == input.SearchBatchCount ||
-                    SearchBatchCount != null &&
-                    SearchBatchCount.Equals(input.SearchBatchCount)
-                ) &&
-                (
-                    BatchAttributes == input.BatchAttributes ||
-                    BatchAttributes != null &&
-                    input.BatchAttributes != null);
-                
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked // Overflow is fine, just wrap
-            {
-                var hashCode = 41;
-                if (SearchBatchCount != null)
-                    hashCode = hashCode * 59 + SearchBatchCount.GetHashCode();
-                if (BatchAttributes != null)
-                    hashCode = hashCode * 59 + BatchAttributes.GetHashCode();
-                return hashCode;
-            }
-        }
-
+        }     
     }
 }

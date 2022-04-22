@@ -19,7 +19,7 @@ namespace UKHO.FileShareClient
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
         Task<IResult<BatchSearchResponse>> Search(string searchQuery , int? pageSize, int? start , CancellationToken cancellationToken);
-        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken);
+        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchResponse(string searchQuery, CancellationToken cancellationToken);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
@@ -191,17 +191,11 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken)
-        {
-            var response = await BatchAttributeSearchResponse(searchQuery, cancellationToken);
-            var result = new Result<BatchAttributesSearchResponse>();
-            await result.ProcessHttpResponse(HttpStatusCode.OK, response);
-            return result;
-        }
-
-        private async Task<HttpResponseMessage> BatchAttributeSearchResponse(string searchQuery, CancellationToken cancellationToken)
+        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchResponse(string searchQuery, CancellationToken cancellationToken)
         {
             var uri = "attributes/search";
+            var result = new Result<BatchAttributesSearchResponse>();
+            HttpStatusCode httpStatusCode = HttpStatusCode.OK;
 
             var query = new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(searchQuery))
@@ -212,10 +206,11 @@ namespace UKHO.FileShareClient
             using (var httpClient = await GetAuthenticationHeaderSetClient())
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
-                return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                await result.ProcessHttpResponse(httpStatusCode, response);
             }
+            return result;
         }
-
 
 
         #region private methods
