@@ -6,9 +6,9 @@ using System.Text;
 
 namespace UKHO.FileShareClient.Models
 {
-    public class SearchBatchAttribute 
+    public class BatchAttributesSearchAttribute 
     {
-        public SearchBatchAttribute(string key = default, List<string> values = default)
+        public BatchAttributesSearchAttribute(string key = default, List<string> values = default)
         {
             Key = key;
             Values = values;
@@ -23,9 +23,9 @@ namespace UKHO.FileShareClient.Models
         public override string ToString()
         {
             var sb = new StringBuilder();
-            sb.Append($"class {nameof(SearchBatchAttribute)} {"{"}\n");
-            sb.Append($"{nameof(Key)}: {(Key)}\n");
-            sb.Append($"{nameof(Values)}: {string.Join(", ", Values)}\n");
+            sb.Append($"class {nameof(BatchAttributesSearchAttribute)} {"{"}\n");
+            sb.Append($" {nameof(Key)}: {(Key)}\n");
+            sb.Append($" {nameof(Values)}: {string.Join(", ", Values)}\n");
             sb.Append("}\n");
             return sb.ToString();
         }

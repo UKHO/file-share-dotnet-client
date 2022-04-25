@@ -19,7 +19,7 @@ namespace UKHO.FileShareClient
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
         Task<IResult<BatchSearchResponse>> Search(string searchQuery , int? pageSize, int? start , CancellationToken cancellationToken);
-        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchResponse(string searchQuery, CancellationToken cancellationToken);
+        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
@@ -191,7 +191,7 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchResponse(string searchQuery, CancellationToken cancellationToken)
+        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken)
         {
             var uri = "attributes/search";
             var result = new Result<BatchAttributesSearchResponse>();
