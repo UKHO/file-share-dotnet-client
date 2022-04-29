@@ -25,7 +25,7 @@ namespace UKHO.FileShareClient.Models
         public BatchDetails(string batchId = default, StatusEnum? status = default,
             List<BatchDetailsAttributes> attributes = default, string businessUnit = default,
             DateTime? batchPublishedDate = default, DateTime? expiryDate = default,
-            List<BatchDetailsFiles> files = default)
+            List<BatchDetailsFiles> files = default, long? allFilesZipSize = default)
         {
             BatchId = batchId;
             Status = status;
@@ -34,6 +34,7 @@ namespace UKHO.FileShareClient.Models
             BatchPublishedDate = batchPublishedDate;
             ExpiryDate = expiryDate;
             Files = files;
+            AllFilesZipSize = allFilesZipSize;
         }
 
         [DataMember(Name = "batchId", EmitDefaultValue = false)]
@@ -57,6 +58,9 @@ namespace UKHO.FileShareClient.Models
         [DataMember(Name = "files", EmitDefaultValue = false)]
         public List<BatchDetailsFiles> Files { get; set; }
 
+        [DataMember(Name = "allFilesZipSize", EmitDefaultValue = false)]
+        public long? AllFilesZipSize { get; set; }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
@@ -68,6 +72,7 @@ namespace UKHO.FileShareClient.Models
             sb.Append("  BatchPublishedDate: ").Append(BatchPublishedDate).Append("\n");
             sb.Append("  ExpiryDate: ").Append(ExpiryDate).Append("\n");
             sb.Append("  Files: ").Append(Files).Append("\n");
+            sb.Append("  AllFilesZipSize: ").Append(AllFilesZipSize).Append("\n");
             sb.Append("}\n");
             return sb.ToString();
         }
@@ -124,6 +129,11 @@ namespace UKHO.FileShareClient.Models
                     Files != null &&
                     input.Files != null &&
                     Files.SequenceEqual(input.Files)
+                ) &&
+                (
+                    AllFilesZipSize == input.AllFilesZipSize ||
+                    AllFilesZipSize != null &&
+                    AllFilesZipSize.Equals(input.AllFilesZipSize)
                 );
         }
 
@@ -144,6 +154,8 @@ namespace UKHO.FileShareClient.Models
                     hashCode = hashCode * 59 + ExpiryDate.GetHashCode();
                 if (Files != null)
                     hashCode = hashCode * 59 + Files.GetHashCode();
+                if (AllFilesZipSize != null)
+                    hashCode = hashCode * 59 + AllFilesZipSize.GetHashCode();
                 return hashCode;
             }
         }
