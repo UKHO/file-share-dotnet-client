@@ -220,7 +220,7 @@ namespace UKHO.FileShareClient
             using (var httpClient = await GetAuthenticationHeaderSetClient())
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
-                var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                 response.EnsureSuccessStatusCode();
                 var downloadedFileStream = await response.Content.ReadAsStreamAsync();
                 return downloadedFileStream;
