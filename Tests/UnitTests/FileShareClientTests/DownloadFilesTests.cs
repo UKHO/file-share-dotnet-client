@@ -234,5 +234,91 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual(expectedBytes.Length, destStream.Length);
         }
 
+        [Test]
+        public async Task TestBasicDownloadZipFile()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+
+            var batchStatusResponse = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+            Assert.AreEqual(expectedBytes, ((MemoryStream)batchStatusResponse).ToArray());
+            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestDownloadZipFileForABatchThatDoesNotExist()
+        {
+            var batchId = Guid.NewGuid().ToString();
+
+            nextResponseStatusCode = HttpStatusCode.BadRequest;
+
+            try
+            {
+                await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+                Assert.Fail("Expected to throw an exception");
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOf<HttpRequestException>(e);
+            }
+
+            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestDownloadZipFileForABatchWithAFileThatDoesNotExist()
+        {
+            var batchId = Guid.NewGuid().ToString();
+
+            nextResponseStatusCode = HttpStatusCode.NotFound;
+
+            try
+            {
+                await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+                Assert.Fail("Expected to throw an exception");
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOf<HttpRequestException>(e);
+            }
+
+            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestGetBatchStatusForABatchZipFileThatHasBeenDeleted()
+        {
+            var batchId = Guid.NewGuid().ToString();
+
+            nextResponseStatusCode = HttpStatusCode.Gone;
+
+            try
+            {
+                await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+                Assert.Fail("Expected to throw an exception");
+            }
+            catch (Exception e)
+            {
+                Assert.IsInstanceOf<HttpRequestException>(e);
+            }
+
+            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+        }
+
+        [Test]
+        public async Task TestDownloadZipFileSetsAuthorizationHeader()
+        {
+            var batchId = Guid.NewGuid().ToString();
+            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
+            nextResponse = new MemoryStream(expectedBytes);
+
+            await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+
+            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
+            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
+            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+        }
+
     }
 }
