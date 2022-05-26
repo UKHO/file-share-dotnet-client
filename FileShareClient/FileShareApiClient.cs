@@ -24,7 +24,7 @@ namespace UKHO.FileShareClient
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<string>> GetUserAttributesAsync();
-        Task<Stream> DownloadZipFileAsync(string batchId, CancellationToken cancellationToken = default);
+        Task<Stream> DownloadZipFileAsync(string batchId, CancellationToken cancellationToken);
     }
 
     public class FileShareApiClient : IFileShareApiClient
