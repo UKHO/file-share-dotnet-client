@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using UKHO.FileShareClient.Internal;
@@ -46,9 +44,9 @@ namespace UKHO.FileShareClient.Models
         }
 
         //this is strange and exists to keep backwards compatibility for the FileShareApiClient.DownloadFileAsync method
-        internal static async Task<IResult<U>> WithAlwaysDefaultData<U>(HttpResponseMessage response)
+        internal static async Task<IResult<U>> WithNullData<U>(HttpResponseMessage response) where U : class
         {
-            return await CreateResult<U>(response, default);
+            return await CreateResult<U>(response, null);
         }
 
         private static async Task<IResult<U>> CreateResult<U>(HttpResponseMessage response, U data)
@@ -68,8 +66,8 @@ namespace UKHO.FileShareClient.Models
                 }
                 catch
                 {
-                    var content = await response.ReadAsTypeAsync<string>();
-                    result.Errors = new List<Error> { new Error { Description = content } };
+                    var stringContent = await response.Content.ReadAsStringAsync();
+                    result.Errors.Add(new Error { Description = stringContent });
                 }
             }
 

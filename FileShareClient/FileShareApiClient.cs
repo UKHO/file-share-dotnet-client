@@ -151,7 +151,7 @@ namespace UKHO.FileShareClient
                     }
 
                     var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                    result = await Result.WithAlwaysDefaultData<DownloadFileResponse>(response);
+                    result = await Result.WithNullData<DownloadFileResponse>(response);
                     
                     if (!result.IsSuccess) return result;
 

@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using NUnit.Framework;
-using UKHO.FileShareClient;
 using UKHO.FileShareClient.Models;
-using UKHO.FileShareClientTests.Helpers;
 
 namespace UKHO.FileShareClientTests
 {
+    [TestFixture]
     public class ResultTests
     {
         [TestCase(HttpStatusCode.OK)]
@@ -51,12 +49,12 @@ namespace UKHO.FileShareClientTests
 
         [TestCase(HttpStatusCode.OK)]
         [TestCase(HttpStatusCode.PartialContent)]
-        public async Task WithAlwaysDefaultData_Success(HttpStatusCode statusCode)
+        public async Task WithNullData_Success(HttpStatusCode statusCode)
         {
             var response = new HttpResponseMessage { StatusCode = statusCode };
             response.Content = new StringContent("this content is ignored");
 
-            var result = await Result.WithAlwaysDefaultData<string>(response);
+            var result = await Result.WithNullData<string>(response);
 
             Assert.IsNull(result.Data);
             Assert.AreEqual(result.StatusCode, (int)statusCode);
@@ -101,7 +99,7 @@ namespace UKHO.FileShareClientTests
 
             CommonAssertions(await Result.WithStreamData(badRequest));
             CommonAssertions(await Result.WithObjectData<List<string>>(badRequest));
-            CommonAssertions(await Result.WithAlwaysDefaultData<string>(badRequest));
+            CommonAssertions(await Result.WithNullData<string>(badRequest));
         }
 
         [Test]
@@ -121,7 +119,7 @@ namespace UKHO.FileShareClientTests
 
             CommonAssertions(await Result.WithStreamData(internalServerError));
             CommonAssertions(await Result.WithObjectData<List<string>>(internalServerError));
-            CommonAssertions(await Result.WithAlwaysDefaultData<Uri>(internalServerError));
+            CommonAssertions(await Result.WithNullData<Uri>(internalServerError));
         }
 
         [Test]
@@ -134,7 +132,7 @@ namespace UKHO.FileShareClientTests
                 Assert.IsNull(result.Data);
                 Assert.AreEqual(result.StatusCode, (int)HttpStatusCode.BadRequest);
                 Assert.IsFalse(result.IsSuccess);
-                Assert.AreEqual(result.Errors[0], errorContent);
+                Assert.AreEqual(result.Errors[0].Description, errorContent);
             }
 
             var badRequest = new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest };
@@ -142,7 +140,7 @@ namespace UKHO.FileShareClientTests
 
             CommonAssertions(await Result.WithStreamData(badRequest));
             CommonAssertions(await Result.WithObjectData<List<string>>(badRequest));
-            CommonAssertions(await Result.WithAlwaysDefaultData<Uri>(badRequest));
+            CommonAssertions(await Result.WithNullData<Uri>(badRequest));
         }
 
         
