@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -15,38 +17,63 @@ namespace UKHO.FileShareClient.Models
         public List<Error> Errors { get; set; } = new List<Error>();
 
         public T Data { get; set; }
+    }
 
-        /// <summary>
-        /// Deserialize the response data.
-        /// </summary>
-        /// <param name="successCode">Expected HttpStatusCode</param>
-        /// <param name="response">API response</param>
-        /// <param name="isResponseContentStream">Optional parameter for API response content is Stream</param>
-        /// <returns></returns>
-        internal async Task ProcessHttpResponse(HttpStatusCode successCode, HttpResponseMessage response, bool isResponseContentStream = false)
+    internal static class Result
+    {
+        internal static async Task<IResult<Stream>> WithStreamData(HttpResponseMessage response)
         {
-            IsSuccess = response.IsSuccessStatusCode;
-            StatusCode = (int)response.StatusCode;
+            Stream data = default;
 
-            if (response.Content != null)
+            if (response.IsSuccessStatusCode && response.Content != null)
             {
-                if(IsSuccess && isResponseContentStream)
-                {
-                   await response.ReadAsStreamAsync();
-                    return;
-                }
+                data = await response.ReadAsStreamAsync();
+            }
 
-                if (response.StatusCode.CompareTo(successCode) == 0)
-                {
-                    Data = await response.ReadAsTypeAsync<T>();
-                }
-                else
+            return await CreateResult(response, data);
+        }
+
+        internal static async Task<IResult<U>> WithObjectData<U>(HttpResponseMessage response)
+        {
+            U data = default;
+
+            if (response.IsSuccessStatusCode && response.Content != null)
+            {
+                data = await response.ReadAsTypeAsync<U>();
+            }
+
+            return await CreateResult(response, data);
+        }
+
+        //this is strange and exists to keep backwards compatibility for the FileShareApiClient.DownloadFileAsync method
+        internal static async Task<IResult<U>> WithAlwaysDefaultData<U>(HttpResponseMessage response)
+        {
+            return await CreateResult<U>(response, default);
+        }
+
+        private static async Task<IResult<U>> CreateResult<U>(HttpResponseMessage response, U data)
+        {
+            var result = new Result<U>();
+            result.IsSuccess = response.IsSuccessStatusCode;
+            result.StatusCode = (int)response.StatusCode;
+            result.Data = data;
+            result.Errors = new List<Error>();
+
+            if (response.Content != null && !response.IsSuccessStatusCode)
+            {
+                try
                 {
                     var errorResponse = await response.ReadAsTypeAsync<ErrorResponseModel>();
-
-                    Errors = errorResponse == null ? null : errorResponse.Errors;
+                    result.Errors = errorResponse?.Errors ?? new List<Error>();
+                }
+                catch
+                {
+                    var content = await response.ReadAsTypeAsync<string>();
+                    result.Errors = new List<Error> { new Error { Description = content } };
                 }
             }
+
+            return result;
         }
     }
 }

@@ -246,6 +246,7 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsTrue(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.AreEqual(response.Data, nextResponse);
         }
 
         [Test]
@@ -259,6 +260,7 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsFalse(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.IsNull(response.Data);
         }
 
         [Test]
@@ -272,6 +274,7 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsFalse(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.IsNull(response.Data);
         }
 
         [Test]
@@ -285,6 +288,7 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsFalse(response.IsSuccess);            
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.IsNull(response.Data);
         }
 
         [Test]
