@@ -241,8 +241,10 @@ namespace UKHO.FileShareClientTests
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
             nextResponse = new MemoryStream(expectedBytes);
 
-            var batchStatusResponse = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
-            Assert.AreEqual(expectedBytes, ((MemoryStream)batchStatusResponse).ToArray());
+            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+
+            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
+            Assert.IsTrue(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
         }
 
@@ -250,19 +252,12 @@ namespace UKHO.FileShareClientTests
         public async Task TestDownloadZipFileForABatchThatDoesNotExist()
         {
             var batchId = Guid.NewGuid().ToString();
-
             nextResponseStatusCode = HttpStatusCode.BadRequest;
 
-            try
-            {
-                await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
-                Assert.Fail("Expected to throw an exception");
-            }
-            catch (Exception e)
-            {
-                Assert.IsInstanceOf<HttpRequestException>(e);
-            }
+            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
+            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
+            Assert.IsFalse(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
         }
 
@@ -270,19 +265,12 @@ namespace UKHO.FileShareClientTests
         public async Task TestDownloadZipFileForABatchWithAFileThatDoesNotExist()
         {
             var batchId = Guid.NewGuid().ToString();
-
             nextResponseStatusCode = HttpStatusCode.NotFound;
 
-            try
-            {
-                await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
-                Assert.Fail("Expected to throw an exception");
-            }
-            catch (Exception e)
-            {
-                Assert.IsInstanceOf<HttpRequestException>(e);
-            }
+            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
+            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
+            Assert.IsFalse(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
         }
 
@@ -290,19 +278,12 @@ namespace UKHO.FileShareClientTests
         public async Task TestGetBatchStatusForABatchZipFileThatHasBeenDeleted()
         {
             var batchId = Guid.NewGuid().ToString();
-
             nextResponseStatusCode = HttpStatusCode.Gone;
 
-            try
-            {
-                await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
-                Assert.Fail("Expected to throw an exception");
-            }
-            catch (Exception e)
-            {
-                Assert.IsInstanceOf<HttpRequestException>(e);
-            }
+            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
+            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
+            Assert.IsFalse(response.IsSuccess);            
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
         }
 
