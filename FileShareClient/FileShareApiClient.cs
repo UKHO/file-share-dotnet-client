@@ -223,7 +223,12 @@ namespace UKHO.FileShareClient
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);                
-                await result.ProcessHttpResponse(httpStatusCode, response, true);                
+                await result.ProcessHttpResponse(httpStatusCode, response, true);
+                if (result.IsSuccess)
+                {
+                    result.Data = response.ReadAsStreamAsync().Result;
+                    return result;
+                }
             }
             return result;
         }
