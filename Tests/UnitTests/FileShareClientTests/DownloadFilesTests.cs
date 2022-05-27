@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareClient;
+using UKHO.FileShareClient.Models;
 using UKHO.FileShareClientTests.Helpers;
 
 namespace UKHO.FileShareClientTests
@@ -238,11 +239,16 @@ namespace UKHO.FileShareClientTests
         public async Task TestBasicDownloadZipFile()
         {
             var batchId = Guid.NewGuid().ToString();
-            var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            
+            IResult<Stream> expectedBytes = new Result<Stream>
+            {
+                Data = new MemoryStream(Encoding.UTF8.GetBytes("Contents of a file."))
+            };
+            nextResponse = expectedBytes.Data;
 
             var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
+            Assert.AreEqual(expectedBytes.Data, response.Data);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsTrue(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);

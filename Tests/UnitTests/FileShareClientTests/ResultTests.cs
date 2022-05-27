@@ -132,17 +132,17 @@ namespace UKHO.FileShareClientTests
             void CommonAssertions<T>(IResult<T> result)
             {
                 Assert.IsNull(result.Data);
-                Assert.AreEqual(result.StatusCode, (int)HttpStatusCode.InternalServerError);
+                Assert.AreEqual(result.StatusCode, (int)HttpStatusCode.BadRequest);
                 Assert.IsFalse(result.IsSuccess);
                 Assert.AreEqual(result.Errors[0], errorContent);
             }
 
-            var internalServerError = new HttpResponseMessage { StatusCode = HttpStatusCode.InternalServerError };
-            internalServerError.Content = new StringContent(errorContent);
+            var badRequest = new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest };
+            badRequest.Content = new StringContent(errorContent);
 
-            CommonAssertions(await Result.WithStreamData(internalServerError));
-            CommonAssertions(await Result.WithObjectData<List<string>>(internalServerError));
-            CommonAssertions(await Result.WithAlwaysDefaultData<Uri>(internalServerError));
+            CommonAssertions(await Result.WithStreamData(badRequest));
+            CommonAssertions(await Result.WithObjectData<List<string>>(badRequest));
+            CommonAssertions(await Result.WithAlwaysDefaultData<Uri>(badRequest));
         }
 
         
