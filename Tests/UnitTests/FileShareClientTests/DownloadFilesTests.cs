@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using UKHO.FileShareClient;
+using UKHO.FileShareClient.Models;
 using UKHO.FileShareClientTests.Helpers;
 
 namespace UKHO.FileShareClientTests
@@ -233,6 +234,5 @@ namespace UKHO.FileShareClientTests
 
             Assert.AreEqual(expectedBytes.Length, destStream.Length);
         }
-
     }
 }

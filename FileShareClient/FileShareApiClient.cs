@@ -81,9 +81,7 @@ namespace UKHO.FileShareClient
         public async Task<IResult<BatchSearchResponse>> Search(string searchQuery, int? pageSize, int? start, CancellationToken cancellationToken )
         {
             var response = await SearchResponse(searchQuery, pageSize, start, cancellationToken);
-            var result = new Result<BatchSearchResponse>();
-            await result.ProcessHttpResponse(HttpStatusCode.OK, response);
-            return result;
+            return await Result.WithObjectData<BatchSearchResponse>(response);
         }
 
         private async Task<HttpResponseMessage> SearchResponse(string searchQuery, int? pageSize, int? start , CancellationToken cancellationToken)
@@ -135,9 +133,8 @@ namespace UKHO.FileShareClient
         {
             long startByte = 0;
             long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes-1;
-            var result = new Result<DownloadFileResponse>();
-            HttpStatusCode httpStatusCode = HttpStatusCode.OK;
-
+            IResult<DownloadFileResponse> result = null;
+            
             while (startByte <= endByte)
             {
                 string rangeHeader = $"bytes={startByte}-{endByte}";
@@ -150,12 +147,11 @@ namespace UKHO.FileShareClient
                     if (fileSizeInBytes != 0 && rangeHeader != null)
                     {
                         httpRequestMessage.Headers.Add("Range", rangeHeader);
-                        httpStatusCode = HttpStatusCode.PartialContent;
                     }
 
                     var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-
-                    await result.ProcessHttpResponse(httpStatusCode, response, true);
+                    result = await Result.WithNullData<DownloadFileResponse>(response);
+                    
                     if (!result.IsSuccess) return result;
 
                     using (var contentStream = await response.Content.ReadAsStreamAsync())
@@ -194,8 +190,6 @@ namespace UKHO.FileShareClient
         public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken)
         {
             var uri = "attributes/search";
-            var result = new Result<BatchAttributesSearchResponse>();
-            HttpStatusCode httpStatusCode = HttpStatusCode.OK;
 
             var query = new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(searchQuery))
@@ -207,11 +201,9 @@ namespace UKHO.FileShareClient
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
             {
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                await result.ProcessHttpResponse(httpStatusCode, response);
+                return await Result.WithObjectData<BatchAttributesSearchResponse>(response);
             }
-            return result;
         }
-
 
         #region private methods
         private static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, string>> queryString)
@@ -233,7 +225,7 @@ namespace UKHO.FileShareClient
             }
 
             return sb.ToString();
-        }
+        }        
         #endregion
 
     }

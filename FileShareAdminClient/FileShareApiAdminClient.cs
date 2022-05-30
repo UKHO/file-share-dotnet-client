@@ -393,8 +393,7 @@ namespace UKHO.FileShareAdminClient
             {
                 var response = await httpClient.SendAsync(messageToSend, cancellationToken);
                 var result = new Result<TResponse>();
-                await result.ProcessHttpResponse(successCode, response);
-                return result;
+                return await Result.WithObjectData<TResponse>(response);
             }
         }
         #endregion
