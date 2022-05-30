@@ -239,16 +239,13 @@ namespace UKHO.FileShareClientTests
         public async Task TestBasicDownloadZipFile()
         {
             var batchId = Guid.NewGuid().ToString();
-            
-            IResult<Stream> expectedBytes = new Result<Stream>
-            {
-                Data = new MemoryStream(Encoding.UTF8.GetBytes("Contents of a file."))
-            };
-            nextResponse = expectedBytes.Data;
+
+            var expectedBytes = new MemoryStream(Encoding.UTF8.GetBytes("Contents of a file."));
+            nextResponse = expectedBytes;
 
             var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.AreEqual(expectedBytes.Data, response.Data);
+            Assert.AreEqual(expectedBytes, response.Data);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsTrue(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
@@ -262,6 +259,7 @@ namespace UKHO.FileShareClientTests
 
             var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
+            Assert.IsNull(response.Data);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsFalse(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
@@ -275,6 +273,7 @@ namespace UKHO.FileShareClientTests
 
             var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
+            Assert.IsNull(response.Data);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsFalse(response.IsSuccess);
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
@@ -288,6 +287,7 @@ namespace UKHO.FileShareClientTests
 
             var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
+            Assert.IsNull(response.Data);
             Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
             Assert.IsFalse(response.IsSuccess);            
             Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
@@ -306,6 +306,5 @@ namespace UKHO.FileShareClientTests
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
             Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
         }
-
     }
 }
