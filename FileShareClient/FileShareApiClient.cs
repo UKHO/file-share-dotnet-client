@@ -24,6 +24,7 @@ namespace UKHO.FileShareClient
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<string>> GetUserAttributesAsync();
+        Task<IResult<Stream>> DownloadZipFileAsync(string batchId, CancellationToken cancellationToken);
     }
 
     public class FileShareApiClient : IFileShareApiClient
@@ -202,6 +203,18 @@ namespace UKHO.FileShareClient
             {
                 var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                 return await Result.WithObjectData<BatchAttributesSearchResponse>(response);
+            }
+        }
+
+        public async Task<IResult<Stream>> DownloadZipFileAsync(string batchId, CancellationToken cancellationToken)
+        {
+            var uri = $"batch/{batchId}/files";
+
+            using (var httpClient = await GetAuthenticationHeaderSetClient())
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
+            {
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                return await Result.WithStreamData(response);
             }
         }
 
