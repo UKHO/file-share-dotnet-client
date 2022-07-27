@@ -20,6 +20,7 @@ namespace UKHO.FileShareClient
         Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
         Task<IResult<BatchSearchResponse>> Search(string searchQuery , int? pageSize, int? start , CancellationToken cancellationToken);
         Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken);
+        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, int maxAttributeValueCount, CancellationToken cancellationToken);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
@@ -31,7 +32,7 @@ namespace UKHO.FileShareClient
     {
         protected readonly IHttpClientFactory httpClientFactory;
         protected readonly IAuthTokenProvider authTokenProvider;
-        
+
         private int maxDownloadBytes = 10485760;
 
         public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider)
@@ -110,7 +111,7 @@ namespace UKHO.FileShareClient
 
             using (var httpClient = await GetAuthenticationHeaderSetClient())
             using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
-            {                
+            {
                 return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
             }
         }
@@ -135,7 +136,7 @@ namespace UKHO.FileShareClient
             long startByte = 0;
             long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes-1;
             IResult<DownloadFileResponse> result = null;
-            
+
             while (startByte <= endByte)
             {
                 string rangeHeader = $"bytes={startByte}-{endByte}";
@@ -152,7 +153,7 @@ namespace UKHO.FileShareClient
 
                     var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                     result = await Result.WithNullData<DownloadFileResponse>(response);
-                    
+
                     if (!result.IsSuccess) return result;
 
                     using (var contentStream = await response.Content.ReadAsStreamAsync())
@@ -169,7 +170,7 @@ namespace UKHO.FileShareClient
                 }
 
             }
-            
+
             return result;
         }
 
@@ -195,6 +196,25 @@ namespace UKHO.FileShareClient
             var query = new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(searchQuery))
                 query["$filter"] = searchQuery;
+
+            uri = AddQueryString(uri, query);
+
+            using (var httpClient = await GetAuthenticationHeaderSetClient())
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri))
+            {
+                var response = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                return await Result.WithObjectData<BatchAttributesSearchResponse>(response);
+            }
+        }
+
+        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, int maxAttributeValueCount, CancellationToken cancellationToken)
+        {
+            var uri = "attributes/search";
+
+            var query = new Dictionary<string, string>();
+            if (!string.IsNullOrEmpty(searchQuery))
+            query["$filter"] = searchQuery;
+            query["maxAttributeValueCount"] = maxAttributeValueCount.ToString();
 
             uri = AddQueryString(uri, query);
 
@@ -238,7 +258,7 @@ namespace UKHO.FileShareClient
             }
 
             return sb.ToString();
-        }        
+        }
         #endregion
 
     }
