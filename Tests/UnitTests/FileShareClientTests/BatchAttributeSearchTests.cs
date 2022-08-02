@@ -152,13 +152,46 @@ namespace UKHO.FileShareClientTests
             var colourList = new List<string> { "red", "blue" };
 
             var searchBatchAttributes = new BatchAttributesSearchAttribute
-                    {
-                        Key = "Colour",Values = colourList
+            {
+                Key = "Colour",
+                Values = colourList
             };
             var attributeValues = searchBatchAttributes.ToString();
             Assert.AreEqual("class BatchAttributesSearchAttribute {\n Key: Colour\n Values: red, blue\n}\n", attributeValues);
         }
 
+        #region BatchSearch with MaxAttributeValueCount
+
+        [TestCase(-1)]
+        [TestCase(0)]
+        [TestCase(2)]
+        [TestCase(10)]
+        [TestCase(1000)]
+        public async Task DoesBatchAttributeSearchReturnsSucessWithMaxAttributeValueCountandFilter(int maxAttributeValueCount)
+        {
+            var response = await fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", maxAttributeValueCount, cancellationToken: CancellationToken.None);
+            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount="+maxAttributeValueCount, lastRequestUri.Query);
+            Assert.IsTrue(response.IsSuccess);
+
+        }
+
+        [Test]
+        public async Task DoesBatchAttributeSearchReturnsBadRequestWithMaxAttributeValueCountZeroandFilter()
+        {
+            int MaxAttributeValueCount = 0;
+            nextResponseStatusCode = HttpStatusCode.BadRequest;
+
+            var response = await fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", MaxAttributeValueCount, cancellationToken: CancellationToken.None);
+            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount=0", lastRequestUri.Query);
+            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
+            Assert.IsFalse(response.IsSuccess);
+        }
+
+        #endregion
+
+        #region Private method
         private void CheckResponseMatchesExpectedResponse(BatchAttributesSearchResponse expectedResponse,
             BatchAttributesSearchResponse response)
         {
@@ -174,5 +207,7 @@ namespace UKHO.FileShareClientTests
                 }
             }
         }
+        #endregion
+
     }
 }
