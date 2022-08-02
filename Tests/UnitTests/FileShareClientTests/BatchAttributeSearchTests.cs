@@ -162,17 +162,20 @@ namespace UKHO.FileShareClientTests
 
         #region BatchSearch with MaxAttributeValueCount
 
-        [Test]
-        public async Task DoesBatchAttributeSearchReturnsSucessWithMaxAttributeValueCountandFilter()
+        [TestCase(-1)]
+        [TestCase(0)]
+        [TestCase(2)]
+        [TestCase(10)]
+        [TestCase(1000)]
+        public async Task DoesBatchAttributeSearchReturnsSucessWithMaxAttributeValueCountandFilter(int maxAttributeValueCount)
         {
-            int MaxAttributeValueCount = 2;
-
-            var response = await fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", MaxAttributeValueCount,cancellationToken: CancellationToken.None);
+            var response = await fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", maxAttributeValueCount, cancellationToken: CancellationToken.None);
             Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount=2", lastRequestUri.Query);
+            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount="+maxAttributeValueCount, lastRequestUri.Query);
             Assert.IsTrue(response.IsSuccess);
 
         }
+
         [Test]
         public async Task DoesBatchAttributeSearchReturnsBadRequestWithMaxAttributeValueCountZeroandFilter()
         {

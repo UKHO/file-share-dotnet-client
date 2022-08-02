@@ -213,7 +213,9 @@ namespace UKHO.FileShareClient
 
             var query = new Dictionary<string, string>();
             if (!string.IsNullOrEmpty(searchQuery))
-            query["$filter"] = searchQuery;
+            {
+                query["$filter"] = searchQuery;
+            }
             query["maxAttributeValueCount"] = maxAttributeValueCount.ToString();
 
             uri = AddQueryString(uri, query);
