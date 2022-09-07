@@ -158,6 +158,20 @@ stages:
               projects: "**/*.csproj"
               arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
 
+          - task: Powershell@2
+            displayName: "type FileShareClient project.nuget.cache"
+            inputs:
+              targetType: inline
+              script: |
+                type "$(Build.SourcesDirectory)\FileShareClient\obj\project.nuget.cache"
+
+          - task: Powershell@2
+            displayName: "type FileShareAdminClient project.nuget.cache"
+            inputs:
+              targetType: inline
+              script: |
+                type "$(Build.SourcesDirectory)\FileShareAdminClient\obj\project.nuget.cache"
+
           - task: DotNetCoreCLI@2
             displayName: "dotnet test"
             inputs:
