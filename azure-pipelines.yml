@@ -69,6 +69,7 @@ stages:
     displayName: "Build (inc DependencyChecker, Dotnet Build , dotnet test and publish artifact )"
     dependsOn: []
     pool:
+      name: NautilusBuild
       demands:
       - Agent.Name -equals HTFSPRDUAG03-Melanie-A01
     jobs:
