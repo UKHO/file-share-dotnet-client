@@ -68,10 +68,10 @@ namespace UKHO.FileShareAdminClientTests
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType1);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream2, filename2, mimeType1);
 
-            await fileShareApiClient.CommitBatch(batchHandle);
+            await fileShareApiClient.CommitBatchAsync(batchHandle);
 
             CollectionAssert.AreEqual(new[]
             {
@@ -109,10 +109,10 @@ namespace UKHO.FileShareAdminClientTests
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream2, filename2, mimeType1, CancellationToken.None);
 
-            await fileShareApiClient.CommitBatch(batchHandle.Data, CancellationToken.None);
+            await fileShareApiClient.CommitBatchAsync(batchHandle.Data, CancellationToken.None);
 
             CollectionAssert.AreEqual(new[]
             {
@@ -180,7 +180,7 @@ namespace UKHO.FileShareAdminClientTests
             nextResponse = new CreateBatchResponseModel { BatchId = batchId };
             var batchHandle = new BatchHandle(batchId);
 
-            await fileShareApiClient.CommitBatch(batchHandle);
+            await fileShareApiClient.CommitBatchAsync(batchHandle);
 
             Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
