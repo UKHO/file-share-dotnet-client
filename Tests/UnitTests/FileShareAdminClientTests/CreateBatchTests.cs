@@ -77,7 +77,7 @@ namespace UKHO.FileShareAdminClientTests
             var createBatchResult = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
             Assert.IsNotNull(createBatchResult);
             Assert.AreEqual(expectedBatchId, createBatchResult.Data.BatchId);
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+            Assert.That(lastRequestUri.AbsolutePath, Is.EqualTo("/batch"));
         }
 
         [Test]
