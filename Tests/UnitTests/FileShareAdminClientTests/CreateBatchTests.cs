@@ -51,6 +51,12 @@ namespace UKHO.FileShareAdminClientTests
                 new FileShareApiAdminClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            fakeHttpClientFactory.Dispose();
+        }
+
         [Test]
         public async Task TestCreateNewBatch()
         {

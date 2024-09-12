@@ -52,6 +52,12 @@ namespace UKHO.FileShareAdminClientTests
                     MaxBlockSize);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            fakeHttpClientFactory.Dispose();
+        }
+
         [Test]
         public async Task TestReplaceAcl()
         {

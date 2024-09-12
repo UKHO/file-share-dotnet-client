@@ -43,6 +43,12 @@ namespace UKHO.FileShareClientTests
                 new FileShareApiClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            fakeHttpClientFactory.Dispose();
+        }
+
         [Test]
         public async Task TestBasicDownloadFile()
         {

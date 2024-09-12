@@ -53,13 +53,19 @@ namespace UKHO.FileShareAdminClientTests
                     MaxBlockSize);
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            fakeHttpClientFactory.Dispose();
+        }
+
         [Test]
         public async Task TestUnseekableStreamThrowsException()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
             nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
             var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+            Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
             var stream1 = A.Fake<Stream>();
             A.CallTo(() => stream1.CanSeek).Returns(false);
@@ -73,8 +79,8 @@ namespace UKHO.FileShareAdminClientTests
             }
             catch (ArgumentException ex)
             {
-                Assert.AreEqual("stream", ex.ParamName);
-                Assert.AreEqual("The stream must be seekable. (Parameter 'stream')", ex.Message);
+                Assert.That(ex.ParamName, Is.EqualTo("stream"));
+                Assert.That(ex.Message, Is.EqualTo("The stream must be seekable. (Parameter 'stream')"));
             }
         }
 
