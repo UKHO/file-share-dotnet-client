@@ -1,61 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using System.Net;
+using FileShareClientTestsCommon.Helpers;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
-using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareAdminClientTests
+namespace FileShareAdminClientTests
 {
     internal class ReplaceAclTests
     {
-        private object nextResponse = null;
-        private IFileShareApiAdminClient fileShareApiClient;
-        private HttpStatusCode nextResponseStatusCode;
-        private List<(HttpMethod, Uri)> lastRequestUris;
-        private List<string> lastRequestBodies;
+        private FileShareApiAdminClient _fileShareApiAdminClient;
+        private HttpStatusCode _nextResponseStatusCode;
+        private List<(HttpMethod HttpMethod, Uri? Uri)> _lastRequestUris;
+        private List<string?> _lastRequestBodies;
         private const int MaxBlockSize = 32;
-        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
 
         [SetUp]
         public void Setup()
         {
-            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
-                lastRequestUris.Add((request.Method, request.RequestUri));
+                _lastRequestUris.Add((request.Method, request.RequestUri));
+
                 if (request.Content is StringContent content && request.Content.Headers.ContentLength.HasValue)
-                    lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                {
+                    _lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                }
                 else
-                    lastRequestBodies.Add(null);
-                return (nextResponseStatusCode, nextResponse);
+                {
+                    _lastRequestBodies.Add(null);
+                }
+
+                return (_nextResponseStatusCode, new object());
             });
-            nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.NoContent;
-            lastRequestUris = new List<(HttpMethod, Uri)>();
-            lastRequestBodies = new List<string>();
 
-            var config = new
-            {
-                BaseAddress = @"https://fss-tests.net",
-                AccessToken = DUMMY_ACCESS_TOKEN
-            };
-
-            fileShareApiClient =
-                new FileShareApiAdminClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken,
-                    MaxBlockSize);
+            _nextResponseStatusCode = HttpStatusCode.NoContent;
+            _lastRequestUris = [];
+            _lastRequestBodies = [];
+            _fileShareApiAdminClient = new FileShareApiAdminClient(_fakeFssHttpClientFactory, @"https://fss-tests.net", DUMMY_ACCESS_TOKEN, MaxBlockSize);
         }
 
         [TearDown]
         public void TearDown()
         {
-            fakeHttpClientFactory.Dispose();
+            _fakeFssHttpClientFactory.Dispose();
         }
 
         [Test]
@@ -68,18 +57,20 @@ namespace UKHO.FileShareAdminClientTests
                 ReadUsers = new List<string> { "public" }
             };
 
-            await fileShareApiClient.ReplaceAclAsync(batchId, acl, CancellationToken.None);
+            await _fileShareApiAdminClient.ReplaceAclAsync(batchId, acl, CancellationToken.None);
 
-           CollectionAssert.AreEqual(new[]
-           {
+            var expectedRequests = new[]
+            {
                 $"PUT:/batch/{batchId}/acl"
-           },
-           
-           lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
-
-            var replaceAclModel = lastRequestBodies.First().DeserialiseJson<Acl>();
-            CollectionAssert.AreEqual(acl.ReadGroups, replaceAclModel.ReadGroups);
-            CollectionAssert.AreEqual(acl.ReadUsers, replaceAclModel.ReadUsers);
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            var replaceAclModel = _lastRequestBodies.First()?.DeserialiseJson<Acl>();
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(replaceAclModel?.ReadGroups, Is.EqualTo(acl.ReadGroups));
+                Assert.That(replaceAclModel?.ReadUsers, Is.EqualTo(acl.ReadUsers));
+            });
         }
     }
 }

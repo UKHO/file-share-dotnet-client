@@ -16,9 +16,12 @@ namespace FileShareAdminClientTests.Models
 
             var json = JsonConvert.SerializeObject(model);
             var deserialisedModel = JsonConvert.DeserializeObject<Acl>(json);
-
-            Assert.That(deserialisedModel?.ReadGroups, Is.EqualTo(model.ReadGroups));
-            Assert.That(deserialisedModel.ReadUsers, Is.EqualTo(model.ReadUsers));
+            Assert.That(deserialisedModel, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(deserialisedModel.ReadGroups, Is.EqualTo(model.ReadGroups));
+                Assert.That(deserialisedModel.ReadUsers, Is.EqualTo(model.ReadUsers));
+            });
         }
     }
 }

@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using Newtonsoft.Json;
-using NUnit.Framework;
+﻿using Newtonsoft.Json;
 using UKHO.FileShareAdminClient.Models;
 
-namespace UKHO.FileShareAdminClientTests.Models
+namespace FileShareAdminClientTests.Models
 {
     internal class BatchCommitModelTests
     {
@@ -19,9 +17,13 @@ namespace UKHO.FileShareAdminClientTests.Models
 
             var json = JsonConvert.SerializeObject(model);
             var deserialisedModel = JsonConvert.DeserializeObject<BatchCommitModel>(json);
-            Assert.AreEqual(model.FileDetails.Count, deserialisedModel.FileDetails.Count);
-            Assert.AreEqual(model.FileDetails.Single().FileName, deserialisedModel.FileDetails.Single().FileName);
-            Assert.AreEqual(model.FileDetails.Single().Hash, deserialisedModel.FileDetails.Single().Hash);
+            Assert.That(deserialisedModel, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(deserialisedModel.FileDetails, Has.Count.EqualTo(model.FileDetails.Count));
+                Assert.That(deserialisedModel.FileDetails.Single().FileName, Is.EqualTo(model.FileDetails.Single().FileName));
+                Assert.That(deserialisedModel.FileDetails.Single().Hash, Is.EqualTo(model.FileDetails.Single().Hash));
+            });
         }
     }
 }

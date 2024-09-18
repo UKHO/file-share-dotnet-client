@@ -1,84 +1,72 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using NUnit.Framework;
+using FileShareClientTestsCommon.Helpers;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
-using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareAdminClientTests
+namespace FileShareAdminClientTests
 {
     internal class SetExpiryDateTests
     {
-        private object nextResponse = null;
-        private IFileShareApiAdminClient fileShareApiClient;
-        private HttpStatusCode nextResponseStatusCode;
-        private List<(HttpMethod, Uri)> lastRequestUris;
-        private List<string> lastRequestBodies;
+        private FileShareApiAdminClient _fileShareApiAdminClient;
+        private HttpStatusCode _nextResponseStatusCode;
+        private List<(HttpMethod HttpMethod, Uri? Uri)> _lastRequestUris;
+        private List<string?> _lastRequestBodies;
         private const int MaxBlockSize = 32;
-        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
-                lastRequestUris.Add((request.Method, request.RequestUri));
+                _lastRequestUris.Add((request.Method, request.RequestUri));
+
                 if (request.Content is StringContent content && request.Content.Headers.ContentLength.HasValue)
-                    lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                {
+                    _lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                }
                 else
-                    lastRequestBodies.Add(null);
+                {
+                    _lastRequestBodies.Add(null);
+                }
 
-                return (nextResponseStatusCode, nextResponse);
+                return (_nextResponseStatusCode, new object());
             });
-            nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.NoContent;
-            lastRequestUris = new List<(HttpMethod, Uri)>();
-            lastRequestBodies = new List<string>();
 
-            var config = new
-            {
-                BaseAddress = @"https://fss-tests.net",
-                AccessToken = DUMMY_ACCESS_TOKEN
-            };
-
-            fileShareApiClient =
-                new FileShareApiAdminClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken,
-                    MaxBlockSize);
+            _nextResponseStatusCode = HttpStatusCode.NoContent;
+            _lastRequestUris = [];
+            _lastRequestBodies = [];
+            _fileShareApiAdminClient = new FileShareApiAdminClient(_fakeFssHttpClientFactory, @"https://fss-tests.net", DUMMY_ACCESS_TOKEN, MaxBlockSize);
         }
 
         [TearDown]
         public void TearDown()
         {
-            fakeHttpClientFactory.Dispose();
+            _fakeFssHttpClientFactory.Dispose();
         }
 
         [Test]
         public async Task TestSetExpiryDate()
         {
-            DateTime dateTime = DateTime.UtcNow.AddDays(15);
-            dateTime = Convert.ToDateTime(dateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture));            
-
+            var dateTime = DateTime.UtcNow.AddDays(15);
+            dateTime = Convert.ToDateTime(dateTime.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture));
             var batchId = Guid.NewGuid().ToString();
 
-            await fileShareApiClient.SetExpiryDateAsync(batchId, 
-                new BatchExpiryModel { ExpiryDate = dateTime }, 
-                CancellationToken.None);
+            await _fileShareApiAdminClient.SetExpiryDateAsync(batchId, new BatchExpiryModel { ExpiryDate = dateTime }, CancellationToken.None);
 
-            CollectionAssert.AreEqual(new[]
+            var expectedRequests = new[]
             {
                 $"PUT:/batch/{batchId}/expiry"
-            },
-            lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
-
-            var expiryDate = lastRequestBodies.First().DeserialiseJson<BatchExpiryModel>();
-            Assert.AreEqual(dateTime, expiryDate.ExpiryDate);
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            var expiryDate = _lastRequestBodies.First()?.DeserialiseJson<BatchExpiryModel>();
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(expiryDate?.ExpiryDate, Is.EqualTo(dateTime));
+            });
         }
     }
 }

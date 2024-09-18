@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\FileShareClient\FileShareClient.csproj" />
+    <ProjectReference Include="..\FileShareClientTestsCommon\FileShareClientTestsCommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
