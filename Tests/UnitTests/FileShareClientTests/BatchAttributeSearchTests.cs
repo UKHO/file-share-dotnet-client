@@ -51,7 +51,7 @@ namespace FileShareClientTests
             Assert.Multiple(() =>
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
-                Assert.That(_lastRequestUri?.Query, Is.EqualTo("/basePath/attributes/search"), "Should be no query string for an empty search");
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query string for an empty search");
             });
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
