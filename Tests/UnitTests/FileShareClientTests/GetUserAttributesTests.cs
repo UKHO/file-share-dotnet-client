@@ -1,92 +1,96 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using System.Net;
+using FileShareClientTestsCommon.Helpers;
 using UKHO.FileShareClient;
-using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareClientTests
+namespace FileShareClientTests
 {
     public class GetUserAttributesTests
     {
-        private object nextResponse;
-        private IFileShareApiClient fileShareApiClient;
-        private HttpStatusCode nextResponseStatusCode;
-        private Uri lastRequestUri;
-        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private object _nextResponse;
+        private FileShareApiClient _fileShareApiClient;
+        private HttpStatusCode _nextResponseStatusCode;
+        private Uri? _lastRequestUri;
+        private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
-                lastRequestUri = request.RequestUri;
-                return (nextResponseStatusCode, nextResponse);
+                _lastRequestUri = request.RequestUri;
+                return (_nextResponseStatusCode, _nextResponse);
             });
-            nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.OK;
 
-            var config = new
-            {
-                BaseAddress = @"https://fss-tests.net/basePath/",
-                AccessToken = DUMMY_ACCESS_TOKEN
-            };
-
-
-            fileShareApiClient =
-                new FileShareApiClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
+            _nextResponse = new object();
+            _nextResponseStatusCode = HttpStatusCode.OK;
+            _fileShareApiClient = new FileShareApiClient(_fakeFssHttpClientFactory, @"https://fss-tests.net/basePath/", DUMMY_ACCESS_TOKEN);
         }
 
         [TearDown]
         public void TearDown()
         {
-            fakeHttpClientFactory.Dispose();
+            _fakeFssHttpClientFactory.Dispose();
         }
 
         [Test]
         public async Task TestSimpleGetAttributes()
         {
-            nextResponse = new List<string> {"One", "Two"};
-            var attributes = await fileShareApiClient.GetUserAttributesAsync();
-            Assert.AreEqual("/basePath/attributes", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("", lastRequestUri.Query, "Should be no query query string for an empty search");
-            CollectionAssert.AreEqual((List<string>) nextResponse, attributes);
+            _nextResponse = new List<string> { "One", "Two" };
+
+            var attributes = await _fileShareApiClient.GetUserAttributesAsync();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
+                Assert.That(attributes, Is.EqualTo((List<string>)_nextResponse));
+            });
         }
 
         [Test]
         public async Task TestEmptyGetAttributes()
         {
-            nextResponse = new List<string>();
-            var attributes = await fileShareApiClient.GetUserAttributesAsync();
-            Assert.AreEqual("/basePath/attributes", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("", lastRequestUri.Query, "Should be no query query string for an empty search");
-            CollectionAssert.AreEqual((List<string>) nextResponse, attributes);
+            _nextResponse = new List<string>();
+
+            var attributes = await _fileShareApiClient.GetUserAttributesAsync();
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
+                Assert.That(attributes, Is.EqualTo((List<string>)_nextResponse));
+            });
         }
 
         [Test]
         public void TestGetAttributesWhenServerReturnsError()
         {
-            nextResponseStatusCode = HttpStatusCode.ServiceUnavailable;
-            var exception =
-                Assert.ThrowsAsync<HttpRequestException>(async () => await fileShareApiClient.GetUserAttributesAsync());
-            Assert.AreEqual("/basePath/attributes", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("", lastRequestUri.Query, "Should be no query query string for an empty search");
-            Assert.AreEqual("Response status code does not indicate success: 503 (Service Unavailable).",
-                exception.Message);
+            _nextResponseStatusCode = HttpStatusCode.ServiceUnavailable;
+
+            var exception = Assert.ThrowsAsync<HttpRequestException>(_fileShareApiClient.GetUserAttributesAsync);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
+                Assert.That(exception.Message, Is.EqualTo("Response status code does not indicate success: 503 (Service Unavailable)."));
+            });
         }
 
         [Test]
         public async Task TestGetAttributesSetsAuthorizationHeader()
         {
-            nextResponse = new List<string> { "One", "Two" };
-            await fileShareApiClient.GetUserAttributesAsync();
+            _nextResponse = new List<string> { "One", "Two" };
 
-            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
-            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
-            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+            await _fileShareApiClient.GetUserAttributesAsync();
+
+            Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+            });
         }
     }
 }
