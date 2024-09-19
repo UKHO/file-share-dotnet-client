@@ -6,7 +6,6 @@ namespace FileShareClientTests.Models
     public class BatchStatusResponseTests
     {
         [Test]
-        [SuppressMessage("Assertion", "NUnit2010:Use EqualConstraint for better assertion messages in case of failure", Justification = "Test overridden Equals method")]
         public void TestEquals()
         {
             var emptyBatchStatusResponse = new BatchStatusResponse();
