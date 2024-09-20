@@ -1,28 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
-    <suppress>
-        <notes><![CDATA[
-            file name: System.Runtime.CompilerServices.Unsafe.dll
-            Suppress false positive as this CVE is for Drupal.
-        ]]></notes>
-        <cve>CVE-2014-9152</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-            file name: System.Threading.Tasks.Extensions.dll
-            CVE references 
-                "Tasks" application version before 9.7.3 is affected by insecure permissions. The VoiceCommandActivity...
-            This is a false positive from a Tasks mobile application against the System.Threading.Tasks.Extensions.dll assembly
-        ]]></notes>
-        <cve>CVE-2020-22475</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        The aaugustin websockets library before 9.1 for Python has an Observable Timing Discrepancy on 
-        servers when HTTP Basic Authentication is enabled with basic_auth_protocol_factory(credentials=...). 
-        An attacker may be able to guess a password via a timing attack
-        ]]></notes>
-        <cve>CVE-2021-33880</cve>
-    </suppress>    
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
 </suppressions>
