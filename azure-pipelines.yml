@@ -20,7 +20,7 @@ variables:
 - name: UKHOAssemblyCompany
   value: "UK Hydrographic Office"
 - name: UKHOAssemblyVersionPrefix
-  value: "1.6."
+  value: "2.0."
 - name: UKHOAssemblyProduct
   value: "File Share Dotnet Client"
 - name: SdkVersion
