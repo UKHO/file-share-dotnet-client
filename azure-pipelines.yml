@@ -24,7 +24,7 @@ variables:
 - name: UKHOAssemblyProduct
   value: "File Share Dotnet Client"
 - name: SdkVersion
-  value: "8.x"
+  value: "8.0.x"
 
 stages:
 - stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
