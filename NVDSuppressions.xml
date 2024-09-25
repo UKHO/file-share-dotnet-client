@@ -1,88 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.1.xsd">
-    <suppress>
-        <notes><![CDATA[
-            file name: System.Runtime.CompilerServices.Unsafe.dll
-            Suppress false positive as this CVE is for Drupal.
-        ]]></notes>
-        <cve>CVE-2014-9152</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-            file name: System.Threading.Tasks.Extensions.dll
-            CVE references 
-                "Tasks" application version before 9.7.3 is affected by insecure permissions. The VoiceCommandActivity...
-            This is a false positive from a Tasks mobile application against the System.Threading.Tasks.Extensions.dll assembly
-        ]]></notes>
-        <cve>CVE-2020-22475</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-        The aaugustin websockets library before 9.1 for Python has an Observable Timing Discrepancy on 
-        servers when HTTP Basic Authentication is enabled with basic_auth_protocol_factory(credentials=...). 
-        An attacker may be able to guess a password via a timing attack
-        ]]></notes>
-        <cve>CVE-2021-33880</cve>
-    </suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
-   file name: Microsoft.Bcl.AsyncInterfaces:1.1.1
-   ]]>
-		</notes>
-		<cve>CVE-2021-43138</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+  <suppress>
+    <notes>
+      <![CDATA[
    file name: Microsoft.NETCore.Platforms:1.1.1
    ]]>
-		</notes>
-		<cve>CVE-2022-41064</cve>
-		<cve>CVE-2022-30184</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
+    </notes>
+    <packageUrl regex="true">^pkg:nuget/Microsoft\.NETCore\.Platforms@.*$</packageUrl>
+    <cve>CVE-2022-41064</cve>
+    <cve>CVE-2022-30184</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
    file name: Microsoft.NETCore.Targets:1.1.3
    ]]>
-		</notes>
-		<cve>CVE-2022-41064</cve>
-		<cve>CVE-2022-30184</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
-   file name: System.Buffers:4.4.0
-   ]]>
-		</notes>
-		<cve>CVE-2022-41064</cve>
-		<cve>CVE-2022-30184</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
+    </notes>
+    <packageUrl regex="true">^pkg:nuget/Microsoft\.NETCore\.Targets@.*$</packageUrl>
+    <cve>CVE-2022-41064</cve>
+    <cve>CVE-2022-30184</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
    file name: System.Buffers:4.5.1
    ]]>
-		</notes>
-		<cve>CVE-2022-41064</cve>
-		<cve>CVE-2022-30184</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
+    </notes>
+    <packageUrl regex="true">^pkg:nuget/System\.Buffers@.*$</packageUrl>
+    <cve>CVE-2022-41064</cve>
+    <cve>CVE-2022-30184</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
    file name: System.Threading.Tasks.Extensions.dll
    ]]>
-		</notes>
-		<cve>CVE-2022-39349</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
+    </notes>
+    <packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks\.Extensions@.*$</packageUrl>
+    <cve>CVE-2020-22475</cve>
+    <cve>CVE-2022-39349</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
    file name: System.Threading.Tasks.Extensions:4.5.4
    ]]>
-		</notes>
-		<cve>CVE-2022-39349</cve>
-	</suppress>
+    </notes>
+    <packageUrl regex="true">^pkg:nuget/System\.Threading\.Tasks\.Extensions@.*$</packageUrl>
+    <cve>CVE-2020-22475</cve>
+    <cve>CVE-2022-39349</cve>
+  </suppress>
 </suppressions>

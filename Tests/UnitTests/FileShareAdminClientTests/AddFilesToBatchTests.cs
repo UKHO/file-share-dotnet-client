@@ -1,65 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net;
 using FakeItEasy;
-using NUnit.Framework;
+using FileShareClientTestsCommon.Helpers;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
-using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareAdminClientTests
+namespace FileShareAdminClientTests
 {
     internal class AddFilesToBatchTests
     {
-        private object nextResponse = null;
-        private IFileShareApiAdminClient fileShareApiClient;
-        private HttpStatusCode nextResponseStatusCode;
-        private List<(HttpMethod, Uri)> lastRequestUris;
-        private List<string> lastRequestBodies;
+        private object _nextResponse;
+        private FileShareApiAdminClient _fileShareApiAdminClient;
+        private HttpStatusCode _nextResponseStatusCode;
+        private List<(HttpMethod HttpMethod, Uri? Uri)> _lastRequestUris;
+        private List<string?> _lastRequestBodies;
         private const int MaxBlockSize = 32;
-        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
-                lastRequestUris.Add((request.Method, request.RequestUri));
+                _lastRequestUris.Add((request.Method, request.RequestUri));
+
                 if (request.Content is StringContent content && request.Content.Headers.ContentLength.HasValue)
-                    lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                {
+                    _lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                }
                 else
-                    lastRequestBodies.Add(null);
-                return (nextResponseStatusCode, nextResponse);
+                {
+                    _lastRequestBodies.Add(null);
+                }
+
+                return (_nextResponseStatusCode, _nextResponse);
             });
-            nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.Created;
-            lastRequestUris = new List<(HttpMethod, Uri)>();
-            lastRequestBodies = new List<string>();
 
-            var config = new
-            {
-                BaseAddress = @"https://fss-tests.net",
-                AccessToken = DUMMY_ACCESS_TOKEN
-            };
+            _nextResponse = new object();
+            _nextResponseStatusCode = HttpStatusCode.Created;
+            _lastRequestUris = [];
+            _lastRequestBodies = [];
+            _fileShareApiAdminClient = new FileShareApiAdminClient(_fakeFssHttpClientFactory, @"https://fss-tests.net", DUMMY_ACCESS_TOKEN, MaxBlockSize);
+        }
 
-            fileShareApiClient =
-                new FileShareApiAdminClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken,
-                    MaxBlockSize);
+        [TearDown]
+        public void TearDown()
+        {
+            _fakeFssHttpClientFactory.Dispose();
         }
 
         [Test]
         public async Task TestUnseekableStreamThrowsException()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
             var stream1 = A.Fake<Stream>();
             A.CallTo(() => stream1.CanSeek).Returns(false);
@@ -68,13 +64,16 @@ namespace UKHO.FileShareAdminClientTests
 
             try
             {
-                await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+                await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
             catch (ArgumentException ex)
             {
-                Assert.AreEqual("stream", ex.ParamName);
-                Assert.AreEqual("The stream must be seekable. (Parameter 'stream')", ex.Message);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(ex.ParamName, Is.EqualTo("stream"));
+                    Assert.That(ex.Message, Is.EqualTo("The stream must be seekable. (Parameter 'stream')"));
+                });
             }
         }
 
@@ -82,9 +81,9 @@ namespace UKHO.FileShareAdminClientTests
         public async Task TestUnseekableStreamThrowsExceptionWithCancellationToken()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
-            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
             var stream1 = A.Fake<Stream>();
             A.CallTo(() => stream1.CanSeek).Returns(false);
@@ -93,13 +92,16 @@ namespace UKHO.FileShareAdminClientTests
 
             try
             {
-                await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+                await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
             catch (ArgumentException ex)
             {
-                Assert.AreEqual("stream", ex.ParamName);
-                Assert.AreEqual("The stream must be seekable. (Parameter 'stream')", ex.Message);
+                Assert.Multiple(() =>
+                {
+                    Assert.That(ex.ParamName, Is.EqualTo("stream"));
+                    Assert.That(ex.Message, Is.EqualTo("The stream must be seekable. (Parameter 'stream')"));
+                });
             }
         }
 
@@ -107,273 +109,279 @@ namespace UKHO.FileShareAdminClientTests
         public async Task TestAddSmallFilesToBatch()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] {1, 2, 3, 4, 5});
-            Stream stream2 = new MemoryStream(new byte[] {2, 3, 4, 5, 6, 7, 8});
+            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
+            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2);
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2);
 
-
-            CollectionAssert.AreEqual(new[]
+            var expectedRequests = new[]
             {
                 "POST:/batch",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename1}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename2}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
-            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            Assert.That(actualRequests, Is.EqualTo(expectedRequests));
         }
 
         [Test]
         public async Task TestAddSmallFilesToBatchWithCancellationToken()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
-            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
-            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
+            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
+            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None);
 
-
-            CollectionAssert.AreEqual(new[]
+            var expectedRequests = new[]
             {
                 "POST:/batch",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename1}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename2}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
-            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            Assert.That(actualRequests, Is.EqualTo(expectedRequests));
         }
 
         [Test]
         public async Task TestAddSmallFilesToBatchWithFileAttributes()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] {1, 2, 3, 4, 5});
-            Stream stream2 = new MemoryStream(new byte[] {2, 3, 4, 5, 6, 7, 8});
+            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
+            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1,
-                new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2,
-                new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2, new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
-
-            CollectionAssert.AreEqual(new[]
+            var expectedRequests = new[]
             {
                 "POST:/batch",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename1}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename2}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
-            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
-
-
-            var addFile1Request = lastRequestBodies[1];
-            var addFile2Request = lastRequestBodies[4];
-            StringAssert.Contains("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\"", addFile1Request);
-            StringAssert.Contains("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\"", addFile2Request);
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            var addFile1Request = _lastRequestBodies[1];
+            var addFile2Request = _lastRequestBodies[4];
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(addFile1Request, Does.Contain("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\""));
+                Assert.That(addFile2Request, Does.Contain("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\""));
+            });
         }
 
         [Test]
         public async Task TestAddSmallFilesToBatchWithFileAttributesWithCancellationToken()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
-            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
-            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
+            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
+            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None,
-                new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None,
-                new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None, new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None, new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
-
-            CollectionAssert.AreEqual(new[]
+            var expectedRequests = new[]
             {
                 "POST:/batch",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename1}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename2}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
-            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
-
-
-            var addFile1Request = lastRequestBodies[1];
-            var addFile2Request = lastRequestBodies[4];
-            StringAssert.Contains("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\"", addFile1Request);
-            StringAssert.Contains("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\"", addFile2Request);
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            var addFile1Request = _lastRequestBodies[1];
+            var addFile2Request = _lastRequestBodies[4];
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(addFile1Request, Does.Contain("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\""));
+                Assert.That(addFile2Request, Does.Contain("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\""));
+            });
         }
 
         [Test]
         public async Task TestAddLargerFileToBatch()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
             Stream stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
 
-
-            CollectionAssert.AreEqual(new[]
+            var expectedRequests = new[]
             {
                 "POST:/batch",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename1}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00002",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00003",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}"
-            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
-
-
-            var writeBlockFileModel = lastRequestBodies.Last().DeserialiseJson<WriteBlockFileModel>();
-            CollectionAssert.AreEqual(new[] {"00001", "00002", "00003"}, writeBlockFileModel.BlockIds);
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            var writeBlockFileModel = _lastRequestBodies.Last()?.DeserialiseJson<WriteBlockFileModel>();
+            var expectedBlockIds = new[] { "00001", "00002", "00003" };
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(writeBlockFileModel?.BlockIds, Is.EqualTo(expectedBlockIds));
+            });
         }
 
         [Test]
         public async Task TestAddLargerFileToBatchWithCancellationToken()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
-            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
             Stream stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
 
-
-            CollectionAssert.AreEqual(new[]
+            var expectedRequests = new[]
             {
                 "POST:/batch",
-
                 $"POST:/batch/{expectedBatchId}/files/{filename1}",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00001",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00002",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}/00003",
                 $"PUT:/batch/{expectedBatchId}/files/{filename1}"
-            }, lastRequestUris.Select(uri => $"{uri.Item1}:{uri.Item2.AbsolutePath}"));
-
-
-            var writeBlockFileModel = lastRequestBodies.Last().DeserialiseJson<WriteBlockFileModel>();
-            CollectionAssert.AreEqual(new[] { "00001", "00002", "00003" }, writeBlockFileModel.BlockIds);
+            };
+            var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
+            var writeBlockFileModel = _lastRequestBodies.Last()?.DeserialiseJson<WriteBlockFileModel>();
+            var expectedBlockIds = new[] { "00001", "00002", "00003" };
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(writeBlockFileModel?.BlockIds, Is.EqualTo(expectedBlockIds));
+            });
         }
 
         [Test]
         public async Task TestProgressFeedbackWithAddLargerFileToBatch()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel {BatchId = expectedBatchId};
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel {BusinessUnit = "TestUnit"});
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            var stream1 = new MemoryStream(new byte[(MaxBlockSize * 3)-1]);
+            var stream1 = new MemoryStream(new byte[MaxBlockSize * 3 - 1]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            IList<(int blocksComplete, int totalBlockCount)> progressReports =
-                new List<(int blocksComplete, int totalBlockCount)>();
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1,
-                progressUpdate => { progressReports.Add(progressUpdate); });
+            var progressReports = new List<(int blocksComplete, int totalBlockCount)>();
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, progressReports.Add);
 
-            Assert.AreEqual(4, progressReports.Count);
-            CollectionAssert.AreEqual(new[] {0, 1, 2, 3}, progressReports.Select(r => r.blocksComplete));
-            CollectionAssert.AreEqual(new[] {3, 3, 3, 3}, progressReports.Select(r => r.totalBlockCount));
+            var expectedBlocksComplete = new[] { 0, 1, 2, 3 };
+            var expectedTotalBlockCount = new[] { 3, 3, 3, 3 };
+            Assert.Multiple(() =>
+            {
+                Assert.That(progressReports, Has.Count.EqualTo(4));
+                Assert.That(progressReports.Select(r => r.blocksComplete), Is.EqualTo(expectedBlocksComplete));
+                Assert.That(progressReports.Select(r => r.totalBlockCount), Is.EqualTo(expectedTotalBlockCount));
+            });
         }
 
         [Test]
         public async Task TestProgressFeedbackWithAddLargerFileToBatchWithCancellationToken()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
-            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            var stream1 = new MemoryStream(new byte[(MaxBlockSize * 3) - 1]);
+            var stream1 = new MemoryStream(new byte[MaxBlockSize * 3 - 1]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            IList<(int blocksComplete, int totalBlockCount)> progressReports =
-                new List<(int blocksComplete, int totalBlockCount)>();
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1,
-                progressUpdate => { progressReports.Add(progressUpdate); }, CancellationToken.None);
+            var progressReports = new List<(int blocksComplete, int totalBlockCount)>();
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, progressReports.Add, CancellationToken.None);
 
-            Assert.AreEqual(4, progressReports.Count);
-            CollectionAssert.AreEqual(new[] { 0, 1, 2, 3 }, progressReports.Select(r => r.blocksComplete));
-            CollectionAssert.AreEqual(new[] { 3, 3, 3, 3 }, progressReports.Select(r => r.totalBlockCount));
+            var expectedBlocksComplete = new[] { 0, 1, 2, 3 };
+            var expectedTotalBlockCount = new[] { 3, 3, 3, 3 };
+            Assert.Multiple(() =>
+            {
+                Assert.That(progressReports, Has.Count.EqualTo(4));
+                Assert.That(progressReports.Select(r => r.blocksComplete), Is.EqualTo(expectedBlocksComplete));
+                Assert.That(progressReports.Select(r => r.totalBlockCount), Is.EqualTo(expectedTotalBlockCount));
+            });
         }
 
         [Test]
         public async Task TestAddFileToBatchSetsAuthorizationHeader()
         {
             var batchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel { BatchId = batchId };
+            _nextResponse = new CreateBatchResponseModel { BatchId = batchId };
             var batchHandle = new BatchHandle(batchId);
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
 
-            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
-            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
-            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
-
+            Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+            });
         }
     }
 }

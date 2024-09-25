@@ -7,18 +7,18 @@ namespace UKHO.FileShareClient
         Task<string> GetToken();
     }
 
-    internal class DefaultAuthTokenProvider: IAuthTokenProvider
+    internal class DefaultAuthTokenProvider : IAuthTokenProvider
     {
-        private readonly string accessToken;
+        private readonly string _accessToken;
 
         public DefaultAuthTokenProvider(string accessToken)
         {
-            this.accessToken = accessToken;
+            _accessToken = accessToken;
         }
 
         public Task<string> GetToken()
         {
-            return Task.FromResult(accessToken);
+            return Task.FromResult(_accessToken);
         }
     }
 }

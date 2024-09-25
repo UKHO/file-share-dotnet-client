@@ -1,46 +1,37 @@
-using System;
-using System.IO;
 using System.Net;
-using System.Net.Http;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using NUnit.Framework;
+using FileShareClientTestsCommon.Helpers;
 using UKHO.FileShareClient;
-using UKHO.FileShareClient.Models;
-using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareClientTests
+namespace FileShareClientTests
 {
     public class DownloadFilesTests
     {
-        private object nextResponse = null;
-        private IFileShareApiClient fileShareApiClient;
-        private HttpStatusCode nextResponseStatusCode;
-        private Uri lastRequestUri;
-        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private object _nextResponse;
+        private FileShareApiClient _fileShareApiClient;
+        private HttpStatusCode _nextResponseStatusCode;
+        private Uri? _lastRequestUri;
+        private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
-        
+
         [SetUp]
         public void Setup()
         {
-            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
-                lastRequestUri = request.RequestUri;
-                return (nextResponseStatusCode, nextResponse);
+                _lastRequestUri = request.RequestUri;
+                return (_nextResponseStatusCode, _nextResponse);
             });
-            nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.OK;
 
-            var config = new
-            {
-                BaseAddress = @"https://fss-tests.net/basePath/",
-                AccessToken = DUMMY_ACCESS_TOKEN
-            };
+            _nextResponse = new object();
+            _nextResponseStatusCode = HttpStatusCode.OK;
+            _fileShareApiClient = new FileShareApiClient(_fakeFssHttpClientFactory, @"https://fss-tests.net/basePath/", DUMMY_ACCESS_TOKEN);
+        }
 
-
-            fileShareApiClient =
-                new FileShareApiClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
+        [TearDown]
+        public void TearDown()
+        {
+            _fakeFssHttpClientFactory.Dispose();
         }
 
         [Test]
@@ -48,71 +39,75 @@ namespace UKHO.FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
 
-            var batchStatusResponse = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
-            Assert.AreEqual(expectedBytes, ((MemoryStream) batchStatusResponse).ToArray());
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+            var batchStatusResponse = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(((MemoryStream)batchStatusResponse).ToArray(), Is.EqualTo(expectedBytes));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
+            });
         }
 
         [Test]
         public async Task TestDownloadFilesForABatchThatDoesNotExist()
         {
             var batchId = Guid.NewGuid().ToString();
-
-            nextResponseStatusCode = HttpStatusCode.BadRequest;
+            _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
             try
             {
-                await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
+                await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
+
                 Assert.Fail("Expected to throw an exception");
             }
             catch (Exception e)
             {
-                Assert.IsInstanceOf<HttpRequestException>(e);
+                Assert.That(e, Is.InstanceOf<HttpRequestException>());
             }
 
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+            Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
         }
 
         [Test]
         public async Task TestDownloadFilesForABatchWithAFileThatDoesNotExist()
         {
             var batchId = Guid.NewGuid().ToString();
-
-            nextResponseStatusCode = HttpStatusCode.NotFound;
+            _nextResponseStatusCode = HttpStatusCode.NotFound;
 
             try
             {
-                await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
+                await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
+
                 Assert.Fail("Expected to throw an exception");
             }
             catch (Exception e)
             {
-                Assert.IsInstanceOf<HttpRequestException>(e);
+                Assert.That(e, Is.InstanceOf<HttpRequestException>());
             }
 
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+            Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
         }
 
         [Test]
         public async Task TestGetBatchStatusForABatchThatHasBeenDeleted()
         {
             var batchId = Guid.NewGuid().ToString();
-
-            nextResponseStatusCode = HttpStatusCode.Gone;
+            _nextResponseStatusCode = HttpStatusCode.Gone;
 
             try
             {
-                await fileShareApiClient.DownloadFileAsync(batchId, "AFile.txt");
+                await _fileShareApiClient.DownloadFileAsync(batchId, "AFile.txt");
+
                 Assert.Fail("Expected to throw an exception");
             }
             catch (Exception e)
             {
-                Assert.IsInstanceOf<HttpRequestException>(e);
+                Assert.That(e, Is.InstanceOf<HttpRequestException>());
             }
 
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFile.txt", lastRequestUri.AbsolutePath);
+            Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFile.txt"));
         }
 
         [Test]
@@ -120,74 +115,85 @@ namespace UKHO.FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
 
-            await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
-            
-            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
-            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
-            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+            await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
+
+            Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+            });
         }
-
 
         [Test]
         public async Task TestBasicDownloadFileWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
-            
-            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
-            
-            Assert.IsTrue(result.IsSuccess);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
-        }
 
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
+            });
+        }
 
         [Test]
         public async Task TestDownloadFileSetsAuthorizationHeaderWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
 
-            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
-            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
-            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
-            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+            Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+            });
         }
-
 
         [Test]
         public async Task TestDownloadFilesForABatchThatDoesNotExistWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
 
-            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
-            
-            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
-        }
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
+            });
+        }
 
         [Test]
         public async Task TestDownloadFilesForABatchWithAFileThatDoesNotExistWithCancellationToken()
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
 
-            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
-            
-            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
+            });
         }
 
         [Test]
@@ -195,44 +201,52 @@ namespace UKHO.FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
 
-            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
-            
-            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
+            });
         }
 
         [Test]
         public async Task TestForDownloadFilesWhenFileSizeIsGreaterThanMaxDownlodBytes()
         {
             var batchId = Guid.NewGuid().ToString();
-            nextResponseStatusCode = HttpStatusCode.PartialContent;
-            byte[] expectedBytes = new byte[10585760];
-            nextResponse = new MemoryStream(expectedBytes); 
+            _nextResponseStatusCode = HttpStatusCode.PartialContent;
+            var expectedBytes = new byte[10585760];
+            _nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
 
-            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
-            
-            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
-            Assert.AreEqual(expectedBytes.Length, destStream.Length);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files/AFilename.txt", lastRequestUri.AbsolutePath);
-        }
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(destStream.Length, Is.EqualTo(expectedBytes.Length));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
+            });
+        }
 
         [Test]
         public async Task TestForDownloadedFilesbytesIsEqualToExpectedFileBytes()
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
             var destStream = new MemoryStream();
 
-            var result = await fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
-            Assert.AreEqual((int)nextResponseStatusCode, result.StatusCode);
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
-            Assert.AreEqual(expectedBytes.Length, destStream.Length);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(destStream.Length, Is.EqualTo(expectedBytes.Length));
+            });
         }
 
         [Test]
@@ -241,56 +255,68 @@ namespace UKHO.FileShareClientTests
             var batchId = Guid.NewGuid().ToString();
 
             var expectedBytes = new MemoryStream(Encoding.UTF8.GetBytes("Contents of a file."));
-            nextResponse = expectedBytes;
+            _nextResponse = expectedBytes;
 
-            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+            var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.AreEqual(expectedBytes, response.Data);
-            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
-            Assert.IsTrue(response.IsSuccess);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.Multiple(() =>
+            {
+                Assert.That(response.Data, Is.EqualTo(expectedBytes));
+                Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(response.IsSuccess, Is.True);
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
+            });
         }
 
         [Test]
         public async Task TestDownloadZipFileForABatchThatDoesNotExist()
         {
             var batchId = Guid.NewGuid().ToString();
-            nextResponseStatusCode = HttpStatusCode.BadRequest;
+            _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
-            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+            var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.IsNull(response.Data);
-            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
-            Assert.IsFalse(response.IsSuccess);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.Multiple(() =>
+            {
+                Assert.That(response.Data, Is.Null);
+                Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(response.IsSuccess, Is.False);
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
+            });
         }
 
         [Test]
         public async Task TestDownloadZipFileForABatchWithAFileThatDoesNotExist()
         {
             var batchId = Guid.NewGuid().ToString();
-            nextResponseStatusCode = HttpStatusCode.NotFound;
+            _nextResponseStatusCode = HttpStatusCode.NotFound;
 
-            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+            var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.IsNull(response.Data);
-            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
-            Assert.IsFalse(response.IsSuccess);
-            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.Multiple(() =>
+            {
+                Assert.That(response.Data, Is.Null);
+                Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(response.IsSuccess, Is.False);
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
+            });
         }
 
         [Test]
         public async Task TestGetBatchStatusForABatchZipFileThatHasBeenDeleted()
         {
             var batchId = Guid.NewGuid().ToString();
-            nextResponseStatusCode = HttpStatusCode.Gone;
+            _nextResponseStatusCode = HttpStatusCode.Gone;
 
-            var response = await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+            var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.IsNull(response.Data);
-            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
-            Assert.IsFalse(response.IsSuccess);            
-            Assert.AreEqual($"/basePath/batch/{batchId}/files", lastRequestUri.AbsolutePath);
+            Assert.Multiple(() =>
+            {
+                Assert.That(response.Data, Is.Null);
+                Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(response.IsSuccess, Is.False);
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
+            });
         }
 
         [Test]
@@ -298,13 +324,16 @@ namespace UKHO.FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            nextResponse = new MemoryStream(expectedBytes);
+            _nextResponse = new MemoryStream(expectedBytes);
 
-            await fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
+            await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
-            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
-            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+            Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+            });
         }
     }
 }

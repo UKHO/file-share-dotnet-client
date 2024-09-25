@@ -1,24 +1,29 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31019.35
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35303.130
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClient", "FileShareClient\FileShareClient.csproj", "{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileShareAdminClient", "FileShareAdminClient\FileShareAdminClient.csproj", "{C0DD268D-CCEC-4364-B3DC-0C96AFAA1A16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareAdminClient", "FileShareAdminClient\FileShareAdminClient.csproj", "{C0DD268D-CCEC-4364-B3DC-0C96AFAA1A16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BEA1BB14-9A1F-477C-A504-1DA2FA8F129B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientTests", "Tests\UnitTests\FileShareClientTests\FileShareClientTests.csproj", "{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileShareAdminClientTests", "Tests\UnitTests\FileShareAdminClientTests\FileShareAdminClientTests.csproj", "{46D25147-1685-4958-8546-D8634F0C0E30}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AE259067-8E64-4101-8510-E4E1F8B31E65}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Apply-AssemblyVersionAndDefaults.ps1 = Apply-AssemblyVersionAndDefaults.ps1
+		azure-pipelines.yml = azure-pipelines.yml
+		NVDSuppressions.xml = NVDSuppressions.xml
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareAdminClientTests", "Tests\UnitTests\FileShareAdminClientTests\FileShareAdminClientTests.csproj", "{B6A5A281-F07D-4717-8C1B-F24304B6F59B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientTests", "Tests\UnitTests\FileShareClientTests\FileShareClientTests.csproj", "{7A4A93A0-A56B-43BD-B9A0-F29544774DE3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientTestsCommon", "Tests\UnitTests\FileShareClientTestsCommon\FileShareClientTestsCommon.csproj", "{B605B929-E6CB-47B3-AE0F-E5B18718E794}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,26 +35,31 @@ Global
 		{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C0DD268D-CCEC-4364-B3DC-0C96AFAA1A16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C0DD268D-CCEC-4364-B3DC-0C96AFAA1A16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0DD268D-CCEC-4364-B3DC-0C96AFAA1A16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0DD268D-CCEC-4364-B3DC-0C96AFAA1A16}.Release|Any CPU.Build.0 = Release|Any CPU
-		{46D25147-1685-4958-8546-D8634F0C0E30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{46D25147-1685-4958-8546-D8634F0C0E30}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{46D25147-1685-4958-8546-D8634F0C0E30}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{46D25147-1685-4958-8546-D8634F0C0E30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6A5A281-F07D-4717-8C1B-F24304B6F59B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6A5A281-F07D-4717-8C1B-F24304B6F59B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6A5A281-F07D-4717-8C1B-F24304B6F59B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6A5A281-F07D-4717-8C1B-F24304B6F59B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A4A93A0-A56B-43BD-B9A0-F29544774DE3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A4A93A0-A56B-43BD-B9A0-F29544774DE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A4A93A0-A56B-43BD-B9A0-F29544774DE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A4A93A0-A56B-43BD-B9A0-F29544774DE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B605B929-E6CB-47B3-AE0F-E5B18718E794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B605B929-E6CB-47B3-AE0F-E5B18718E794}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B605B929-E6CB-47B3-AE0F-E5B18718E794}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B605B929-E6CB-47B3-AE0F-E5B18718E794}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{BA098D89-8FF2-48EF-BF26-C062E78B8BDA} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
 		{2FCE0ABC-9B97-4943-9B73-898CE69E4BBC} = {BEA1BB14-9A1F-477C-A504-1DA2FA8F129B}
-		{46D25147-1685-4958-8546-D8634F0C0E30} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
+		{B6A5A281-F07D-4717-8C1B-F24304B6F59B} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
+		{7A4A93A0-A56B-43BD-B9A0-F29544774DE3} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
+		{B605B929-E6CB-47B3-AE0F-E5B18718E794} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3880E4BB-4AE5-43D3-A157-0C23C2CAF13B}
