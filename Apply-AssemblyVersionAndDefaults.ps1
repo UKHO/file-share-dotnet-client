@@ -15,8 +15,9 @@ $buildNumberRegex = "(.+)_20[2-3]([0-9]{3,5})\.([0-9]{1,2})"
 $validBuildNumber = $buildNumber -match $buildNumberRegex
 
 if ($validBuildNumber -eq $false) {
-    Write-Error "Build number passed in must be in the following format: (BuildDefinitionName)_.(date:yyyyMMdd)(rev:.r)"
-    return
+    $errorMessage = "Build number passed in must be in the following format: (BuildDefinitionName)_.(date:yyyyMMdd)(rev:.r)"
+    Write-Error $errorMessage
+    throw $errorMessage
 }
 
 # Magic var $Matches comes from the above regex match statement: $buildNumber -match $buildNumberRegex
