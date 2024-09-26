@@ -13,16 +13,6 @@
   <suppress>
     <notes>
       <![CDATA[
-   file name: Microsoft.NETCore.Targets:1.1.3
-   ]]>
-    </notes>
-    <packageUrl regex="true">^pkg:nuget/Microsoft\.NETCore\.Targets@.*$</packageUrl>
-    <cve>CVE-2022-41064</cve>
-    <cve>CVE-2022-30184</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      <![CDATA[
    file name: System.Buffers:4.5.1
    ]]>
     </notes>
@@ -76,6 +66,16 @@
    ]]>
     </notes>
     <packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks@.*$</packageUrl>
+    <cve>CVE-2020-22475</cve>
+    <cve>CVE-2022-39349</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
+   file name: System.Threading.Tasks.Parallel.dll
+   ]]>
+    </notes>
+    <packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks\.Parallel@.*$</packageUrl>
     <cve>CVE-2020-22475</cve>
     <cve>CVE-2022-39349</cve>
   </suppress>
