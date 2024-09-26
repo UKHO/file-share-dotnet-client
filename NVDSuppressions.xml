@@ -50,4 +50,33 @@
     <cve>CVE-2020-22475</cve>
     <cve>CVE-2022-39349</cve>
   </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
+   file name: NETStandard.Library:2.0.3
+   ]]>
+    </notes>
+    <packageUrl regex="true">^pkg:nuget/NETStandard\.Library@.*$</packageUrl>
+    <cve>CVE-2022-41064</cve>
+    <cve>CVE-2022-30184</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
+   file name: System.Security.Cryptography.X509Certificates:4.3.0
+   ]]>
+    </notes>
+    <packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.X509Certificates@.*$</packageUrl>
+    <vulnerabilityName>CVE-2017-11770</vulnerabilityName>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
+   file name: System.Threading.Tasks.dll
+   ]]>
+    </notes>
+    <packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks@.*$</packageUrl>
+    <cve>CVE-2020-22475</cve>
+    <cve>CVE-2022-39349</cve>
+  </suppress>
 </suppressions>
