@@ -73,7 +73,7 @@ stages:
         command: restore
         projects: |
           **/*.csproj
-          !**/*Tests.csproj
+          !**/*Tests*.csproj
         feedsToUse: config
         noCache: true
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
@@ -106,7 +106,7 @@ stages:
       inputs:
         command: restore
         projects: |
-          **/*Tests.csproj
+          **/*Tests*.csproj
         feedsToUse: config
         noCache: true
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
@@ -118,14 +118,14 @@ stages:
       inputs:
         command: "build"
         projects: "**/*.csproj"
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: "dotnet test"
       inputs:
         command: "test"
         projects: "**/*Tests.csproj"
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
           
     - task: DotNetCoreCLI@2
       displayName: Pack Project
@@ -135,7 +135,7 @@ stages:
           **/FileShareClient.csproj
           **/FileShareAdminClient.csproj
         packDirectory: $(Build.ArtifactStagingDirectory)/packages
-        arguments:  '--configuration $(BuildConfiguration)'
+        arguments:  '--no-build --configuration $(BuildConfiguration)'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish Pipeline Artifact

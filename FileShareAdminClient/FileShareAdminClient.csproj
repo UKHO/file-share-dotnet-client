@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net462</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0;net48</TargetFrameworks>
     <RootNamespace>UKHO.FileShareAdminClient</RootNamespace>
     <PackageProjectUrl>https://github.com/UKHO/file-share-dotnet-client</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>UK Hydrographic Office</Authors>
     <Company>UK Hydrographic Office</Company>
     <Description>The File Share Service is the single external place for external people to download files from the UK Hydrographic Office. This package provides a .Net client to access the admin functions of the file share service.</Description>
-    <PackageId>UKHO.FileShareAdminClient</PackageId>  
+    <PackageId>UKHO.FileShareAdminClient</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +16,15 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <Reference Include="netstandard" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
     <PackageReference Include="System.Runtime" Version="4.3.1" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
   <ItemGroup>
