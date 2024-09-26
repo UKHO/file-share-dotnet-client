@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;netstandard2.0;net48</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.1;net48</TargetFrameworks>
     <RootNamespace>UKHO.FileShareAdminClient</RootNamespace>
     <PackageProjectUrl>https://github.com/UKHO/file-share-dotnet-client</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
