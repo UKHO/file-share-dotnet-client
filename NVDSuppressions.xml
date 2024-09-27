@@ -85,4 +85,12 @@
 		</notes>
 		<cve>CVE-2022-39349</cve>
 	</suppress>
+	<suppress>
+		<notes>
+			<![CDATA[
+   file name: Microsoft.JScript.dll
+   ]]>
+		</notes>
+		<cve>CVE-2016-3202</cve>
+	</suppress>
 </suppressions>
