@@ -17,6 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Apply-AssemblyVersionAndDefaults.ps1 = Apply-AssemblyVersionAndDefaults.ps1
 		azure-pipelines.yml = azure-pipelines.yml
 		BuildNuget.config = BuildNuget.config
+		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
+		.github\workflows\dependabot-work-item.yml = .github\workflows\dependabot-work-item.yml
+		.github\dependabot.yml = .github\dependabot.yml
 		NVDSuppressions.xml = NVDSuppressions.xml
 	EndProjectSection
 EndProject
