@@ -85,4 +85,13 @@
 		</notes>
 		<cve>CVE-2022-39349</cve>
 	</suppress>
+	<suppress>
+		<notes><![CDATA[
+		   file name: Microsoft.JScript.dll
+		   CVE references
+				The Microsoft (1) Chakra JavaScript, (2) JScript, and (3) VBScript engines, as used in Microsoft Internet Explorer 10 and 11 and Microsoft Edge, allow remote attackers to execute arbitrary code or cause a denial of service (memory corruption) via a crafted web site, aka "Scripting Engine Memory Corruption Vulnerability."
+		   Suppress false positive as this CVE is for JScript
+		]]></notes>
+		<cve>CVE-2016-3202</cve>
+	</suppress>
 </suppressions>
