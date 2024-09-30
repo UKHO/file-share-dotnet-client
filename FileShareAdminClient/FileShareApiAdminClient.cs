@@ -27,10 +27,10 @@ namespace UKHO.FileShareAdminClient
             params KeyValuePair<string, string>[] fileAttributes);
         Task<IResult<AddFileToBatchResponse>> AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes);
-        Task AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, 
+        Task AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, params KeyValuePair<string, string>[] fileAttributes);
         Task<IResult<AddFileToBatchResponse>> AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken, 
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes);
         Task CommitBatchAsync(IBatchHandle batchHandle);
         Task<IResult<CommitBatchResponse>> CommitBatchAsync(IBatchHandle batchHandle, CancellationToken cancellationToken);
@@ -70,31 +70,41 @@ namespace UKHO.FileShareAdminClient
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
     {
-        private readonly int maxFileBlockSize;
+        private const int DefaultMaxFileBlockSize = 4194304;
+        private readonly int _maxFileBlockSize;
 
-#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
-        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken,
-            int maxFileBlockSize = 4194304) : base(httpClientFactory, baseAddress, accessToken)
+        public FileShareApiAdminClient(string baseAddress, string accessToken) : base(baseAddress, accessToken)
         {
-            this.maxFileBlockSize = maxFileBlockSize;
+            _maxFileBlockSize = DefaultMaxFileBlockSize;
         }
 
-        public FileShareApiAdminClient(string baseAddress, string accessToken, int maxFileBlockSize = 4194304) : base(
-            baseAddress, accessToken)
+        public FileShareApiAdminClient(string baseAddress, string accessToken, int maxFileBlockSize) : base(baseAddress, accessToken)
         {
-            this.maxFileBlockSize = maxFileBlockSize;
+            _maxFileBlockSize = maxFileBlockSize;
         }
 
-        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider,
-            int maxFileBlockSize = 4194304) : base(httpClientFactory, baseAddress, authTokenProvider)
+        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken) : base(httpClientFactory, baseAddress, accessToken)
         {
-            this.maxFileBlockSize = maxFileBlockSize;
+            _maxFileBlockSize = DefaultMaxFileBlockSize;
         }
-#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
 
-        public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl,
-            CancellationToken cancellationToken = default)
-                => await SendResult<Acl, AppendAclResponse>($"batch/{batchId}/acl", HttpMethod.Post, acl, cancellationToken, HttpStatusCode.NoContent);
+        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken, int maxFileBlockSize) : base(httpClientFactory, baseAddress, accessToken)
+        {
+            _maxFileBlockSize = maxFileBlockSize;
+        }
+
+        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider) : base(httpClientFactory, baseAddress, authTokenProvider)
+        {
+            _maxFileBlockSize = DefaultMaxFileBlockSize;
+        }
+
+        public FileShareApiAdminClient(IHttpClientFactory httpClientFactory, string baseAddress, IAuthTokenProvider authTokenProvider, int maxFileBlockSize) : base(httpClientFactory, baseAddress, authTokenProvider)
+        {
+            _maxFileBlockSize = maxFileBlockSize;
+        }
+
+        public async Task<IResult<AppendAclResponse>> AppendAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default)
+            => await SendResult<Acl, AppendAclResponse>($"batch/{batchId}/acl", HttpMethod.Post, acl, cancellationToken);
 
         public async Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel)
         {
@@ -120,7 +130,7 @@ namespace UKHO.FileShareAdminClient
 
         public async Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken)
         {
-            var result = await SendResult<BatchModel, BatchHandle>($"batch", HttpMethod.Post, batchModel, cancellationToken, HttpStatusCode.Created);
+            var result = await SendResult<BatchModel, BatchHandle>($"batch", HttpMethod.Post, batchModel, cancellationToken);
             var mappedResult = new Result<IBatchHandle>
             {
                 Data = result.Data,
@@ -188,13 +198,12 @@ namespace UKHO.FileShareAdminClient
             {
                 FileDetails = ((BatchHandle)batchHandle).FileDetails
             };
-            return await SendResult<List<FileDetail>, CommitBatchResponse>(uri, HttpMethod.Put, batchCommitModel.FileDetails, cancellationToken,
-                HttpStatusCode.Accepted);
+            return await SendResult<List<FileDetail>, CommitBatchResponse>(uri, HttpMethod.Put, batchCommitModel.FileDetails, cancellationToken);
         }
 
         public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl,
             CancellationToken cancellationToken = default)
-                => await SendResult<Acl, ReplaceAclResponse>($"batch/{batchId}/acl", HttpMethod.Put, acl, cancellationToken, HttpStatusCode.NoContent);
+                => await SendResult<Acl, ReplaceAclResponse>($"batch/{batchId}/acl", HttpMethod.Put, acl, cancellationToken);
 
         public async Task RollBackBatchAsync(IBatchHandle batchHandle)
         {
@@ -209,13 +218,11 @@ namespace UKHO.FileShareAdminClient
         }
 
         public async Task<IResult<RollBackBatchResponse>> RollBackBatchAsync(IBatchHandle batchHandle, CancellationToken cancellationToken)
-            => await SendResult<IBatchHandle, RollBackBatchResponse>($"batch/{batchHandle.BatchId}", HttpMethod.Delete, null,
-                cancellationToken, HttpStatusCode.NoContent);
+            => await SendResult<IBatchHandle, RollBackBatchResponse>($"batch/{batchHandle.BatchId}", HttpMethod.Delete, null, cancellationToken);
 
-        public async Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry,
-             CancellationToken cancellationToken = default)
-                => await SendResult<BatchExpiryModel, SetExpiryDateResponse>($"batch/{batchId}/expiry", HttpMethod.Put, batchExpiry,
-                    cancellationToken, HttpStatusCode.NoContent);
+        public async Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken cancellationToken = default)
+            => await SendResult<BatchExpiryModel, SetExpiryDateResponse>($"batch/{batchId}/expiry", HttpMethod.Put, batchExpiry, cancellationToken);
+
         #region backwards compatible obsolete versions of methods that have been renamed.
 
         [Obsolete("Please use AddFileToBatch")]
@@ -292,17 +299,17 @@ namespace UKHO.FileShareAdminClient
 
             var fileBlocks = new List<string>();
             var fileBlockId = 0;
-            var expectedTotalBlockCount = (int)Math.Ceiling(stream.Length / (double)maxFileBlockSize);
+            var expectedTotalBlockCount = (int)Math.Ceiling(stream.Length / (double)_maxFileBlockSize);
             progressUpdate((0, expectedTotalBlockCount));
 
-            var buffer = new byte[maxFileBlockSize];
+            var buffer = new byte[_maxFileBlockSize];
             while (true)
 
             {
                 fileBlockId++;
                 var ms = new MemoryStream();
 
-                var read = stream.Read(buffer, 0, maxFileBlockSize);
+                var read = stream.Read(buffer, 0, _maxFileBlockSize);
                 if (read <= 0) break;
                 ms.Write(buffer, 0, read);
 
@@ -343,6 +350,7 @@ namespace UKHO.FileShareAdminClient
             }
             ((BatchHandle)batchHandle).AddFile(fileName, Convert.ToBase64String(md5Hash));
         }
+
         private async Task<IResult<AddFileToBatchResponse>> AddFiles(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
@@ -357,12 +365,15 @@ namespace UKHO.FileShareAdminClient
                 var fileModel = new FileModel()
                 { Attributes = fileAttributes ?? Enumerable.Empty<KeyValuePair<string, string>>() };
 
-                Dictionary<string, string> requestHeaders = new Dictionary<string, string>();
-                requestHeaders.Add("X-Content-Size", "" + stream.Length);
+                var requestHeaders = new Dictionary<string, string>
+                {
+                    { "X-Content-Size", "" + stream.Length }
+                };
+
                 if (!string.IsNullOrEmpty(mimeType)) requestHeaders.Add("X-MIME-Type", mimeType);
 
-                var result = await SendResult<FileModel, AddFileToBatchResponse>(fileUri, HttpMethod.Post, fileModel, cancellationToken,
-                    HttpStatusCode.Created, requestHeaders);
+                var result = await SendResult<FileModel, AddFileToBatchResponse>(fileUri, HttpMethod.Post, fileModel, cancellationToken, requestHeaders);
+
                 if (result.Errors != null && result.Errors.Any())
                 {
                     mappedResult = (Result<AddFileToBatchResponse>)result;
@@ -374,16 +385,16 @@ namespace UKHO.FileShareAdminClient
 
                     var fileBlocks = new List<string>();
                     var fileBlockId = 0;
-                    var expectedTotalBlockCount = (int)Math.Ceiling(stream.Length / (double)maxFileBlockSize);
+                    var expectedTotalBlockCount = (int)Math.Ceiling(stream.Length / (double)_maxFileBlockSize);
                     progressUpdate((0, expectedTotalBlockCount));
 
-                    var buffer = new byte[maxFileBlockSize];
+                    var buffer = new byte[_maxFileBlockSize];
                     while (true)
                     {
                         fileBlockId++;
                         var ms = new MemoryStream();
 
-                        var read = stream.Read(buffer, 0, maxFileBlockSize);
+                        var read = stream.Read(buffer, 0, _maxFileBlockSize);
                         if (read <= 0) break;
                         ms.Write(buffer, 0, read);
 
@@ -403,7 +414,7 @@ namespace UKHO.FileShareAdminClient
                             httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
                             progressUpdate((fileBlockId, expectedTotalBlockCount));
 
-                            result = await SendMessageResult<AddFileToBatchResponse>(httpRequestMessage, cancellationToken, HttpStatusCode.Created);
+                            result = await SendMessageResult<AddFileToBatchResponse>(httpRequestMessage, cancellationToken);
                             if (result.Errors != null && result.Errors.Any())
                             {
                                 mappedResult = (Result<AddFileToBatchResponse>)result;
@@ -414,8 +425,8 @@ namespace UKHO.FileShareAdminClient
                     if (!(mappedResult.Errors != null && mappedResult.Errors.Any()))
                     {
                         var writeBlockFileModel = new WriteBlockFileModel { BlockIds = fileBlocks };
-                        result = await SendResult<WriteBlockFileModel, AddFileToBatchResponse>(fileUri, HttpMethod.Put,
-                            writeBlockFileModel, cancellationToken, HttpStatusCode.NoContent);
+                        result = await SendResult<WriteBlockFileModel, AddFileToBatchResponse>(fileUri, HttpMethod.Put, writeBlockFileModel, cancellationToken);
+
                         if (result.Errors != null && result.Errors.Any())
                         {
                             mappedResult = (Result<AddFileToBatchResponse>)result;
@@ -431,12 +442,10 @@ namespace UKHO.FileShareAdminClient
             return mappedResult;
         }
 
-        private async Task<IResult<TResponse>> SendResult<TRequest, TResponse>(string uri, HttpMethod httpMethod,
-            TRequest request, CancellationToken cancellationToken, HttpStatusCode successCode, Dictionary<string, string> requestHeaders = default)
-            => await SendObjectResult<TResponse>(uri, httpMethod, request, cancellationToken, successCode, requestHeaders);
+        private async Task<IResult<TResponse>> SendResult<TRequest, TResponse>(string uri, HttpMethod httpMethod, TRequest request, CancellationToken cancellationToken, Dictionary<string, string> requestHeaders = default)
+            => await SendObjectResult<TResponse>(uri, httpMethod, request, cancellationToken, requestHeaders);
 
-        private async Task<IResult<TResponse>> SendObjectResult<TResponse>(string uri, HttpMethod httpMethod,
-            object request, CancellationToken cancellationToken, HttpStatusCode successCode, Dictionary<string, string> requestHeaders = default)
+        private async Task<IResult<TResponse>> SendObjectResult<TResponse>(string uri, HttpMethod httpMethod, object request, CancellationToken cancellationToken, Dictionary<string, string> requestHeaders = default)
         {
             var payloadJson = JsonConvert.SerializeObject(request, new IsoDateTimeConverter { DateTimeFormat = "yyyy-MM-ddTHH:mm:ss.fffK" });
             var httpContent = new StringContent(payloadJson, Encoding.UTF8, "application/json");
@@ -448,12 +457,11 @@ namespace UKHO.FileShareAdminClient
                     httpRequestMessage.Headers.Add(requestHeader.Key, requestHeader.Value);
                 }
 
-                return await SendMessageResult<TResponse>(httpRequestMessage, cancellationToken, successCode);
+                return await SendMessageResult<TResponse>(httpRequestMessage, cancellationToken);
             }
         }
 
-        private async Task<IResult<TResponse>> SendMessageResult<TResponse>(HttpRequestMessage messageToSend,
-            CancellationToken cancellationToken, HttpStatusCode successCode)
+        private async Task<IResult<TResponse>> SendMessageResult<TResponse>(HttpRequestMessage messageToSend, CancellationToken cancellationToken)
         {
             using (var httpClient = await GetAuthenticationHeaderSetClient())
             {
