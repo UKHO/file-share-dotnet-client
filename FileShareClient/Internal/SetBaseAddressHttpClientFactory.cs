@@ -5,19 +5,19 @@ namespace UKHO.FileShareClient.Internal
 {
     internal class SetBaseAddressHttpClientFactory : IHttpClientFactory
     {
-        private readonly IHttpClientFactory httpClientFactoryImplementation;
-        private readonly Uri baseAddress;
+        private readonly IHttpClientFactory _httpClientFactoryImplementation;
+        private readonly Uri _baseAddress;
 
         public SetBaseAddressHttpClientFactory(IHttpClientFactory httpClientFactoryImplementation, Uri baseAddress)
         {
-            this.httpClientFactoryImplementation = httpClientFactoryImplementation;
-            this.baseAddress = baseAddress;
+            _httpClientFactoryImplementation = httpClientFactoryImplementation;
+            _baseAddress = baseAddress;
         }
 
         public HttpClient CreateClient(string name)
         {
-            var httpClient = httpClientFactoryImplementation.CreateClient(name);
-            httpClient.BaseAddress = baseAddress;
+            var httpClient = _httpClientFactoryImplementation.CreateClient(name);
+            httpClient.BaseAddress = _baseAddress;
             return httpClient;
         }
     }

@@ -4,239 +4,211 @@
 # https://aka.ms/yaml
 name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd).$(BuildCounter)
 
+parameters:
+- name: SkipDependencyCheck
+  displayName: "Skip dependency check"
+  type: boolean
+  default: true
+
 trigger:
-  - main
-  - release/*
+- main
+- release/*
 
 pool: NautilusBuild
 
 variables:
-  - name: BuildConfiguration
-    value: "release"
-  - name: BuildPlatform
-    value: "any cpu"
-  - name: BuildCounter
-    value: $[counter(format('{0:yyyyMMdd}', pipeline.startTime), 1)]
-  - name: UKHOAssemblyCompany
-    value: "UK Hydrographic Office"
-  - name: UKHOAssemblyVersionPrefix
-    value: "1.6."
-  - name: UKHOAssemblyProduct
-    value: "File Share Dotnet Client"
-  - name: coverityPool
-    value: NautilusBuild
-  - group: Covscan-vars
-  - name: SdkVersion
-    value: "6.0.x"
-
-resources:
-  repositories:
-    - repository: covscan
-      type: github
-      name: UKHO/coverityscan-buildtemplates
-      endpoint: UKHO
-      ref: refs/heads/master
+- name: BuildConfiguration
+  value: "release"
+- name: BuildPlatform
+  value: "any cpu"
+- name: BuildCounter
+  value: $[counter(format('{0:yyyyMMdd}', pipeline.startTime), 1)]
+- name: UKHOAssemblyCompany
+  value: "UK Hydrographic Office"
+- name: UKHOAssemblyVersionPrefix
+  value: "2.0."
+- name: UKHOAssemblyProduct
+  value: "File Share Dotnet Client"
+- name: SdkVersion
+  value: "8.0.x"
 
 stages:
-  # - stage: CoverityScan
-  #   displayName: "Coverity Scan"
-  #   pool:
-  #     name: $(coverityPool)
-  #   jobs:
-  #   - job: Coverity
-  #     workspace:
-  #       clean: all
-  #     steps:
-  #       - checkout: self
-  #         submodules: recursive
-  #       - task: UseDotNet@2
-  #         displayName: 'Use .NET Core sdk'
-  #         inputs:
-  #           packageType: sdk
-  #           version: 3.1.x
-  #           installationPath: $(Agent.ToolsDirectory)/dotnet
-  #       - checkout: covscan
-  #       - template: dotnet-cov.yml@covScan
-  #         parameters:
-  #           CovHostUrl: "$(CovHostUrl)"
-  #           CovUser: "$(CovUser)"
-  #           CovPwd: "$(CovPwd)"
-  #           StreamName: "file-share-dotnet-client"
-  #           BuildCommand: "$(Build.Repository.LocalPath)/file-share-dotnet-client/FileShareAdminClient/FileShareAdminClient.csproj"
-  #           StripPath: $(Build.Repository.LocalPath)/file-share-dotnet-client
-  #           CoverityScanPath: $(Build.Repository.LocalPath)/coverityscan-buildtemplates
+- stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
+  displayName: "Build (inc DependencyChecker, Dotnet Build, dotnet test and publish artifact )"
+  dependsOn: []
+  jobs:
+  - job:
+    workspace:
+      clean: all
+    displayName: "DependencyChecker Dotnet Build test publish"
 
+    steps:
+    - task: PowerShell@2
+      displayName: "Output Environment Variables"
+      inputs:
+        targetType: inline
+        script: |
+          gci env:
+          $CurrentYear = Get-Date -Format "yyyy"
+          $AssemblyCopyright = "Copyright © UK Hydrographic  Office $CurrentYear"
+          echo "##vso[task.setvariable variable=UKHOAssemblyCopyright]${AssemblyCopyright}"
 
-  - stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
-    displayName: "Build (inc DependencyChecker, Dotnet Build , dotnet test and publish artifact )"
-    dependsOn: []
-    jobs:
-      - job:
-        workspace:
-          clean: all # what to clean up before the job runs outputs | resources | all
-        displayName: "DependencyChecker Dotnet Build test publish"
-
-        steps:
-          - task: PowerShell@2
-            displayName: "Output Environment Variables"
-            inputs:
-              targetType: inline
-              script: |
-                gci env:
-                $CurrentYear = Get-Date -Format "yyyy"
-                $AssemblyCopyright = "Copyright © UK Hydrographic  Office $CurrentYear"
-                echo "##vso[task.setvariable variable=UKHOAssemblyCopyright]${AssemblyCopyright}"
-
-          - task: PowerShell@2
-            displayName: "Set assembly version numbers based on build ID"
-            inputs:
-              targetType: filePath
-              filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
-              arguments: >
-                -buildNumber "$(Build.BuildNumber)" 
-                -solutionDirectory "$(Build.SourcesDirectory)\" 
-                -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" 
-                -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright" 
-                -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" 
-                -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"
-                -SourceRevisionId "$(Build.SourceVersion)" 
+    - task: PowerShell@2
+      displayName: "Set assembly version numbers based on build ID"
+      inputs:
+        targetType: filePath
+        filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
+        arguments: >
+          -buildNumber "$(Build.BuildNumber)" 
+          -solutionDirectory "$(Build.SourcesDirectory)\" 
+          -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" 
+          -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright" 
+          -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" 
+          -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"
+          -SourceRevisionId "$(Build.SourceVersion)" 
           
+    - task: UseDotNet@2
+      displayName: 'Use .NET $(SdkVersion) sdk'
+      inputs:
+        packageType: sdk
+        version: $(SdkVersion)
+
+    - task: DotNetCoreCLI@2
+      displayName: ".Net Core - NuGet restore non-test projects"
+      inputs:
+        command: restore
+        projects: |
+          **/*.csproj
+          !**/*Tests*.csproj
+        feedsToUse: config
+        noCache: true
+        nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+        workingDirectory: '$(Build.SourcesDirectory)'
+        packagesDirectory: '$(Build.SourcesDirectory)\packages'
+
+    - task: CmdLine@1
+      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
+      displayName: "Run OWASP Dependency Checker"
+      inputs:
+        filename: 'dependency-check.bat'
+        arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
+
+    - task: PublishBuildArtifacts@1
+      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
+      displayName: "Publish Artifact: OWASP Dependency Checker Report"
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
+        ArtifactName: "OWASP Dependency Checker Report"
+
+    - task: PowerShell@1
+      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
+      displayName: "Fail Build if Dependency Check Finds Any Vulnerabilities"
+      inputs:
+        scriptType: inlineScript
+        arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
+        inlineScript: |
+          param($ReportLocation)
+          Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
+
+    - task: DotNetCoreCLI@2
+      displayName: ".Net Core - NuGet restore for test projects"
+      inputs:
+        command: restore
+        projects: |
+          **/*Tests*.csproj
+        feedsToUse: config
+        noCache: true
+        nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+        workingDirectory: '$(Build.SourcesDirectory)'
+        packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
+    
+    - task: DotNetCoreCLI@2
+      displayName: "dotnet build"
+      inputs:
+        command: "build"
+        projects: "**/*.csproj"
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: "dotnet test"
+      inputs:
+        command: "test"
+        projects: "**/*Tests.csproj"
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+          
+    - task: DotNetCoreCLI@2
+      displayName: Pack Project
+      inputs:
+        command: pack
+        projects: |
+          **/FileShareClient.csproj
+          **/FileShareAdminClient.csproj
+        packDirectory: $(Build.ArtifactStagingDirectory)/packages
+        arguments:  '--no-build --configuration $(BuildConfiguration)'
+
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Pipeline Artifact
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)
+        artifact: $(Build.DefinitionName)
+          
+    - task: PublishPipelineArtifact@1
+      displayName: Publish NuGet Package Artifacts
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)/packages
+        artifact: NuGetPackages
+
+- stage: Proget
+  variables:
+  - group: nuget-deployment-vars
+  jobs:
+  - deployment: Publish_To_ProGetCloud
+    displayName: Publish To ProGetCloud
+    pool:
+      name: NautilusRelease
+    environment: FileShareDotNetClient-ProGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:              
           - task: UseDotNet@2
             displayName: 'Use .NET $(SdkVersion) sdk'
             inputs:
               packageType: sdk
               version: $(SdkVersion)
 
-          - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore non-test projects"
-            inputs:
-              command: restore
-              projects: |
-                **/*.csproj
-                !**/*Tests.csproj
-              feedsToUse: config
-              noCache: true
-              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-              workingDirectory: '$(Build.SourcesDirectory)'
-              packagesDirectory: '$(Build.SourcesDirectory)\packages'
+          - download: current
+            artifact: NuGetPackages
 
-          - task: CmdLine@1
-            displayName: "Run OWASP Dependency Checker"
-            inputs:
-              filename: 'dependency-check.bat'
-              arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish Artifact: OWASP Dependency Checker Report"
-            inputs:
-              PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
-              ArtifactName: "OWASP Dependency Checker Report"
-
-          - task: PowerShell@1
-            displayName: "Fail Build if Dependency Check Finds Any Vulnerabilities"
-            inputs:
-              scriptType: inlineScript
-              arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
-              inlineScript: |
-                param($ReportLocation)
-                Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
-
-          - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore for test projects"
-            inputs:
-              command: restore
-              projects: |
-                **/*Tests.csproj
-              feedsToUse: config
-              noCache: true
-              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-              workingDirectory: '$(Build.SourcesDirectory)'
-              packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
-    
-          - task: DotNetCoreCLI@2
-            displayName: "dotnet build"
-            inputs:
-              command: "build"
-              projects: "**/*.csproj"
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-
-          - task: DotNetCoreCLI@2
-            displayName: "dotnet test"
-            inputs:
-              command: "test"
-              projects: "**/*Tests.csproj"
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-          
-          - task: DotNetCoreCLI@2
-            displayName: Pack Project
-            inputs:
-              command: pack
-              projects: |
-                **/FileShareClient.csproj
-                **/FileShareAdminClient.csproj
-              packDirectory: $(Build.ArtifactStagingDirectory)/packages
-              arguments:  '--configuration $(BuildConfiguration)'
-
-          - task: PublishPipelineArtifact@1
-            displayName: Publish Pipeline Atrifact
-            inputs:
-              path: $(Build.ArtifactStagingDirectory)
-              artifact: $(Build.DefinitionName)
-          
-          - task: PublishPipelineArtifact@1
-            displayName: Publish NuGet Package Artifacts
-            inputs:
-              path: $(Build.ArtifactStagingDirectory)/packages
-              artifact: NuGetPackages
-
-  - stage: Proget
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))   
-    variables:
-      - group: nuget-deployment-vars
-    jobs:
-    - deployment: Publish_To_ProGetCloud
-      displayName: Publish To ProGetCloud
-      pool:
-        name: NautilusRelease
-      environment: FileShareDotNetClient-ProGet
-      strategy:
-        runOnce:
-          deploy:
-            steps:              
-            - task: UseDotNet@2
-              displayName: 'Use .NET $(SdkVersion) sdk'
-              inputs:
-                packageType: sdk
-                version: $(SdkVersion)
-            - download: current
-              artifact: NuGetPackages
-            - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(progetApiKey) -s https://progetcloud.ukho.gov.uk/nuget/ukho.trusted/v3/index.json }
-              env:
-                progetApiKey : $(progetApiKey)
-              displayName: Publish Package
+          - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(progetApiKey) -s https://progetcloud.ukho.gov.uk/nuget/ukho.trusted/v3/index.json }
+            env:
+              progetApiKey : $(progetApiKey)
+            displayName: Publish Package
             
-  - stage: Nuget
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-    variables:
-      - group: nuget-deployment-vars
-    jobs:
-      - deployment: Publish_To_NuGet
-        displayName: Publish To NuGet
-        pool: 
-          name: NautilusRelease
-        environment: FileShareDotNetClient-NuGet
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-              - task: UseDotNet@2
-                displayName: 'Use .NET $(SdkVersion) sdk'
-                inputs:
-                  packageType: sdk
-                  version: $(SdkVersion)
-              - download: current
-                artifact: NuGetPackages
-              - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/UKHO.FileShareClient.*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true}
-                env:
-                  nugetApiKey : $(nugetApiKey)
-                displayName: Publish Package
+- stage: Nuget
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  variables:
+  - group: nuget-deployment-vars
+  jobs:
+  - deployment: Publish_To_NuGet
+    displayName: Publish To NuGet
+    pool: 
+      name: NautilusRelease
+    environment: FileShareDotNetClient-NuGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET $(SdkVersion) sdk'
+            inputs:
+              packageType: sdk
+              version: $(SdkVersion)
+
+          - download: current
+            artifact: NuGetPackages
+
+          - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/UKHO.FileShareClient.*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true}
+            env:
+              nugetApiKey : $(nugetApiKey)
+            displayName: Publish Package

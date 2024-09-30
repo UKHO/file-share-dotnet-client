@@ -1,46 +1,37 @@
-﻿using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Net;
+using FileShareClientTestsCommon.Helpers;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Models;
-using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareClientTests
+namespace FileShareClientTests
 {
     public class BatchAttributeSearchTests
     {
-        private object nextResponse;
-        private IFileShareApiClient fileShareApiClient;
-        private HttpStatusCode nextResponseStatusCode;
-        private Uri lastRequestUri;
-        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private object _nextResponse;
+        private FileShareApiClient _fileShareApiClient;
+        private HttpStatusCode _nextResponseStatusCode;
+        private Uri? _lastRequestUri;
+        private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
-
 
         [SetUp]
         public void Setup()
         {
-            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
-                lastRequestUri = request.RequestUri;
-                return (nextResponseStatusCode, nextResponse);
+                _lastRequestUri = request.RequestUri;
+                return (_nextResponseStatusCode, _nextResponse);
             });
-            nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.OK;
 
-            var config = new
-            {
-                BaseAddress = @"https://fss-tests.net/basePath/",
-                AccessToken = DUMMY_ACCESS_TOKEN
-            };
+            _nextResponse = new object();
+            _nextResponseStatusCode = HttpStatusCode.OK;
+            _fileShareApiClient = new FileShareApiClient(_fakeFssHttpClientFactory, @"https://fss-tests.net/basePath/", DUMMY_ACCESS_TOKEN);
+        }
 
-
-            fileShareApiClient =
-                new FileShareApiClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
+        [TearDown]
+        public void TearDown()
+        {
+            _fakeFssHttpClientFactory.Dispose();
         }
 
         [Test]
@@ -51,16 +42,17 @@ namespace UKHO.FileShareClientTests
             var expectedResponse = new BatchAttributesSearchResponse
             {
                 SearchBatchCount = 2,
-                BatchAttributes = new List<BatchAttributesSearchAttribute>
-                    {
-                        new BatchAttributesSearchAttribute("Attribute1",firstAttributesList), new BatchAttributesSearchAttribute("Attribute2",secondAttributesList)
-                    }
-
+                BatchAttributes = [new BatchAttributesSearchAttribute("Attribute1", firstAttributesList), new BatchAttributesSearchAttribute("Attribute2", secondAttributesList)]
             };
-            nextResponse = expectedResponse;
-            var response = await fileShareApiClient.BatchAttributeSearchAsync("", cancellationToken: CancellationToken.None);
-            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("", lastRequestUri.Query, "Should be no query string for an empty search");
+            _nextResponse = expectedResponse;
+
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("", cancellationToken: CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query string for an empty search");
+            });
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -70,21 +62,20 @@ namespace UKHO.FileShareClientTests
         {
             var firstAttributesList = new List<string> { "string1", "string2" };
             var secondAttributesList = new List<string> { "string3", "string4" };
-
             var expectedResponse = new BatchAttributesSearchResponse
             {
                 SearchBatchCount = 2,
-                BatchAttributes = new List<BatchAttributesSearchAttribute>
-                    {
-                        new BatchAttributesSearchAttribute("Attribute1",firstAttributesList), new BatchAttributesSearchAttribute("Attribute2",secondAttributesList)
-                    },
-
+                BatchAttributes = [new BatchAttributesSearchAttribute("Attribute1", firstAttributesList), new BatchAttributesSearchAttribute("Attribute2", secondAttributesList)]
             };
-            nextResponse = expectedResponse;
+            _nextResponse = expectedResponse;
 
-            var response = await fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
-            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
+            });
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -94,14 +85,18 @@ namespace UKHO.FileShareClientTests
         {
             var expectedResponse = new BatchAttributesSearchResponse
             {
-                BatchAttributes = new List<BatchAttributesSearchAttribute>(),
+                BatchAttributes = [],
                 SearchBatchCount = 0
             };
-            nextResponse = expectedResponse;
+            _nextResponse = expectedResponse;
 
-            var response = await fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
-            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
+            });
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -112,38 +107,49 @@ namespace UKHO.FileShareClientTests
             var expectedResponse = new BatchAttributesSearchResponse
             {
                 SearchBatchCount = 0,
-                BatchAttributes = new List<BatchAttributesSearchAttribute>()
+                BatchAttributes = []
             };
 
-            await fileShareApiClient.BatchAttributeSearchAsync("", cancellationToken: CancellationToken.None);
+            await _fileShareApiClient.BatchAttributeSearchAsync("", cancellationToken: CancellationToken.None);
 
-            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
-            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
-            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+            Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+            });
         }
 
         [Test]
         public async Task TestSimpleSearchQueryForBadRequest()
         {
-            nextResponseStatusCode = HttpStatusCode.BadRequest;
+            _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
-            var response = await fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
-            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
-            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
-            Assert.IsFalse(response.IsSuccess);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
+                Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(response.IsSuccess, Is.False);
+            });
         }
 
         [Test]
         public async Task TestSimpleSearchQueryForInternalServerError()
         {
-            nextResponseStatusCode = HttpStatusCode.InternalServerError;
+            _nextResponseStatusCode = HttpStatusCode.InternalServerError;
 
-            var response = await fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
-            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27", lastRequestUri.Query);
-            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
-            Assert.IsFalse(response.IsSuccess);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
+                Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(response.IsSuccess, Is.False);
+            });
         }
 
         [Test]
@@ -157,7 +163,8 @@ namespace UKHO.FileShareClientTests
                 Values = colourList
             };
             var attributeValues = searchBatchAttributes.ToString();
-            Assert.AreEqual("class BatchAttributesSearchAttribute {\n Key: Colour\n Values: red, blue\n}\n", attributeValues);
+
+            Assert.That(attributeValues, Is.EqualTo("class BatchAttributesSearchAttribute {\n Key: Colour\n Values: red, blue\n}\n"));
         }
 
         #region BatchSearch with MaxAttributeValueCount
@@ -169,45 +176,54 @@ namespace UKHO.FileShareClientTests
         [TestCase(1000)]
         public async Task DoesBatchAttributeSearchReturnsSucessWithMaxAttributeValueCountandFilter(int maxAttributeValueCount)
         {
-            var response = await fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", maxAttributeValueCount, cancellationToken: CancellationToken.None);
-            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount="+maxAttributeValueCount, lastRequestUri.Query);
-            Assert.IsTrue(response.IsSuccess);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", maxAttributeValueCount, cancellationToken: CancellationToken.None);
 
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount=" + maxAttributeValueCount));
+                Assert.That(response.IsSuccess, Is.True);
+            });
         }
 
         [Test]
         public async Task DoesBatchAttributeSearchReturnsBadRequestWithMaxAttributeValueCountZeroandFilter()
         {
-            int MaxAttributeValueCount = 0;
-            nextResponseStatusCode = HttpStatusCode.BadRequest;
+            var MaxAttributeValueCount = 0;
+            _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
-            var response = await fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", MaxAttributeValueCount, cancellationToken: CancellationToken.None);
-            Assert.AreEqual("/basePath/attributes/search", lastRequestUri.AbsolutePath);
-            Assert.AreEqual("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount=0", lastRequestUri.Query);
-            Assert.AreEqual((int)nextResponseStatusCode, response.StatusCode);
-            Assert.IsFalse(response.IsSuccess);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", MaxAttributeValueCount, cancellationToken: CancellationToken.None);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes/search"));
+                Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27&maxAttributeValueCount=0"));
+                Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(response.IsSuccess, Is.False);
+            });
         }
 
         #endregion
 
         #region Private method
-        private void CheckResponseMatchesExpectedResponse(BatchAttributesSearchResponse expectedResponse,
-            BatchAttributesSearchResponse response)
+
+        private static void CheckResponseMatchesExpectedResponse(BatchAttributesSearchResponse expectedResponse, BatchAttributesSearchResponse response)
         {
-            Assert.AreEqual(expectedResponse.SearchBatchCount, response.SearchBatchCount);
-            for (int i = 0; i < expectedResponse.BatchAttributes.Count; i++)
+            Assert.That(response.SearchBatchCount, Is.EqualTo(expectedResponse.SearchBatchCount));
+
+            for (var i = 0; i < expectedResponse.BatchAttributes.Count; i++)
             {
                 var expectedBatchAttribute = expectedResponse.BatchAttributes[i];
                 var actualBatchAttribute = response.BatchAttributes[i];
-                Assert.AreEqual(expectedBatchAttribute.Key, actualBatchAttribute.Key);
-                for (int j = 0; j < expectedBatchAttribute.Values.Count; j++)
+                Assert.That(actualBatchAttribute.Key, Is.EqualTo(expectedBatchAttribute.Key));
+
+                for (var j = 0; j < expectedBatchAttribute.Values.Count; j++)
                 {
-                    Assert.AreEqual(expectedBatchAttribute.Values[j], actualBatchAttribute.Values[j]);
+                    Assert.That(actualBatchAttribute.Values[j], Is.EqualTo(expectedBatchAttribute.Values[j]));
                 }
             }
         }
-        #endregion
 
+        #endregion
     }
 }

@@ -1,100 +1,112 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using System.Net;
+using FileShareClientTestsCommon.Helpers;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
-using UKHO.FileShareAdminClient.Models.Response;
 using UKHO.FileShareClient.Models;
-using UKHO.FileShareClientTests.Helpers;
 
-namespace UKHO.FileShareAdminClientTests
+namespace FileShareAdminClientTests
 {
     public class CreateBatchTests
     {
-        private object nextResponse;
-        private IFileShareApiAdminClient fileShareApiClient;
-        private HttpStatusCode nextResponseStatusCode;
-        private Uri lastRequestUri;
-        private List<string> lastRequestBodies;
-        private FakeFssHttpClientFactory fakeHttpClientFactory;
+        private object _nextResponse;
+        private FileShareApiAdminClient _fileShareApiAdminClient;
+        private HttpStatusCode _nextResponseStatusCode;
+        private Uri? _lastRequestUri;
+        private List<string?> _lastRequestBodies;
+        private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
-            fakeHttpClientFactory = new FakeFssHttpClientFactory(request =>
+            _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
-                lastRequestUri = request.RequestUri;
+                _lastRequestUri = request.RequestUri;
+
                 if (request.Content is StringContent content && request.Content.Headers.ContentLength.HasValue)
-                    lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                {
+                    _lastRequestBodies.Add(content.ReadAsStringAsync().Result);
+                }
                 else
-                    lastRequestBodies.Add(null);
-                return (nextResponseStatusCode, nextResponse);
+                {
+                    _lastRequestBodies.Add(null);
+                }
+
+                return (_nextResponseStatusCode, _nextResponse);
             });
-            nextResponse = null;
-            nextResponseStatusCode = HttpStatusCode.Created;
-            lastRequestUri = null;
-            lastRequestBodies = new List<string>();
 
-            var config = new
-            {
-                BaseAddress = @"https://fss-tests.net",
-                AccessToken = DUMMY_ACCESS_TOKEN
-            };
+            _nextResponse = new object();
+            _nextResponseStatusCode = HttpStatusCode.Created;
+            _lastRequestUri = null;
+            _lastRequestBodies = [];
+            _fileShareApiAdminClient = new FileShareApiAdminClient(_fakeFssHttpClientFactory, @"https://fss-tests.net", DUMMY_ACCESS_TOKEN);
+        }
 
-            fileShareApiClient =
-                new FileShareApiAdminClient(fakeHttpClientFactory, config.BaseAddress, config.AccessToken);
+        [TearDown]
+        public void TearDown()
+        {
+            _fakeFssHttpClientFactory.Dispose();
         }
 
         [Test]
         public async Task TestCreateNewBatch()
         {
             var expectedBatchId = "newBatchId";
-            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
-            Assert.IsNotNull(batchHandle);
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
 
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+
+            Assert.That(batchHandle, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
+            });
         }
 
         [Test]
         public async Task TestCreateNewBatchWithCancellationToken()
         {
             var expectedBatchId = "newBatchId";
-            nextResponse = new BatchHandle(expectedBatchId);
-            var createBatchResult = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
-            Assert.IsNotNull(createBatchResult);
-            Assert.AreEqual(expectedBatchId, createBatchResult.Data.BatchId);
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
+            _nextResponse = new BatchHandle(expectedBatchId);
+
+            var createBatchResult = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+
+            Assert.That(createBatchResult, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(createBatchResult.Data.BatchId, Is.EqualTo(expectedBatchId));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
+            });
         }
 
         [Test]
         public async Task TestCreateNewBatchWithCancellationTokenWithInvalidBusinessUnit()
-        {            
-            nextResponse = new Result<BatchHandle>() { IsSuccess = false, StatusCode = 400, Errors = new List<Error>() { new Error() { Description = "Business Unit is invalid", Source = "BusinessUnit" } }, Data = new BatchHandle(null) };
-            nextResponseStatusCode = HttpStatusCode.BadRequest;
-            var createBatchResult = await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
-            Assert.IsNull(createBatchResult.Data);
-            Assert.AreEqual(createBatchResult.StatusCode, (int)nextResponseStatusCode);
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
-            Assert.AreEqual(createBatchResult.Errors[0].Description, "Business Unit is invalid");
+        {
+            _nextResponse = new Result<BatchHandle> { IsSuccess = false, StatusCode = 400, Errors = [new Error { Description = "Business Unit is invalid", Source = "BusinessUnit" }], Data = new BatchHandle(null) };
+            _nextResponseStatusCode = HttpStatusCode.BadRequest;
+
+            var createBatchResult = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+
+            Assert.That(createBatchResult, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(createBatchResult.Data, Is.Null);
+                Assert.That(createBatchResult.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
+                Assert.That(createBatchResult.Errors[0].Description, Is.EqualTo("Business Unit is invalid"));
+            });
         }
 
         [Test]
         public async Task TestCreateNewBatchWithAttributesExpiryDateAndAcl()
         {
             var expectedBatchId = "newBatchId";
-            nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
+            _nextResponse = new CreateBatchResponseModel { BatchId = expectedBatchId };
             var batchModel = new BatchModel
             {
                 BusinessUnit = "TestUnit",
-                Acl = new Acl()
+                Acl = new Acl
                 {
                     ReadGroups = new List<string> { "public" },
                     ReadUsers = new List<string> { "userA", "userB" }
@@ -103,90 +115,104 @@ namespace UKHO.FileShareAdminClientTests
                 ExpiryDate = DateTime.UtcNow
             };
 
-            var batchHandle = await fileShareApiClient.CreateBatchAsync(batchModel);
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(batchModel);
 
-            Assert.IsNotNull(batchHandle);
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
-
-            Assert.AreEqual("/batch", lastRequestUri.AbsolutePath);
-            var actualRequest = lastRequestBodies.Single().DeserialiseJson<BatchModel>();
-
-            Assert.AreEqual(batchModel.BusinessUnit, actualRequest.BusinessUnit);
-            CollectionAssert.AreEqual(batchModel.Attributes, actualRequest.Attributes);
-            CollectionAssert.AreEqual(batchModel.Acl.ReadGroups, actualRequest.Acl.ReadGroups);
-            CollectionAssert.AreEqual(batchModel.Acl.ReadUsers, actualRequest.Acl.ReadUsers);
-            Assert.AreEqual(batchModel.ExpiryDate.Value.TruncateToMilliseconds(), actualRequest.ExpiryDate);
+            Assert.That(batchHandle, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
+                Assert.That(_lastRequestBodies, Has.Count.EqualTo(1));
+            });
+            var actualRequest = _lastRequestBodies[0]?.DeserialiseJson<BatchModel>();
+            Assert.That(actualRequest, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequest.BusinessUnit, Is.EqualTo(batchModel.BusinessUnit));
+                Assert.That(actualRequest.Attributes, Is.EqualTo(batchModel.Attributes));
+                Assert.That(actualRequest.Acl.ReadGroups, Is.EqualTo(batchModel.Acl.ReadGroups));
+                Assert.That(actualRequest.Acl.ReadUsers, Is.EqualTo(batchModel.Acl.ReadUsers));
+                Assert.That(actualRequest.ExpiryDate, Is.EqualTo(batchModel.ExpiryDate.Value.TruncateToMilliseconds()));
+            });
         }
 
         [Test]
         public async Task TestGetStatusOfNewBatch()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel
+            _nextResponse = new CreateBatchResponseModel
             {
                 BatchId = expectedBatchId
             };
 
-            var batchHandle =
-                await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
 
-            Assert.IsNotNull(batchHandle);
-            Assert.AreEqual(expectedBatchId, batchHandle.BatchId);
-            nextResponse = new BatchStatusResponse
+            Assert.That(batchHandle, Is.Not.Null);
+            Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
+
+            _nextResponse = new BatchStatusResponse
             {
                 BatchId = expectedBatchId,
                 Status = BatchStatusResponse.StatusEnum.Incomplete
             };
-            nextResponseStatusCode = HttpStatusCode.OK;
-            lastRequestUri = null;
+            _nextResponseStatusCode = HttpStatusCode.OK;
+            _lastRequestUri = null;
 
-            var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchHandle);
-            Assert.AreEqual(BatchStatusResponse.StatusEnum.Incomplete, batchStatusResponse.Status);
-            Assert.AreEqual(expectedBatchId, batchStatusResponse.BatchId);
+            var batchStatusResponse = await _fileShareApiAdminClient.GetBatchStatusAsync(batchHandle);
 
-            // ReSharper disable once PossibleNullReferenceException - Will have been set during fileShareApiClient.GetBatchStatusAsync
-            Assert.AreEqual($"/batch/{expectedBatchId}/status", lastRequestUri.AbsolutePath);
+            Assert.Multiple(() =>
+            {
+                Assert.That(batchStatusResponse.Status, Is.EqualTo(BatchStatusResponse.StatusEnum.Incomplete));
+                Assert.That(batchStatusResponse.BatchId, Is.EqualTo(expectedBatchId));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/batch/{expectedBatchId}/status"));
+            });
         }
 
         [Test]
         public async Task TestGetStatusOfNewBatchWithCancellationToken()
         {
             var expectedBatchId = Guid.NewGuid().ToString();
-            nextResponse = new CreateBatchResponseModel
+            _nextResponse = new CreateBatchResponseModel
             {
                 BatchId = expectedBatchId
             };
 
-            var batchHandle =
-                await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
 
-            Assert.IsNotNull(batchHandle);
-            Assert.AreEqual(expectedBatchId, batchHandle.Data.BatchId);
-            nextResponse = new BatchStatusResponse
+            Assert.That(batchHandle, Is.Not.Null);
+            Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
+
+            _nextResponse = new BatchStatusResponse
             {
                 BatchId = expectedBatchId,
                 Status = BatchStatusResponse.StatusEnum.Incomplete
             };
-            nextResponseStatusCode = HttpStatusCode.OK;
-            lastRequestUri = null;
+            _nextResponseStatusCode = HttpStatusCode.OK;
+            _lastRequestUri = null;
 
-            var batchStatusResponse = await fileShareApiClient.GetBatchStatusAsync(batchHandle.Data);
-            Assert.AreEqual(BatchStatusResponse.StatusEnum.Incomplete, batchStatusResponse.Status);
-            Assert.AreEqual(expectedBatchId, batchStatusResponse.BatchId);
+            var batchStatusResponse = await _fileShareApiAdminClient.GetBatchStatusAsync(batchHandle.Data);
 
-            // ReSharper disable once PossibleNullReferenceException - Will have been set during fileShareApiClient.GetBatchStatusAsync
-            Assert.AreEqual($"/batch/{expectedBatchId}/status", lastRequestUri.AbsolutePath);
+            Assert.Multiple(() =>
+            {
+                Assert.That(batchStatusResponse.Status, Is.EqualTo(BatchStatusResponse.StatusEnum.Incomplete));
+                Assert.That(batchStatusResponse.BatchId, Is.EqualTo(expectedBatchId));
+                Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/batch/{expectedBatchId}/status"));
+            });
         }
 
         [Test]
         public async Task TestCreateNewBatchSetsAuthorizationHeader()
         {
-            nextResponse = new CreateBatchResponseModel { BatchId = "newBatchId" };
-            await fileShareApiClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+            _nextResponse = new CreateBatchResponseModel { BatchId = "newBatchId" };
 
-            Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
-            Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
-            Assert.AreEqual(DUMMY_ACCESS_TOKEN, fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter);
+            await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
+
+            Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
+                Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+            });
         }
     }
 }

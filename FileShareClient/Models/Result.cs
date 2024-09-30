@@ -51,11 +51,13 @@ namespace UKHO.FileShareClient.Models
 
         private static async Task<IResult<U>> CreateResultAsync<U>(HttpResponseMessage response, U data)
         {
-            var result = new Result<U>();
-            result.IsSuccess = response.IsSuccessStatusCode;
-            result.StatusCode = (int)response.StatusCode;
-            result.Data = data;
-            result.Errors = new List<Error>();
+            var result = new Result<U>
+            {
+                IsSuccess = response.IsSuccessStatusCode,
+                StatusCode = (int)response.StatusCode,
+                Data = data,
+                Errors = new List<Error>()
+            };
 
             if (response.Content != null && !response.IsSuccessStatusCode)
             {

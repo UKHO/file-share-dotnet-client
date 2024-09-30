@@ -17,16 +17,16 @@ namespace UKHO.FileShareClient
 
     internal class DefaultAuthTokenProvider : IAuthTokenProvider
     {
-        private readonly string accessToken;
+        private readonly string _accessToken;
 
         public DefaultAuthTokenProvider(string accessToken)
         {
-            this.accessToken = accessToken;
+            _accessToken = accessToken;
         }
 
         public Task<string> GetTokenAsync()
         {
-            return Task.FromResult(accessToken);
+            return Task.FromResult(_accessToken);
         }
 
         #region backwards compatible obsolete versions of methods that have been renamed.
