@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Net;
 using Newtonsoft.Json;
-using NUnit.Framework;
 using UKHO.FileShareClient.Models;
 
-namespace UKHO.FileShareClientTests
+namespace FileShareClientTests
 {
     [TestFixture]
     public class ResultTests
@@ -18,50 +12,66 @@ namespace UKHO.FileShareClientTests
         public async Task WithStreamData_Success(HttpStatusCode statusCode)
         {
             var stream = new MemoryStream();
-            var response = new HttpResponseMessage { StatusCode = statusCode };
-            response.Content = new StreamContent(stream);
+            var response = new HttpResponseMessage
+            {
+                StatusCode = statusCode,
+                Content = new StreamContent(stream)
+            };
 
             var result = await Result.WithStreamData(response);
 
-            Assert.AreEqual(result.Data, stream);
-            Assert.AreEqual(result.StatusCode, (int)statusCode);
-            Assert.IsTrue(result.IsSuccess);
-            Assert.IsEmpty(result.Errors);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Data, Is.EqualTo(stream));
+                Assert.That(result.StatusCode, Is.EqualTo((int)statusCode));
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.Errors, Has.Count.EqualTo(0));
+            });
         }
 
         [TestCase(HttpStatusCode.OK)]
         [TestCase(HttpStatusCode.PartialContent)]
         public async Task WithObjectData_Success(HttpStatusCode statusCode)
         {
-            var content = new List<string>{ "One", "Two" };
-                        
-            var response = new HttpResponseMessage { StatusCode = statusCode };
-            response.Content = new StringContent(JsonConvert.SerializeObject(content));
+            var content = new List<string> { "One", "Two" };
+            var response = new HttpResponseMessage
+            {
+                StatusCode = statusCode,
+                Content = new StringContent(JsonConvert.SerializeObject(content))
+            };
 
             var result = await Result.WithObjectData<List<string>>(response);
 
-            Assert.AreEqual(result.Data[0], content[0]);
-            Assert.AreEqual(result.Data[1], content[1]);
-            Assert.AreEqual(result.StatusCode, (int)statusCode);
-            Assert.IsTrue(result.IsSuccess);
-            Assert.IsEmpty(result.Errors);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Data[0], Is.EqualTo(content[0]));
+                Assert.That(result.Data[1], Is.EqualTo(content[1]));
+                Assert.That(result.StatusCode, Is.EqualTo((int)statusCode));
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.Errors, Has.Count.EqualTo(0));
+            });
         }
 
         [TestCase(HttpStatusCode.OK)]
         [TestCase(HttpStatusCode.PartialContent)]
         public async Task WithNullData_Success(HttpStatusCode statusCode)
         {
-            var response = new HttpResponseMessage { StatusCode = statusCode };
-            response.Content = new StringContent("this content is ignored");
+            var response = new HttpResponseMessage
+            {
+                StatusCode = statusCode,
+                Content = new StringContent("this content is ignored")
+            };
 
             var result = await Result.WithNullData<string>(response);
 
-            Assert.IsNull(result.Data);
-            Assert.AreEqual(result.StatusCode, (int)statusCode);
-            Assert.IsTrue(result.IsSuccess);
-            Assert.IsEmpty(result.Errors);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Data, Is.Null);
+                Assert.That(result.StatusCode, Is.EqualTo((int)statusCode));
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.Errors, Has.Count.EqualTo(0));
+            });
         }
-
 
         [Test]
         public async Task NonSuccess_ErrorContent()
@@ -83,67 +93,81 @@ namespace UKHO.FileShareClientTests
                 }
             };
 
-            var badRequest = new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest };
-            badRequest.Content = new StringContent(JsonConvert.SerializeObject(badRequestContent));
-
-            void CommonAssertions<T>(IResult<T> result)
+            var badRequest = new HttpResponseMessage
             {
-                Assert.AreEqual(result.Data, null);
-                Assert.AreEqual(result.StatusCode, (int)HttpStatusCode.BadRequest);
-                Assert.IsFalse(result.IsSuccess);
-                Assert.AreEqual(result.Errors[0].Source, badRequestContent.Errors[0].Source);
-                Assert.AreEqual(result.Errors[0].Description, badRequestContent.Errors[0].Description);
-                Assert.AreEqual(result.Errors[1].Source, badRequestContent.Errors[1].Source);
-                Assert.AreEqual(result.Errors[1].Description, badRequestContent.Errors[1].Description);
-            }
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(JsonConvert.SerializeObject(badRequestContent))
+            };
 
             CommonAssertions(await Result.WithStreamData(badRequest));
             CommonAssertions(await Result.WithObjectData<List<string>>(badRequest));
             CommonAssertions(await Result.WithNullData<string>(badRequest));
+
+            void CommonAssertions<T>(IResult<T> result)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.Data, Is.Null);
+                    Assert.That(result.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+                    Assert.That(result.IsSuccess, Is.False);
+                    Assert.That(result.Errors[0].Source, Is.EqualTo(badRequestContent.Errors[0].Source));
+                    Assert.That(result.Errors[0].Description, Is.EqualTo(badRequestContent.Errors[0].Description));
+                    Assert.That(result.Errors[1].Source, Is.EqualTo(badRequestContent.Errors[1].Source));
+                    Assert.That(result.Errors[1].Description, Is.EqualTo(badRequestContent.Errors[1].Description));
+                });
+            }
         }
 
         [Test]
         public async Task NonSuccess_BlankContent()
         {
-            void CommonAssertions<T>(IResult<T> result)
+            var internalServerError = new HttpResponseMessage
             {
-                Assert.IsNull(result.Data);
-                Assert.AreEqual(result.StatusCode, (int)HttpStatusCode.InternalServerError);
-                Assert.IsFalse(result.IsSuccess);
-                Assert.IsNotNull(result.Errors);
-                Assert.IsEmpty(result.Errors);
-            }
-
-            var internalServerError = new HttpResponseMessage { StatusCode = HttpStatusCode.InternalServerError };
-            internalServerError.Content = null;
+                StatusCode = HttpStatusCode.InternalServerError,
+                Content = null
+            };
 
             CommonAssertions(await Result.WithStreamData(internalServerError));
             CommonAssertions(await Result.WithObjectData<List<string>>(internalServerError));
             CommonAssertions(await Result.WithNullData<Uri>(internalServerError));
+
+            void CommonAssertions<T>(IResult<T> result)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.Data, Is.Null);
+                    Assert.That(result.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+                    Assert.That(result.IsSuccess, Is.False);
+                    Assert.That(result.Errors, Is.Not.Null);
+                });
+                Assert.That(result.Errors, Has.Count.EqualTo(0));
+            }
         }
 
         [Test]
         public async Task NonSuccess_UnparseableContent()
         {
             var errorContent = "<root><joe/></root>";
-
-            void CommonAssertions<T>(IResult<T> result)
+            var badRequest = new HttpResponseMessage
             {
-                Assert.IsNull(result.Data);
-                Assert.AreEqual(result.StatusCode, (int)HttpStatusCode.BadRequest);
-                Assert.IsFalse(result.IsSuccess);
-                Assert.AreEqual(result.Errors[0].Description, errorContent);
-            }
-
-            var badRequest = new HttpResponseMessage { StatusCode = HttpStatusCode.BadRequest };
-            badRequest.Content = new StringContent(errorContent);
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(errorContent)
+            };
 
             CommonAssertions(await Result.WithStreamData(badRequest));
             CommonAssertions(await Result.WithObjectData<List<string>>(badRequest));
             CommonAssertions(await Result.WithNullData<Uri>(badRequest));
+
+            void CommonAssertions<T>(IResult<T> result)
+            {
+                Assert.Multiple(() =>
+                {
+                    Assert.That(result.Data, Is.Null);
+                    Assert.That(result.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
+                    Assert.That(result.IsSuccess, Is.False);
+                    Assert.That(result.Errors[0].Description, Is.EqualTo(errorContent));
+                });
+            }
         }
-
-        
-
     }
 }

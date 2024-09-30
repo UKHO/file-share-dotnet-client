@@ -1,27 +1,26 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
+﻿using System.Diagnostics.CodeAnalysis;
 using UKHO.FileShareClient.Models;
 
-namespace UKHO.FileShareClientTests.Models
+namespace FileShareClientTests.Models
 {
     public class BatchSearchResponseTests
     {
         [Test]
+        [SuppressMessage("Assertion", "NUnit2010:Use EqualConstraint for better assertion messages in case of failure", Justification = "Test overridden Equals method")]
         public void TestEquals()
         {
             var emptyBatchSearchResponse = new BatchSearchResponse();
             var batchSearchResponse1 = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = new List<BatchDetails>(2) {new BatchDetails("batch1"), new BatchDetails("batch2")},
+                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
             var batchSearchResponse1a = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = new List<BatchDetails>(2) {new BatchDetails("batch1"), new BatchDetails("batch2")},
+                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
@@ -36,7 +35,7 @@ namespace UKHO.FileShareClientTests.Models
             var batchSearchResponse2 = new BatchSearchResponse
             {
                 Count = 1,
-                Entries = new List<BatchDetails>(1) {new BatchDetails("batch1")},
+                Entries = [new BatchDetails("batch1")],
                 Links = new Links(new Link("selfLink1"), new Link("first"), new Link("previous")),
                 Total = 2
             };
@@ -44,55 +43,63 @@ namespace UKHO.FileShareClientTests.Models
             var batchSearchResponse3 = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = new List<BatchDetails>(2) {new BatchDetails("batch3"), new BatchDetails("batch2")},
+                Entries = [new BatchDetails("batch3"), new BatchDetails("batch2")],
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
 
-            Assert.IsTrue(emptyBatchSearchResponse.Equals(emptyBatchSearchResponse));
-            Assert.IsFalse(emptyBatchSearchResponse.Equals(batchSearchResponse1));
+            Assert.Multiple(() =>
+            {
+                Assert.That(emptyBatchSearchResponse.Equals(emptyBatchSearchResponse), Is.True);
+                Assert.That(emptyBatchSearchResponse.Equals(batchSearchResponse1), Is.False);
 
-            Assert.IsTrue(batchSearchResponse1.Equals(batchSearchResponse1));
-            Assert.IsTrue(batchSearchResponse1.Equals(batchSearchResponse1a));
-            Assert.IsTrue(batchSearchResponse1.Equals(batchSearchResponse1b));
-            Assert.IsFalse(batchSearchResponse1.Equals(emptyBatchSearchResponse));
-            Assert.IsFalse(batchSearchResponse1.Equals(batchSearchResponse2));
-            Assert.IsFalse(batchSearchResponse1.Equals(batchSearchResponse3));
+                Assert.That(batchSearchResponse1.Equals(batchSearchResponse1), Is.True);
+                Assert.That(batchSearchResponse1.Equals(batchSearchResponse1a), Is.True);
+                Assert.That(batchSearchResponse1.Equals(batchSearchResponse1b), Is.True);
+                Assert.That(batchSearchResponse1.Equals(emptyBatchSearchResponse), Is.False);
+                Assert.That(batchSearchResponse1.Equals(batchSearchResponse2), Is.False);
+                Assert.That(batchSearchResponse1.Equals(batchSearchResponse3), Is.False);
+            });
         }
 
         [Test]
+        [SuppressMessage("Assertion", "NUnit2009:The same value has been provided as both the actual and the expected argument", Justification = "Test overridden GetHashCode method")]
         public void TestGetHashcode()
         {
             var emptyBatchSearchResponse = new BatchSearchResponse();
             var batchSearchResponse1 = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = new List<BatchDetails>(2) {new BatchDetails("batch1"), new BatchDetails("batch2")},
+                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
 
-            Assert.NotZero(emptyBatchSearchResponse.GetHashCode());
-            Assert.AreEqual(emptyBatchSearchResponse.GetHashCode(), emptyBatchSearchResponse.GetHashCode());
-            Assert.NotZero(batchSearchResponse1.GetHashCode());
-            Assert.AreEqual(batchSearchResponse1.GetHashCode(), batchSearchResponse1.GetHashCode());
+            Assert.Multiple(() =>
+            {
+                Assert.That(emptyBatchSearchResponse.GetHashCode(), Is.Not.Zero);
+                Assert.That(batchSearchResponse1.GetHashCode(), Is.Not.Zero);
+            });
+            Assert.Multiple(() =>
+            {
+                Assert.That(emptyBatchSearchResponse.GetHashCode(), Is.EqualTo(emptyBatchSearchResponse.GetHashCode()));
+                Assert.That(batchSearchResponse1.GetHashCode(), Is.EqualTo(batchSearchResponse1.GetHashCode()));
+            });
         }
 
         [Test]
         public void TestToJson()
         {
-            var batchDetailsList = new List<BatchDetails>(2) {new BatchDetails("batch1"), new BatchDetails("batch2")};
+            var batchDetailsList = new List<BatchDetails>(2) { new("batch1"), new("batch2") };
             var links = new Links(new Link("selfLink1"), new Link("first"), new Link("previous"), new Link("next"));
-            var json = new BatchSearchResponse
+            var batchSearchResponse = new BatchSearchResponse
             {
                 Count = 2,
                 Entries = batchDetailsList,
                 Links = links,
                 Total = 9
-            }.ToJson();
-            Assert.AreEqual(
-                $"{{\"count\":2,\"total\":9,\"entries\":[{string.Join(',', batchDetailsList.Select(e => e.ToJson()))}],\"_links\":{links.ToJson()}}}",
-                json);
+            };
+            Assert.That(batchSearchResponse.ToJson(), Is.EqualTo($"{{\"count\":2,\"total\":9,\"entries\":[{string.Join(',', batchDetailsList.Select(e => e.ToJson()))}],\"_links\":{links.ToJson()}}}"));
         }
     }
 }
