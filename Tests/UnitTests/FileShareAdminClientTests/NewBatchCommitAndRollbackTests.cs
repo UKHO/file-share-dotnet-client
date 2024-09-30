@@ -63,10 +63,10 @@ namespace FileShareAdminClientTests
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType1);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream2, filename2, mimeType1);
 
-            await _fileShareApiAdminClient.CommitBatch(batchHandle);
+            await _fileShareApiAdminClient.CommitBatchAsync(batchHandle);
 
             var expectedRequests = new[]
             {
@@ -106,10 +106,10 @@ namespace FileShareAdminClientTests
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream2, filename2, mimeType1, CancellationToken.None);
 
-            await _fileShareApiAdminClient.CommitBatch(batchHandle.Data, CancellationToken.None);
+            await _fileShareApiAdminClient.CommitBatchAsync(batchHandle.Data, CancellationToken.None);
 
             var expectedRequests = new[]
             {
@@ -183,7 +183,7 @@ namespace FileShareAdminClientTests
             _nextResponse = new CreateBatchResponseModel { BatchId = batchId };
             var batchHandle = new BatchHandle(batchId);
 
-            await _fileShareApiAdminClient.CommitBatch(batchHandle);
+            await _fileShareApiAdminClient.CommitBatchAsync(batchHandle);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
             Assert.Multiple(() =>

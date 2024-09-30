@@ -46,7 +46,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.BatchAttributeSearch("", cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("", cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -69,7 +69,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -90,7 +90,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -110,7 +110,7 @@ namespace FileShareClientTests
                 BatchAttributes = []
             };
 
-            await _fileShareApiClient.BatchAttributeSearch("", cancellationToken: CancellationToken.None);
+            await _fileShareApiClient.BatchAttributeSearchAsync("", cancellationToken: CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
             Assert.Multiple(() =>
@@ -125,7 +125,7 @@ namespace FileShareClientTests
         {
             _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
-            var response = await _fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -141,7 +141,7 @@ namespace FileShareClientTests
         {
             _nextResponseStatusCode = HttpStatusCode.InternalServerError;
 
-            var response = await _fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -176,7 +176,7 @@ namespace FileShareClientTests
         [TestCase(1000)]
         public async Task DoesBatchAttributeSearchReturnsSucessWithMaxAttributeValueCountandFilter(int maxAttributeValueCount)
         {
-            var response = await _fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", maxAttributeValueCount, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", maxAttributeValueCount, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -192,7 +192,7 @@ namespace FileShareClientTests
             var MaxAttributeValueCount = 0;
             _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
-            var response = await _fileShareApiClient.BatchAttributeSearch("$batch(key) eq 'value'", MaxAttributeValueCount, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.BatchAttributeSearchAsync("$batch(key) eq 'value'", MaxAttributeValueCount, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {

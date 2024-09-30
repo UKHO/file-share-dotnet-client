@@ -64,7 +64,7 @@ namespace FileShareAdminClientTests
 
             try
             {
-                await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+                await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
             catch (ArgumentException ex)
@@ -92,7 +92,7 @@ namespace FileShareAdminClientTests
 
             try
             {
-                await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+                await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
             catch (ArgumentException ex)
@@ -120,8 +120,8 @@ namespace FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream2, filename2, mimeType2);
 
             var expectedRequests = new[]
             {
@@ -152,8 +152,8 @@ namespace FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None);
 
             var expectedRequests = new[]
             {
@@ -184,8 +184,8 @@ namespace FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2, new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1, new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream2, filename2, mimeType2, new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
             var expectedRequests = new[]
             {
@@ -223,8 +223,8 @@ namespace FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None, new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None, new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None, new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None, new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
             var expectedRequests = new[]
             {
@@ -259,7 +259,7 @@ namespace FileShareAdminClientTests
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1);
 
             var expectedRequests = new[]
             {
@@ -292,7 +292,7 @@ namespace FileShareAdminClientTests
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
 
             var expectedRequests = new[]
             {
@@ -326,7 +326,7 @@ namespace FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
 
             var progressReports = new List<(int blocksComplete, int totalBlockCount)>();
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, progressReports.Add);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1, progressReports.Add);
 
             var expectedBlocksComplete = new[] { 0, 1, 2, 3 };
             var expectedTotalBlockCount = new[] { 3, 3, 3, 3 };
@@ -351,7 +351,7 @@ namespace FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
 
             var progressReports = new List<(int blocksComplete, int totalBlockCount)>();
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, progressReports.Add, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, progressReports.Add, CancellationToken.None);
 
             var expectedBlocksComplete = new[] { 0, 1, 2, 3 };
             var expectedTotalBlockCount = new[] { 3, 3, 3, 3 };
@@ -374,7 +374,7 @@ namespace FileShareAdminClientTests
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await _fileShareApiAdminClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+            await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
             Assert.Multiple(() =>

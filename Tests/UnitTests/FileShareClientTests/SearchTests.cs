@@ -57,7 +57,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("");
+            var response = await _fileShareApiClient.SearchAsync("");
 
             Assert.Multiple(() =>
             {
@@ -80,7 +80,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'");
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'");
 
             Assert.Multiple(() =>
             {
@@ -103,7 +103,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", 50);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", 50);
 
             Assert.Multiple(() =>
             {
@@ -126,7 +126,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", null, 20);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, 20);
 
             Assert.Multiple(() =>
             {
@@ -149,7 +149,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", 10, 20);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", 10, 20);
 
             Assert.Multiple(() =>
             {
@@ -164,7 +164,7 @@ namespace FileShareClientTests
         [TestCase(0)]
         public void TestSearchWithInvalidPageSizeThrowsArgumentException(int pageSize)
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.Search("$batch(key) eq 'value'", pageSize, 20));
+            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20));
 
             Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
         }
@@ -172,7 +172,7 @@ namespace FileShareClientTests
         [Test]
         public void TestSearchWithInvalidPageStartThrowsArgumentException()
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.Search("$batch(key) eq 'value'", -10, 20));
+            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20));
 
             Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
         }
@@ -189,7 +189,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'");
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'");
 
             Assert.Multiple(() =>
             {
@@ -211,7 +211,7 @@ namespace FileShareClientTests
                 Links = new Links(new Link("self"))
             };
 
-            await _fileShareApiClient.Search("");
+            await _fileShareApiClient.SearchAsync("");
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
             Assert.Multiple(() =>
@@ -234,7 +234,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("", null, null, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.SearchAsync("", null, null, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -259,7 +259,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -284,7 +284,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", 50, null, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", 50, null, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -309,7 +309,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", null, 20, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, 20, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -326,7 +326,7 @@ namespace FileShareClientTests
         [TestCase(0)]
         public void TestSearchWithInvalidPageSizeThrowsArgumentExceptionAndCancellationn(int pageSize)
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.Search("$batch(key) eq 'value'", pageSize, 20, cancellationToken: CancellationToken.None));
+            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20, cancellationToken: CancellationToken.None));
 
             Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
         }
@@ -334,7 +334,7 @@ namespace FileShareClientTests
         [Test]
         public void TestSearchWithInvalidPageStartThrowsArgumentExceptionAndCancellation()
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.Search("$batch(key) eq 'value'", -10, 20, cancellationToken: CancellationToken.None));
+            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20, cancellationToken: CancellationToken.None));
 
             Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
         }
@@ -351,7 +351,7 @@ namespace FileShareClientTests
             };
             _nextResponse = expectedResponse;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -375,7 +375,7 @@ namespace FileShareClientTests
                 Links = new Links(new Link("self"))
             };
 
-            await _fileShareApiClient.Search("", null, null, cancellationToken: CancellationToken.None);
+            await _fileShareApiClient.SearchAsync("", null, null, cancellationToken: CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
             Assert.Multiple(() =>
@@ -390,7 +390,7 @@ namespace FileShareClientTests
         {
             _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
@@ -406,7 +406,7 @@ namespace FileShareClientTests
         {
             _nextResponseStatusCode = HttpStatusCode.InternalServerError;
 
-            var response = await _fileShareApiClient.Search("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
+            var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
             Assert.Multiple(() =>
             {
