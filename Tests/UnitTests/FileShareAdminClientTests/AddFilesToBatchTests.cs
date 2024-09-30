@@ -68,7 +68,7 @@ namespace UKHO.FileShareAdminClientTests
 
             try
             {
-                await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+                await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
             catch (ArgumentException ex)
@@ -93,7 +93,7 @@ namespace UKHO.FileShareAdminClientTests
 
             try
             {
-                await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+                await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
                 Assert.Fail("Expected an exception");
             }
             catch (ArgumentException ex)
@@ -118,8 +118,8 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream2, filename2, mimeType2);
 
 
             CollectionAssert.AreEqual(new[]
@@ -151,8 +151,8 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None);
 
 
             CollectionAssert.AreEqual(new[]
@@ -184,9 +184,9 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1,
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1,
                 new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream2, filename2, mimeType2,
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream2, filename2, mimeType2,
                 new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
 
@@ -225,9 +225,9 @@ namespace UKHO.FileShareAdminClientTests
             var mimeType1 = "application/octet-stream";
             var mimeType2 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None,
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None,
                 new KeyValuePair<string, string>("fileAttributeKey1", "fileAttributeValue1"));
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None,
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream2, filename2, mimeType2, CancellationToken.None,
                 new KeyValuePair<string, string>("fileAttributeKey2", "fileAttributeValue2"));
 
 
@@ -263,7 +263,7 @@ namespace UKHO.FileShareAdminClientTests
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1);
 
 
             CollectionAssert.AreEqual(new[]
@@ -294,7 +294,7 @@ namespace UKHO.FileShareAdminClientTests
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1, CancellationToken.None);
 
 
             CollectionAssert.AreEqual(new[]
@@ -327,7 +327,7 @@ namespace UKHO.FileShareAdminClientTests
 
             IList<(int blocksComplete, int totalBlockCount)> progressReports =
                 new List<(int blocksComplete, int totalBlockCount)>();
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1,
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1,
                 progressUpdate => { progressReports.Add(progressUpdate); });
 
             Assert.AreEqual(4, progressReports.Count);
@@ -349,7 +349,7 @@ namespace UKHO.FileShareAdminClientTests
 
             IList<(int blocksComplete, int totalBlockCount)> progressReports =
                 new List<(int blocksComplete, int totalBlockCount)>();
-            await fileShareApiClient.AddFileToBatch(batchHandle.Data, stream1, filename1, mimeType1,
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle.Data, stream1, filename1, mimeType1,
                 progressUpdate => { progressReports.Add(progressUpdate); }, CancellationToken.None);
 
             Assert.AreEqual(4, progressReports.Count);
@@ -368,7 +368,7 @@ namespace UKHO.FileShareAdminClientTests
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
-            await fileShareApiClient.AddFileToBatch(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
+            await fileShareApiClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
 
             Assert.NotNull(fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization);
             Assert.AreEqual("bearer", fakeHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme);
