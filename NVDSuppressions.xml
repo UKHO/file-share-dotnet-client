@@ -3,17 +3,9 @@
   <suppress>
     <notes>
       <![CDATA[
-   file name: Microsoft.NETCore.Platforms:1.1.1
-   ]]>
-    </notes>
-    <packageUrl regex="true">^pkg:nuget/Microsoft\.NETCore\.Platforms@.*$</packageUrl>
-    <cve>CVE-2022-41064</cve>
-    <cve>CVE-2022-30184</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      <![CDATA[
    file name: System.Buffers:4.5.1
+   CVE-2022-41064 applies to System.Data.SqlClient/Microsoft.Data.SqlClient (not used). See https://github.com/dotnet/announcements/issues/239
+   CVE-2022-30184 patched in latest .NET Core 3.1/.NET 6 versions. See https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2022-30184
    ]]>
     </notes>
     <packageUrl regex="true">^pkg:nuget/System\.Buffers@.*$</packageUrl>
@@ -24,6 +16,8 @@
     <notes>
       <![CDATA[
    file name: System.Threading.Tasks.Extensions.dll
+   CVE-2020-22475 applies to Tasks.org Android app. See https://nvd.nist.gov/vuln/detail/CVE-2020-22475
+   CVE-2022-39349 applies to Tasks.org Android app. See https://securitylab.github.com/advisories/GHSL-2022-062_Tasks_org
    ]]>
     </notes>
     <packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks\.Extensions@.*$</packageUrl>
@@ -34,48 +28,11 @@
     <notes>
       <![CDATA[
    file name: System.Threading.Tasks.Extensions:4.5.4
+   CVE-2020-22475 applies to Tasks.org Android app. See https://nvd.nist.gov/vuln/detail/CVE-2020-22475
+   CVE-2022-39349 applies to Tasks.org Android app. See https://securitylab.github.com/advisories/GHSL-2022-062_Tasks_org
    ]]>
     </notes>
     <packageUrl regex="true">^pkg:nuget/System\.Threading\.Tasks\.Extensions@.*$</packageUrl>
-    <cve>CVE-2020-22475</cve>
-    <cve>CVE-2022-39349</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      <![CDATA[
-   file name: NETStandard.Library:2.0.3
-   ]]>
-    </notes>
-    <packageUrl regex="true">^pkg:nuget/NETStandard\.Library@.*$</packageUrl>
-    <cve>CVE-2022-41064</cve>
-    <cve>CVE-2022-30184</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      <![CDATA[
-   file name: System.Security.Cryptography.X509Certificates:4.3.0
-   ]]>
-    </notes>
-    <packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.X509Certificates@.*$</packageUrl>
-    <vulnerabilityName>CVE-2017-11770</vulnerabilityName>
-  </suppress>
-  <suppress>
-    <notes>
-      <![CDATA[
-   file name: System.Threading.Tasks.dll
-   ]]>
-    </notes>
-    <packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks@.*$</packageUrl>
-    <cve>CVE-2020-22475</cve>
-    <cve>CVE-2022-39349</cve>
-  </suppress>
-  <suppress>
-    <notes>
-      <![CDATA[
-   file name: System.Threading.Tasks.Parallel.dll
-   ]]>
-    </notes>
-    <packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks\.Parallel@.*$</packageUrl>
     <cve>CVE-2020-22475</cve>
     <cve>CVE-2022-39349</cve>
   </suppress>

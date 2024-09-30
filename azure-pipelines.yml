@@ -8,7 +8,7 @@ parameters:
 - name: SkipDependencyCheck
   displayName: "Skip dependency check"
   type: boolean
-  default: true
+  default: false
 
 trigger:
 - main
