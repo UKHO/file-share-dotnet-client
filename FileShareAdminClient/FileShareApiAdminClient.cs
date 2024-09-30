@@ -201,9 +201,8 @@ namespace UKHO.FileShareAdminClient
             return await SendResult<List<FileDetail>, CommitBatchResponse>(uri, HttpMethod.Put, batchCommitModel.FileDetails, cancellationToken);
         }
 
-        public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl,
-            CancellationToken cancellationToken = default)
-                => await SendResult<Acl, ReplaceAclResponse>($"batch/{batchId}/acl", HttpMethod.Put, acl, cancellationToken);
+        public async Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default)
+            => await SendResult<Acl, ReplaceAclResponse>($"batch/{batchId}/acl", HttpMethod.Put, acl, cancellationToken);
 
         public async Task RollBackBatchAsync(IBatchHandle batchHandle)
         {
@@ -470,6 +469,7 @@ namespace UKHO.FileShareAdminClient
                 return await Result.WithObjectData<TResponse>(response);
             }
         }
+
         #endregion
     }
 }

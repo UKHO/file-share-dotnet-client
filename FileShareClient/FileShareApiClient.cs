@@ -23,7 +23,6 @@ namespace UKHO.FileShareClient
         Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchAsync(string searchQuery, int maxAttributeValueCount, CancellationToken cancellationToken);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
-
         Task<IEnumerable<string>> GetUserAttributesAsync();
         Task<IResult<Stream>> DownloadZipFileAsync(string batchId, CancellationToken cancellationToken);
 
