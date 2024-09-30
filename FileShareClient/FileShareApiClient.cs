@@ -17,15 +17,35 @@ namespace UKHO.FileShareClient
     public interface IFileShareApiClient
     {
         Task<BatchStatusResponse> GetBatchStatusAsync(string batchId);
-        Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
-        Task<IResult<BatchSearchResponse>> Search(string searchQuery , int? pageSize, int? start , CancellationToken cancellationToken);
-        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken);
-        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, int maxAttributeValueCount, CancellationToken cancellationToken);
+        Task<BatchSearchResponse> SearchAsync(string searchQuery, int? pageSize = null, int? start = null);
+        Task<IResult<BatchSearchResponse>> SearchAsync(string searchQuery, int? pageSize, int? start, CancellationToken cancellationToken);
+        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchAsync(string searchQuery, CancellationToken cancellationToken);
+        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchAsync(string searchQuery, int maxAttributeValueCount, CancellationToken cancellationToken);
         Task<Stream> DownloadFileAsync(string batchId, string filename);
         Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default);
 
         Task<IEnumerable<string>> GetUserAttributesAsync();
         Task<IResult<Stream>> DownloadZipFileAsync(string batchId, CancellationToken cancellationToken);
+
+        #region backwards compatible old names
+
+        [Obsolete("Please use SearchAsync")]
+        Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null);
+
+        [Obsolete("Please use SearchAsync")]
+        Task<IResult<BatchSearchResponse>> Search(string searchQuery, int? pageSize, int? start,
+            CancellationToken cancellationToken);
+
+        [Obsolete("Please use BatchAttributeSearchAsync")]
+        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery,
+            CancellationToken cancellationToken);
+
+        [Obsolete("Please use BatchAttributeSearchAsync")]
+        Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery,
+            int maxAttributeValueCount, CancellationToken cancellationToken);
+
+        #endregion
+
     }
 
     public class FileShareApiClient : IFileShareApiClient
@@ -42,7 +62,7 @@ namespace UKHO.FileShareClient
         }
 
         public FileShareApiClient(IHttpClientFactory httpClientFactory, string baseAddress, string accessToken)
-            :this(httpClientFactory, baseAddress, new DefaultAuthTokenProvider(accessToken))
+            : this(httpClientFactory, baseAddress, new DefaultAuthTokenProvider(accessToken))
         {
         }
 
@@ -54,7 +74,7 @@ namespace UKHO.FileShareClient
         protected async Task<HttpClient> GetAuthenticationHeaderSetClient()
         {
             var httpClient = httpClientFactory.CreateClient();
-            await httpClient.SetAuthenticationHeader(authTokenProvider);
+            await httpClient.SetAuthenticationHeaderAsync(authTokenProvider);
             return httpClient;
         }
 
@@ -72,7 +92,7 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null)
+        public async Task<BatchSearchResponse> SearchAsync(string searchQuery, int? pageSize = null, int? start = null)
         {
             var response = await SearchResponse(searchQuery, pageSize, start, CancellationToken.None);
             response.EnsureSuccessStatusCode();
@@ -80,13 +100,13 @@ namespace UKHO.FileShareClient
             return searchResponse;
         }
 
-        public async Task<IResult<BatchSearchResponse>> Search(string searchQuery, int? pageSize, int? start, CancellationToken cancellationToken )
+        public async Task<IResult<BatchSearchResponse>> SearchAsync(string searchQuery, int? pageSize, int? start, CancellationToken cancellationToken)
         {
             var response = await SearchResponse(searchQuery, pageSize, start, cancellationToken);
             return await Result.WithObjectData<BatchSearchResponse>(response);
         }
 
-        private async Task<HttpResponseMessage> SearchResponse(string searchQuery, int? pageSize, int? start , CancellationToken cancellationToken)
+        private async Task<HttpResponseMessage> SearchResponse(string searchQuery, int? pageSize, int? start, CancellationToken cancellationToken)
         {
             var uri = "batch";
 
@@ -134,7 +154,7 @@ namespace UKHO.FileShareClient
         public async Task<IResult<DownloadFileResponse>> DownloadFileAsync(string batchId, string fileName, Stream destinationStream, long fileSizeInBytes = 0, CancellationToken cancellationToken = default)
         {
             long startByte = 0;
-            long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes-1;
+            long endByte = fileSizeInBytes < maxDownloadBytes ? fileSizeInBytes - 1 : maxDownloadBytes - 1;
             IResult<DownloadFileResponse> result = null;
 
             while (startByte <= endByte)
@@ -162,7 +182,7 @@ namespace UKHO.FileShareClient
                     }
                 }
                 startByte = endByte + 1;
-                endByte += maxDownloadBytes-1;
+                endByte += maxDownloadBytes - 1;
 
                 if (endByte > fileSizeInBytes - 1)
                 {
@@ -189,7 +209,7 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, CancellationToken cancellationToken)
+        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchAsync(string searchQuery, CancellationToken cancellationToken)
         {
             var uri = "attributes/search";
 
@@ -207,7 +227,7 @@ namespace UKHO.FileShareClient
             }
         }
 
-        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery, int maxAttributeValueCount, CancellationToken cancellationToken)
+        public async Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearchAsync(string searchQuery, int maxAttributeValueCount, CancellationToken cancellationToken)
         {
             var uri = "attributes/search";
 
@@ -239,6 +259,39 @@ namespace UKHO.FileShareClient
                 return await Result.WithStreamData(response);
             }
         }
+
+
+        #region backwards compatible old names
+
+        [Obsolete("Please use SearchAsync")]
+        public Task<BatchSearchResponse> Search(string searchQuery, int? pageSize = null, int? start = null)
+        {
+            return SearchAsync(searchQuery, pageSize, start);
+
+        }
+
+        [Obsolete("Please use SearchAsync")]
+        public Task<IResult<BatchSearchResponse>> Search(string searchQuery, int? pageSize, int? start,
+            CancellationToken cancellationToken)
+        {
+            return SearchAsync(searchQuery, pageSize, start, cancellationToken);
+        }
+
+        [Obsolete("Please use BatchAttributeSearchAsync")]
+        public Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery,
+            CancellationToken cancellationToken)
+        {
+            return BatchAttributeSearchAsync(searchQuery, cancellationToken);
+        }
+
+        [Obsolete("Please use BatchAttributeSearchAsync")]
+        public Task<IResult<BatchAttributesSearchResponse>> BatchAttributeSearch(string searchQuery,
+            int maxAttributeValueCount, CancellationToken cancellationToken)
+        {
+            return BatchAttributeSearchAsync(searchQuery, maxAttributeValueCount, cancellationToken);
+        }
+
+        #endregion
 
         #region private methods
         private static string AddQueryString(string uri, IEnumerable<KeyValuePair<string, string>> queryString)

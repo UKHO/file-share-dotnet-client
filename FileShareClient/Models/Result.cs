@@ -28,7 +28,7 @@ namespace UKHO.FileShareClient.Models
                 data = await response.ReadAsStreamAsync();
             }
 
-            return await CreateResult(response, data);
+            return await CreateResultAsync(response, data);
         }
 
         internal static async Task<IResult<U>> WithObjectData<U>(HttpResponseMessage response)
@@ -40,16 +40,16 @@ namespace UKHO.FileShareClient.Models
                 data = await response.ReadAsTypeAsync<U>();
             }
 
-            return await CreateResult(response, data);
+            return await CreateResultAsync(response, data);
         }
 
         //this is strange and exists to keep backwards compatibility for the FileShareApiClient.DownloadFileAsync method
         internal static async Task<IResult<U>> WithNullData<U>(HttpResponseMessage response) where U : class
         {
-            return await CreateResult<U>(response, null);
+            return await CreateResultAsync<U>(response, null);
         }
 
-        private static async Task<IResult<U>> CreateResult<U>(HttpResponseMessage response, U data)
+        private static async Task<IResult<U>> CreateResultAsync<U>(HttpResponseMessage response, U data)
         {
             var result = new Result<U>();
             result.IsSuccess = response.IsSuccessStatusCode;

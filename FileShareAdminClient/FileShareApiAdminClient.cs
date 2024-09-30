@@ -24,21 +24,49 @@ namespace UKHO.FileShareAdminClient
         Task<IBatchHandle> CreateBatchAsync(BatchModel batchModel);
         Task<IResult<IBatchHandle>> CreateBatchAsync(BatchModel batchModel, CancellationToken cancellationToken);
         Task<BatchStatusResponse> GetBatchStatusAsync(IBatchHandle batchHandle);
-        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        Task AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
-        Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        Task<IResult<AddFileToBatchResponse>> AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes);
-        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        Task AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, 
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, params KeyValuePair<string, string>[] fileAttributes);
-        Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
-            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
+        Task<IResult<AddFileToBatchResponse>> AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken, 
             params KeyValuePair<string, string>[] fileAttributes);
-        Task CommitBatch(IBatchHandle batchHandle);
-        Task<IResult<CommitBatchResponse>> CommitBatch(IBatchHandle batchHandle, CancellationToken cancellationToken);
+        Task CommitBatchAsync(IBatchHandle batchHandle);
+        Task<IResult<CommitBatchResponse>> CommitBatchAsync(IBatchHandle batchHandle, CancellationToken cancellationToken);
         Task<IResult<ReplaceAclResponse>> ReplaceAclAsync(string batchId, Acl acl, CancellationToken cancellationToken = default);
         Task RollBackBatchAsync(IBatchHandle batchHandle);
         Task<IResult<RollBackBatchResponse>> RollBackBatchAsync(IBatchHandle batchHandle, CancellationToken cancellationToken);
         Task<IResult<SetExpiryDateResponse>> SetExpiryDateAsync(string batchId, BatchExpiryModel batchExpiry, CancellationToken cancellationToken = default);
+
+        #region backwards compatible obsolete versions of methods that have been renamed.
+
+        [Obsolete("Please use AddFileToBatch")]
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            params KeyValuePair<string, string>[] fileAttributes);
+
+        [Obsolete("Please use AddFileToBatch")]
+        Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName,
+            string mimeType, CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes);
+
+        [Obsolete("Please use AddFileToBatch")]
+        Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+            Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
+            params KeyValuePair<string, string>[] fileAttributes);
+
+        [Obsolete("Please use AddFileToBatch")]
+        Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName,
+            string mimeType, Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
+            CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes);
+
+        [Obsolete("Please use CommitBatchAsync")]
+        Task CommitBatch(IBatchHandle batchHandle);
+
+        [Obsolete("Please use CommitBatchAsync")]
+        Task<IResult<CommitBatchResponse>> CommitBatch(IBatchHandle batchHandle, CancellationToken cancellationToken);
+
+        #endregion
     }
 
     public class FileShareApiAdminClient : FileShareApiClient, IFileShareApiAdminClient
@@ -109,33 +137,33 @@ namespace UKHO.FileShareAdminClient
             return GetBatchStatusAsync(batchHandle.BatchId);
         }
 
-        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        public Task AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes)
         {
-            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, CancellationToken.None, fileAttributes);
+            return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, _ => { }, CancellationToken.None, fileAttributes);
         }
 
-        public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken,
+        public Task<IResult<AddFileToBatchResponse>> AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
-            return AddFileToBatch(batchHandle, stream, fileName, mimeType, _ => { }, cancellationToken, fileAttributes);
+            return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, _ => { }, cancellationToken, fileAttributes);
         }
 
-        public async Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        public async Task AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
             params KeyValuePair<string, string>[] fileAttributes)
         {
-            await AddFile(batchHandle, stream, fileName, mimeType, progressUpdate, CancellationToken.None, fileAttributes);
+            await AddFileAsync(batchHandle, stream, fileName, mimeType, progressUpdate, CancellationToken.None, fileAttributes);
         }
 
-        public async Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        public async Task<IResult<AddFileToBatchResponse>> AddFileToBatchAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
             return await AddFiles(batchHandle, stream, fileName, mimeType, progressUpdate, cancellationToken, fileAttributes);
         }
 
-        public async Task CommitBatch(IBatchHandle batchHandle)
+        public async Task CommitBatchAsync(IBatchHandle batchHandle)
         {
             var uri = $"/batch/{batchHandle.BatchId}";
             var batchCommitModel = new BatchCommitModel
@@ -154,7 +182,7 @@ namespace UKHO.FileShareAdminClient
             }
         }
 
-        public async Task<IResult<CommitBatchResponse>> CommitBatch(IBatchHandle batchHandle, CancellationToken cancellationToken)
+        public async Task<IResult<CommitBatchResponse>> CommitBatchAsync(IBatchHandle batchHandle, CancellationToken cancellationToken)
         {
             var uri = $"/batch/{batchHandle.BatchId}";
             var batchCommitModel = new BatchCommitModel
@@ -189,11 +217,49 @@ namespace UKHO.FileShareAdminClient
              CancellationToken cancellationToken = default)
                 => await SendResult<BatchExpiryModel, SetExpiryDateResponse>($"batch/{batchId}/expiry", HttpMethod.Put, batchExpiry,
                     cancellationToken, HttpStatusCode.NoContent);
+        #region backwards compatible obsolete versions of methods that have been renamed.
 
+        [Obsolete("Please use AddFileToBatch")]
+        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, params KeyValuePair<string, string>[] fileAttributes)
+        {
+            return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, fileAttributes);
+        }
+        [Obsolete("Please use AddFileToBatch")]
+
+        public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes)
+        {
+            return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, cancellationToken, fileAttributes);
+        }
+
+        [Obsolete("Please use AddFileToBatch")]
+        public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, Action<(int blocksComplete, int totalBlockCount)> progressUpdate, params KeyValuePair<string, string>[] fileAttributes)
+        {
+            return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, progressUpdate, fileAttributes);
+        }
+
+        [Obsolete("Please use AddFileToBatch")]
+        public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes)
+        {
+            return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, progressUpdate, cancellationToken, fileAttributes);
+        }
+
+        [Obsolete("Please use CommitBatchAsync")]
+        public Task CommitBatch(IBatchHandle batchHandle)
+        {
+            return CommitBatchAsync(batchHandle);
+        }
+
+        [Obsolete("Please use CommitBatchAsync")]
+        public Task<IResult<CommitBatchResponse>> CommitBatch(IBatchHandle batchHandle, CancellationToken cancellationToken)
+        {
+            return CommitBatchAsync(batchHandle, cancellationToken);
+        }
+
+        #endregion
 
         #region Private methods
 
-        private async Task AddFile(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
+        private async Task AddFileAsync(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken,
             params KeyValuePair<string, string>[] fileAttributes)
         {
@@ -255,10 +321,10 @@ namespace UKHO.FileShareAdminClient
                         httpRequestMessage.Content.Headers.ContentType =
                             new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
-                        httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
+                    httpRequestMessage.Content.Headers.ContentMD5 = blockMD5;
 
-                        var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
-                        putFileResponse.EnsureSuccessStatusCode();
+                    var putFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
+                    putFileResponse.EnsureSuccessStatusCode();
 
                         progressUpdate((fileBlockId, expectedTotalBlockCount));
                     }
