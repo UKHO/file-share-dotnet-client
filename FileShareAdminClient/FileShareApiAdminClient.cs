@@ -183,8 +183,7 @@ namespace UKHO.FileShareAdminClient
             var payloadJson = JsonConvert.SerializeObject(batchCommitModel.FileDetails);
 
             using (var httpClient = await GetAuthenticationHeaderSetClient())
-            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri)
-            { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, uri) { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
             {
                 var response = await httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
                 response.EnsureSuccessStatusCode();
@@ -281,8 +280,7 @@ namespace UKHO.FileShareAdminClient
                 var payloadJson = JsonConvert.SerializeObject(fileModel);
 
                 using (var httpClient = await GetAuthenticationHeaderSetClient())
-                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, fileUri)
-                { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, fileUri) { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
                 {
                     httpRequestMessage.Headers.Add("X-Content-Size", "" + stream.Length);
 
@@ -320,8 +318,7 @@ namespace UKHO.FileShareAdminClient
                     var blockMD5 = ms.CalculateMD5();
 
                     using (var httpClient = await GetAuthenticationHeaderSetClient())
-                    using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, putFileUri)
-                    { Content = new StreamContent(ms) })
+                    using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, putFileUri) { Content = new StreamContent(ms) })
                     {
                         httpRequestMessage.Content.Headers.ContentType =
                             new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
@@ -340,8 +337,7 @@ namespace UKHO.FileShareAdminClient
                     var payloadJson = JsonConvert.SerializeObject(writeBlockFileModel);
 
                     using (var httpClient = await GetAuthenticationHeaderSetClient())
-                    using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri)
-                    { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
+                    using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, fileUri) { Content = new StringContent(payloadJson, Encoding.UTF8, "application/json") })
                     {
                         var writeFileResponse = await httpClient.SendAsync(httpRequestMessage, cancellationToken);
                         writeFileResponse.EnsureSuccessStatusCode();
@@ -406,8 +402,7 @@ namespace UKHO.FileShareAdminClient
 
                             var blockMD5 = ms.CalculateMD5();
 
-                            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, putFileUri)
-                            { Content = new StreamContent(ms) })
+                            using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Put, putFileUri) { Content = new StreamContent(ms) })
                             {
                                 httpRequestMessage.Content.Headers.ContentType =
                                     new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");

@@ -146,7 +146,7 @@ stages:
           **/FileShareClient.csproj
           **/FileShareAdminClient.csproj
         packDirectory: $(Build.ArtifactStagingDirectory)/packages
-        arguments:  '--no-build --configuration $(BuildConfiguration)'
+        arguments:  '--configuration $(BuildConfiguration)'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish Pipeline Artifact
