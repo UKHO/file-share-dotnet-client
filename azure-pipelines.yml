@@ -31,6 +31,8 @@ variables:
   value: "File Share Dotnet Client"
 - name: SdkVersion
   value: "8.0.x"
+- name: BuildTaskFramework
+  value: "net8.0"
 
 stages:
 - stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
@@ -127,7 +129,7 @@ stages:
       inputs:
         command: "build"
         projects: "**/*.csproj"
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+        arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: "dotnet test"
