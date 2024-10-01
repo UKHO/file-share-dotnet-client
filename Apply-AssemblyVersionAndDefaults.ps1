@@ -11,7 +11,7 @@ param (
 Write-Host "Build number: " + $buildNumber
 
 #UKHO.file-share-dotnet-client_merge_20210428.5
-$buildNumberRegex = "(.+)_20[2-3]([0-9]{3,5})\.([0-9]{1,2})"
+$buildNumberRegex = "(.+)_202([0-9]{3,5})\.([0-9]{1,2})"
 $validBuildNumber = $buildNumber -match $buildNumberRegex
 
 if ($validBuildNumber -eq $false) {
