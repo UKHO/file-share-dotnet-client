@@ -228,6 +228,7 @@ namespace UKHO.FileShareAdminClient
         {
             return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, fileAttributes);
         }
+
         [Obsolete("Please use AddFileToBatch")]
 
         public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes)
