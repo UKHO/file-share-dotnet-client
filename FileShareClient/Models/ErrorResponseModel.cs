@@ -13,6 +13,4 @@ namespace UKHO.FileShareClient.Models
         public string Source { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
     }
-
-    
 }

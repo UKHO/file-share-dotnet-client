@@ -1,6 +1,4 @@
-﻿
-
-namespace UKHO.FileShareClient.Models
+﻿namespace UKHO.FileShareClient.Models
 {
     public class DownloadFileResponse
     {

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Globalization;
-using Newtonsoft.Json;
-using NUnit.Framework;
+﻿using Newtonsoft.Json;
 using UKHO.FileShareAdminClient.Models;
 
-namespace UKHO.FileShareAdminClientTests.Models
+namespace FileShareAdminClientTests.Models
 {
     internal class BatchExpiryModelTests
     {
@@ -15,8 +12,8 @@ namespace UKHO.FileShareAdminClientTests.Models
 
             var json = JsonConvert.SerializeObject(model);
             var deserialisedModel = JsonConvert.DeserializeObject<BatchExpiryModel>(json);
-          
-            Assert.AreEqual(model.ExpiryDate, deserialisedModel.ExpiryDate);
+
+            Assert.That(deserialisedModel?.ExpiryDate, Is.EqualTo(model.ExpiryDate));
         }
     }
 }
