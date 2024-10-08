@@ -41,20 +41,20 @@ namespace UKHO.FileShareAdminClient
 
         #region backwards compatible obsolete versions of methods that have been renamed.
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             params KeyValuePair<string, string>[] fileAttributes);
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
         Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName,
             string mimeType, CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes);
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
         Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType,
             Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
             params KeyValuePair<string, string>[] fileAttributes);
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
         Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName,
             string mimeType, Action<(int blocksComplete, int totalBlockCount)> progressUpdate,
             CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes);
@@ -223,26 +223,26 @@ namespace UKHO.FileShareAdminClient
 
         #region backwards compatible obsolete versions of methods that have been renamed.
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
         public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, params KeyValuePair<string, string>[] fileAttributes)
         {
             return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, fileAttributes);
         }
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
 
         public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes)
         {
             return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, cancellationToken, fileAttributes);
         }
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
         public Task AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, Action<(int blocksComplete, int totalBlockCount)> progressUpdate, params KeyValuePair<string, string>[] fileAttributes)
         {
             return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, progressUpdate, fileAttributes);
         }
 
-        [Obsolete("Please use AddFileToBatch")]
+        [Obsolete("Please use AddFileToBatchAsync")]
         public Task<IResult<AddFileToBatchResponse>> AddFileToBatch(IBatchHandle batchHandle, Stream stream, string fileName, string mimeType, Action<(int blocksComplete, int totalBlockCount)> progressUpdate, CancellationToken cancellationToken, params KeyValuePair<string, string>[] fileAttributes)
         {
             return AddFileToBatchAsync(batchHandle, stream, fileName, mimeType, progressUpdate, cancellationToken, fileAttributes);
