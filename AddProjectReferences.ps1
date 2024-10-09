@@ -5,9 +5,9 @@ param (
 )
 
 $csprojPath = $SourcesDirectory + "\Tests\IntegrationTests\FileShareClientIntegrationTests\FileShareClientIntegrationTests.csproj"
-Write-Host "Updating " + $csprojPath
-Write-Host "Using version " + $NuGetVersion
-Write-Host "Package source " + $PackagePath
+Write-Host "Updating " $csprojPath
+Write-Host "Using version " $NuGetVersion
+Write-Host "Package source " $PackagePath
 
 $xmlContent = [xml](Get-Content $csprojPath)
 

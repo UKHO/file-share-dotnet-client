@@ -119,6 +119,7 @@ stages:
         command: restore
         projects: |
           **/*Tests*.csproj
+          !**/FileShareClientIntegrationTests.csproj
         feedsToUse: config
         noCache: true
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
@@ -136,7 +137,9 @@ stages:
       displayName: "dotnet test"
       inputs:
         command: "test"
-        projects: "**/*Tests.csproj"
+        projects: |
+          **/*Tests.csproj
+          !**/FileShareClientIntegrationTests.csproj
         arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
           
     - task: DotNetCoreCLI@2
@@ -164,6 +167,16 @@ stages:
       inputs:
         path: $(Build.SourcesDirectory)
         artifact: Sources
+
+    - task: DotNetCoreCLI@2
+      displayName: ".Net Core - NuGet restore for integration tests"
+      inputs:
+        command: restore
+        projects: **/FileShareClientIntegrationTests.csproj
+        feedsToUse: config
+        noCache: true
+        nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+        restoreDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish Pipeline Artifact
