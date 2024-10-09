@@ -156,8 +156,8 @@ stages:
         filePath: '$(Build.SourcesDirectory)\AddProjectReferences.ps1'
         arguments: >
           -SourcesDirectory "$(Build.SourcesDirectory)"
-          -NuGetVersion "$(SetAssemblyVersion.WebAppSlotName)"
-          -PackagePath "$(Build.ArtifactStagingDirectory)/packages"
+          -NuGetVersion "$(SetAssemblyVersion.NuGetVersion)"
+          -PackagePath "$(Build.ArtifactStagingDirectory)\packages"
 
     - task: PublishPipelineArtifact@1
       displayName: REMOVE - Publish source
