@@ -57,17 +57,18 @@ stages:
 
     - task: PowerShell@2
       displayName: "Set assembly version numbers based on build ID"
+      name: SetAssemblyVersion
       inputs:
         targetType: filePath
         filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
         arguments: >
-          -buildNumber "$(Build.BuildNumber)" 
-          -solutionDirectory "$(Build.SourcesDirectory)\" 
-          -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" 
-          -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright" 
-          -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" 
+          -buildNumber "$(Build.BuildNumber)"
+          -solutionDirectory "$(Build.SourcesDirectory)\"
+          -UKHOAssemblyCompany "$env:UKHOAssemblyCompany"
+          -UKHOAssemblyCopyright "$env:UKHOAssemblyCopyright"
+          -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix"
           -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"
-          -SourceRevisionId "$(Build.SourceVersion)" 
+          -SourceRevisionId "$(Build.SourceVersion)"
           
     - task: UseDotNet@2
       displayName: 'Use .NET $(SdkVersion) sdk'
@@ -147,6 +148,22 @@ stages:
           **/FileShareAdminClient.csproj
         packDirectory: $(Build.ArtifactStagingDirectory)/packages
         arguments:  '--configuration $(BuildConfiguration)'
+
+    - task: PowerShell@2
+      displayName: "Include new packages in integration tests"
+      inputs:
+        targetType: filePath
+        filePath: '$(Build.SourcesDirectory)\AddProjectReferences.ps1'
+        arguments: >
+          -SourcesDirectory "$(Build.SourcesDirectory)"
+          -NuGetVersion "$(SetAssemblyVersion.WebAppSlotName)"
+          -PackagePath "$(Build.ArtifactStagingDirectory)/packages"
+
+    - task: PublishPipelineArtifact@1
+      displayName: REMOVE - Publish source
+      inputs:
+        path: $(Build.SourcesDirectory)
+        artifact: Sources
 
     - task: PublishPipelineArtifact@1
       displayName: Publish Pipeline Artifact
