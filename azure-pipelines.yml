@@ -172,7 +172,8 @@ stages:
       displayName: ".Net Core - NuGet restore for integration tests"
       inputs:
         command: restore
-        projects: **/FileShareClientIntegrationTests.csproj
+        projects: |
+          **/FileShareClientIntegrationTests.csproj
         feedsToUse: config
         noCache: true
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
