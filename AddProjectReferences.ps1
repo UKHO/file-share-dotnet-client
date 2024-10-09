@@ -27,15 +27,11 @@ if ($itemGroup -is [array]) {
     $itemGroup = $itemGroup[0]
 }
 
-$newPackageReference1 = $xmlContent.CreateElement("PackageReference", $xmlContent.DocumentElement.NamespaceURI)
-$newPackageReference1.SetAttribute("Include", "UKHO.FileShareClient")
-$newPackageReference1.SetAttribute("Version", $NuGetVersion)
-$itemGroup.AppendChild($newPackageReference1)
+$packageNode1 = $itemGroup.PackageReference | Where-Object { $_.Include -eq 'UKHO.FileShareClient' }
+$packageNode1.SetAttribute("Version", $NuGetVersion)
 
-$newPackageReference2 = $xmlContent.CreateElement("PackageReference", $xmlContent.DocumentElement.NamespaceURI)
-$newPackageReference2.SetAttribute("Include", "UKHO.FileShareAdminClient")
-$newPackageReference2.SetAttribute("Version", $NuGetVersion)
-$itemGroup.AppendChild($newPackageReference2)
+$packageNode2 = $itemGroup.PackageReference | Where-Object { $_.Include -eq 'UKHO.FileShareAdminClient' }
+$packageNode2.SetAttribute("Version", $NuGetVersion)
 
 $xmlContent.Save($csprojPath)
 
