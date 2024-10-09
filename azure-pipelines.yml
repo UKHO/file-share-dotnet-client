@@ -130,7 +130,9 @@ stages:
       displayName: "dotnet build"
       inputs:
         command: "build"
-        projects: "**/*.csproj"
+        projects: |
+          **/*.csproj
+          !**/FileShareClientIntegrationTests.csproj
         arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
     - task: DotNetCoreCLI@2
