@@ -32,7 +32,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientTestsCommon"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{EDA25D86-229C-4AA9-863D-F22FD419186E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileShareClientIntegrationTests", "Tests\IntegrationTests\FileShareClientIntegrationTests\FileShareClientIntegrationTests.csproj", "{1D226187-09E3-4B08-A993-706D44E1E146}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientIntegrationTests", "Tests\IntegrationTests\FileShareClientIntegrationTests\FileShareClientIntegrationTests.csproj", "{1D226187-09E3-4B08-A993-706D44E1E146}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
