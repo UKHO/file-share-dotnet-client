@@ -164,12 +164,6 @@ stages:
           -NuGetVersion "$(SetAssemblyVersion.NuGetVersion)"
           -PackagePath "$(Build.ArtifactStagingDirectory)\packages"
 
-    - task: PublishPipelineArtifact@1
-      displayName: REMOVE - Publish source
-      inputs:
-        path: $(Build.SourcesDirectory)
-        artifact: Sources
-
     - task: DotNetCoreCLI@2
       displayName: ".Net Core - NuGet restore for integration tests"
       inputs:
@@ -180,6 +174,12 @@ stages:
         noCache: true
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
         restoreDirectory: '$(Build.SourcesDirectory)\packagesForTests'
+
+    - task: PublishPipelineArtifact@1
+      displayName: REMOVE - Publish source
+      inputs:
+        path: $(Build.SourcesDirectory)
+        artifact: Sources
 
     - task: PublishPipelineArtifact@1
       displayName: Publish Pipeline Artifact

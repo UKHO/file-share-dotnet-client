@@ -28,10 +28,20 @@ if ($itemGroup -is [array]) {
 }
 
 $packageNode1 = $itemGroup.PackageReference | Where-Object { $_.Include -eq 'UKHO.FileShareClient' }
-$packageNode1.SetAttribute("Version", $NuGetVersion)
+
+if ($packageNode1 -eq $null) {
+    throw "Error - unable to find UKHO.FileShareClient reference"
+} else {
+    $packageNode1.SetAttribute("Version", $NuGetVersion)
+}
 
 $packageNode2 = $itemGroup.PackageReference | Where-Object { $_.Include -eq 'UKHO.FileShareAdminClient' }
-$packageNode2.SetAttribute("Version", $NuGetVersion)
+
+if ($packageNode2 -eq $null) {
+    throw "Error - unable to find UKHO.FileShareAdminClient reference"
+} else {
+    $packageNode2.SetAttribute("Version", $NuGetVersion)
+}
 
 $xmlContent.Save($csprojPath)
 
