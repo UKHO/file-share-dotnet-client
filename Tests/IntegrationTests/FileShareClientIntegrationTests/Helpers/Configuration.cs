@@ -17,19 +17,18 @@ namespace FileShareClientIntegrationTests.Helpers
 
             HttpClientFactory = new FileShareApiClientFactory();
 
-            var fssAuthSection = configurationRoot!.GetSection("FssAuth") ?? throw new NullReferenceException("Unable to find FssAuth section in appsettings.json");
-            var clientId = GetFssAuthValue("ClientId");
-            var clientSecret = GetFssAuthValue("ClientSecret");
-            var fssClientId = GetFssAuthValue("FssClientId");
-            var microsoftOnlineLoginUrl = GetFssAuthValue("MicrosoftOnlineLoginUrl");
-            var tenantId = GetFssAuthValue("TenantId");
+            var clientId = GetValue("FssAuth:ClientId");
+            var clientSecret = GetValue("FssAuth:ClientSecret");
+            var fssClientId = GetValue("FssAuth:FssClientId");
+            var microsoftOnlineLoginUrl = GetValue("FssAuth:MicrosoftOnlineLoginUrl");
+            var tenantId = GetValue("FssAuth:TenantId");
             AuthTokenProvider = new FileShareApiTokenProvider(clientId, clientSecret, fssClientId, microsoftOnlineLoginUrl, tenantId);
 
-            FssUrl = configurationRoot.GetValue<string>("FssUrl") ?? throw new NullReferenceException("Unable to find FssUrl value in appsettings.json");
+            FssUrl = GetValue("FssUrl");
 
-            GetBatchStatusAsync = new GetBatchStatusAsyncModel { BatchId = configurationRoot.GetValue<string>("GetBatchStatusAsync:BatchId") };
+            GetBatchStatusAsync = new GetBatchStatusAsyncModel { BatchId = GetValue("GetBatchStatusAsync:BatchId") };
 
-            string GetFssAuthValue(string key) => fssAuthSection!.GetValue<string>(key) ?? throw new NullReferenceException($"Unable to find {key} in FssAuth section in appsettings.json");
+            string GetValue(string key) => configurationRoot!.GetValue<string>(key) ?? throw new NullReferenceException($"Unable to find {key} in appsettings.json");
         }
     }
 }
