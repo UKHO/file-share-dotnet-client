@@ -83,5 +83,13 @@ namespace FileShareClientIntegrationTests
                 Assert.That(stream.Length, Is.EqualTo(result1.Length));
             });
         }
+
+        [Test]
+        public async Task GetUserAttributesAsync()
+        {
+            var result = await _fileShareApiClient.GetUserAttributesAsync();
+
+            Assert.That(result?.Count(), Is.GreaterThan(0));
+        }
     }
 }
