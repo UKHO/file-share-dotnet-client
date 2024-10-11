@@ -17,8 +17,8 @@ if ($propertyGroup -is [array]) {
     $propertyGroup = $propertyGroup[0]
 }
 
-$newRestoreSources = $xmlContent.CreateElement("RestoreSources", $xmlContent.DocumentElement.NamespaceURI)
-$newRestoreSources.InnerText = '$(RestoreSources);' + $PackagePath
+$newRestoreSources = $xmlContent.CreateElement("RestoreAdditionalProjectSources", $xmlContent.DocumentElement.NamespaceURI)
+$newRestoreSources.InnerText = $PackagePath
 $propertyGroup.AppendChild($newRestoreSources)
 
 $itemGroup = $xmlContent.Project.ItemGroup
