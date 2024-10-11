@@ -11,6 +11,7 @@ namespace FileShareClientIntegrationTests.Helpers
         public static string FssUrl { get; }
         public static GetBatchStatusAsyncModel GetBatchStatusAsync { get; }
         public static SearchAsyncModel SearchAsync { get; }
+        public static DownloadFileAsyncModel DownloadFileAsync { get; }
 
         static Configuration()
         {
@@ -34,6 +35,12 @@ namespace FileShareClientIntegrationTests.Helpers
                 SearchQuery = GetString("SearchAsync:SearchQuery"),
                 PageSize = GetInt("SearchAsync:PageSize"),
                 Start = GetInt("SearchAsync:Start")
+            };
+
+            DownloadFileAsync = new DownloadFileAsyncModel
+            {
+                BatchId = GetString("DownloadFileAsync:BatchId"),
+                FileName = GetString("DownloadFileAsync:FileName")
             };
 
             string GetString(string key) => configurationRoot!.GetValue<string>(key) ?? throw new NullReferenceException($"Unable to find {key} in appsettings.json");
