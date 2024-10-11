@@ -77,8 +77,11 @@ namespace FileShareClientIntegrationTests
 
             var result2 = await _fileShareApiClient.DownloadFileAsync(Configuration.DownloadFileAsync.BatchId, Configuration.DownloadFileAsync.FileName, stream, result1.Length, CancellationToken.None);
 
-            Assert.That(result2, Is.Not.Null);
-            Assert.That(stream.Length, Is.EqualTo(result1.Length));
+            Assert.Multiple(() =>
+            {
+                Assert.That(result2, Is.Not.Null);
+                Assert.That(stream.Length, Is.EqualTo(result1.Length));
+            });
         }
     }
 }
