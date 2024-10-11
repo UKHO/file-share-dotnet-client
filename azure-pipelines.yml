@@ -91,29 +91,29 @@ stages:
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packages'
 
-    # - task: CmdLine@1
-    #   condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-    #   displayName: "Run OWASP Dependency Checker"
-    #   inputs:
-    #     filename: 'dependency-check.bat'
-    #     arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
+    - task: CmdLine@1
+      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
+      displayName: "Run OWASP Dependency Checker"
+      inputs:
+        filename: 'dependency-check.bat'
+        arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
 
-    # - task: PublishBuildArtifacts@1
-    #   condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-    #   displayName: "Publish Artifact: OWASP Dependency Checker Report"
-    #   inputs:
-    #     PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
-    #     ArtifactName: "OWASP Dependency Checker Report"
+    - task: PublishBuildArtifacts@1
+      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
+      displayName: "Publish Artifact: OWASP Dependency Checker Report"
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
+        ArtifactName: "OWASP Dependency Checker Report"
 
-    # - task: PowerShell@1
-    #   condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-    #   displayName: "Fail Build if Dependency Check Finds Any Vulnerabilities"
-    #   inputs:
-    #     scriptType: inlineScript
-    #     arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
-    #     inlineScript: |
-    #       param($ReportLocation)
-    #       Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
+    - task: PowerShell@1
+      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
+      displayName: "Fail Build if Dependency Check Finds Any Vulnerabilities"
+      inputs:
+        scriptType: inlineScript
+        arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
+        inlineScript: |
+          param($ReportLocation)
+          Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
     - task: DotNetCoreCLI@2
       displayName: ".Net Core - NuGet restore for test projects"
@@ -128,23 +128,23 @@ stages:
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
     
-    # - task: DotNetCoreCLI@2
-    #   displayName: "dotnet build"
-    #   inputs:
-    #     command: "build"
-    #     projects: |
-    #       **/*.csproj
-    #       !**/FileShareClientIntegrationTests.csproj
-    #     arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+    - task: DotNetCoreCLI@2
+      displayName: "dotnet build"
+      inputs:
+        command: "build"
+        projects: |
+          **/*.csproj
+          !**/FileShareClientIntegrationTests.csproj
+        arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
-    # - task: DotNetCoreCLI@2
-    #   displayName: "dotnet test"
-    #   inputs:
-    #     command: "test"
-    #     projects: |
-    #       **/*Tests.csproj
-    #       !**/FileShareClientIntegrationTests.csproj
-    #     arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+    - task: DotNetCoreCLI@2
+      displayName: "dotnet test"
+      inputs:
+        command: "test"
+        projects: |
+          **/*Tests.csproj
+          !**/FileShareClientIntegrationTests.csproj
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
           
     - task: DotNetCoreCLI@2
       displayName: Pack Project
