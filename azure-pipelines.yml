@@ -115,18 +115,18 @@ stages:
     #       param($ReportLocation)
     #       Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
-    # - task: DotNetCoreCLI@2
-    #   displayName: ".Net Core - NuGet restore for test projects"
-    #   inputs:
-    #     command: restore
-    #     projects: |
-    #       **/*Tests*.csproj
-    #       !**/FileShareClientIntegrationTests.csproj
-    #     feedsToUse: config
-    #     noCache: true
-    #     nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-    #     workingDirectory: '$(Build.SourcesDirectory)'
-    #     packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
+    - task: DotNetCoreCLI@2
+      displayName: ".Net Core - NuGet restore for test projects"
+      inputs:
+        command: restore
+        projects: |
+          **/*Tests*.csproj
+          !**/FileShareClientIntegrationTests.csproj
+        feedsToUse: config
+        noCache: true
+        nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+        workingDirectory: '$(Build.SourcesDirectory)'
+        packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
     
     # - task: DotNetCoreCLI@2
     #   displayName: "dotnet build"
