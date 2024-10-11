@@ -13,7 +13,7 @@ namespace FileShareClientIntegrationTests.Helpers
 
         static Configuration()
         {
-            var configurationRoot = new ConfigurationBuilder().AddJsonFile("appsettings.json", false).Build();
+            var configurationRoot = new ConfigurationBuilder().AddJsonFile("appsettings.json", false).Build() ?? throw new NullReferenceException("Unable to build configuration from appsettings.json");
 
             HttpClientFactory = new FileShareApiClientFactory();
 

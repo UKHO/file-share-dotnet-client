@@ -145,6 +145,7 @@ stages:
           **/*Tests.csproj
           !**/FileShareClientIntegrationTests.csproj
         arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+        testRunTitle: UnitTests
           
     - task: DotNetCoreCLI@2
       displayName: Pack Project
@@ -192,11 +193,11 @@ stages:
         xmlTransformationRules:
         jsonTargetFiles: 'appsettings.json'
 
-    - task: PublishPipelineArtifact@1
-      displayName: REMOVE - Publish settings
-      inputs:
-        path: $(Build.BinariesDirectory)\integrationtests\appsettings.json
-        artifact: Settings
+    # - task: PublishPipelineArtifact@1
+    #   displayName: REMOVE - Publish settings
+    #   inputs:
+    #     path: $(Build.BinariesDirectory)\integrationtests\appsettings.json
+    #     artifact: Settings
 
     - task: DotNetCoreCLI@2
       displayName: Integration tests - dotnet test
@@ -205,7 +206,6 @@ stages:
         projects: |
           $(Build.BinariesDirectory)\integrationtests\FileShareClientIntegrationTests.dll
         testRunTitle: IntegrationTests
-        #workingDirectory: $(Build.BinariesDirectory)\integrationtests
 
     # - task: PublishPipelineArtifact@1
     #   displayName: REMOVE - Publish source
@@ -213,76 +213,76 @@ stages:
     #     path: $(Build.SourcesDirectory)
     #     artifact: Sources
 
-#     - task: PublishPipelineArtifact@1
-#       displayName: REMOVE - Publish integration tests build
-#       inputs:
-#         path: $(Build.BinariesDirectory)\integrationtests
-#         artifact: Integration test build
+    # - task: PublishPipelineArtifact@1
+    #   displayName: REMOVE - Publish integration tests build
+    #   inputs:
+    #     path: $(Build.BinariesDirectory)\integrationtests
+    #     artifact: Integration test build
 
-#     - task: PublishPipelineArtifact@1
-#       displayName: Publish Pipeline Artifact
-#       inputs:
-#         path: $(Build.ArtifactStagingDirectory)
-#         artifact: $(Build.DefinitionName)
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Pipeline Artifact
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)
+        artifact: $(Build.DefinitionName)
           
-#     - task: PublishPipelineArtifact@1
-#       displayName: Publish NuGet Package Artifacts
-#       inputs:
-#         path: $(Build.ArtifactStagingDirectory)/packages
-#         artifact: NuGetPackages
+    - task: PublishPipelineArtifact@1
+      displayName: Publish NuGet Package Artifacts
+      inputs:
+        path: $(Build.ArtifactStagingDirectory)/packages
+        artifact: NuGetPackages
 
-# - stage: Proget
-#   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-#   variables:
-#   - group: nuget-deployment-vars
-#   jobs:
-#   - deployment: Publish_To_ProGetCloud
-#     displayName: Publish To ProGetCloud
-#     pool:
-#       name: NautilusRelease
-#     environment: FileShareDotNetClient-ProGet
-#     strategy:
-#       runOnce:
-#         deploy:
-#           steps:              
-#           - task: UseDotNet@2
-#             displayName: 'Use .NET $(SdkVersion) sdk'
-#             inputs:
-#               packageType: sdk
-#               version: $(SdkVersion)
+- stage: Proget
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  variables:
+  - group: nuget-deployment-vars
+  jobs:
+  - deployment: Publish_To_ProGetCloud
+    displayName: Publish To ProGetCloud
+    pool:
+      name: NautilusRelease
+    environment: FileShareDotNetClient-ProGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:              
+          - task: UseDotNet@2
+            displayName: 'Use .NET $(SdkVersion) sdk'
+            inputs:
+              packageType: sdk
+              version: $(SdkVersion)
 
-#           - download: current
-#             artifact: NuGetPackages
+          - download: current
+            artifact: NuGetPackages
 
-#           - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(progetApiKey) -s https://progetcloud.ukho.gov.uk/nuget/ukho.trusted/v3/index.json }
-#             env:
-#               progetApiKey : $(progetApiKey)
-#             displayName: Publish Package
+          - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(progetApiKey) -s https://progetcloud.ukho.gov.uk/nuget/ukho.trusted/v3/index.json }
+            env:
+              progetApiKey : $(progetApiKey)
+            displayName: Publish Package
             
-# - stage: Nuget
-#   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-#   variables:
-#   - group: nuget-deployment-vars
-#   jobs:
-#   - deployment: Publish_To_NuGet
-#     displayName: Publish To NuGet
-#     pool: 
-#       name: NautilusRelease
-#     environment: FileShareDotNetClient-NuGet
-#     strategy:
-#       runOnce:
-#         deploy:
-#           steps:
-#           - task: UseDotNet@2
-#             displayName: 'Use .NET $(SdkVersion) sdk'
-#             inputs:
-#               packageType: sdk
-#               version: $(SdkVersion)
+- stage: Nuget
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  variables:
+  - group: nuget-deployment-vars
+  jobs:
+  - deployment: Publish_To_NuGet
+    displayName: Publish To NuGet
+    pool: 
+      name: NautilusRelease
+    environment: FileShareDotNetClient-NuGet
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET $(SdkVersion) sdk'
+            inputs:
+              packageType: sdk
+              version: $(SdkVersion)
 
-#           - download: current
-#             artifact: NuGetPackages
+          - download: current
+            artifact: NuGetPackages
 
-#           - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/UKHO.FileShareClient.*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true}
-#             env:
-#               nugetApiKey : $(nugetApiKey)
-#             displayName: Publish Package
+          - powershell: Get-ChildItem "$(Pipeline.Workspace)/NuGetPackages/UKHO.FileShareClient.*.nupkg" -File | Foreach {dotnet nuget push $_.fullname -k $(nugetApiKey) -s https://api.nuget.org/v3/index.json --no-symbols true}
+            env:
+              nugetApiKey : $(nugetApiKey)
+            displayName: Publish Package
