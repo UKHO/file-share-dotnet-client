@@ -49,10 +49,20 @@ namespace FileShareClientIntegrationTests
         [Test]
         public async Task SearchAsync()
         {
-            var result = await _fileShareApiClient.SearchAsync("$batch(Product Type) eq 'ADP' and contains($batch(Content), 'Software')");
+            var result = await _fileShareApiClient.SearchAsync(Configuration.SearchAsync.SearchQuery);
 
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Count, Is.GreaterThan(0));
+            Assert.That(result.Total, Is.GreaterThan(Configuration.SearchAsync.PageSize));
+
+            result = await _fileShareApiClient.SearchAsync(Configuration.SearchAsync.SearchQuery, Configuration.SearchAsync.PageSize);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.EqualTo(Configuration.SearchAsync.PageSize));
+
+            result = await _fileShareApiClient.SearchAsync(Configuration.SearchAsync.SearchQuery, Configuration.SearchAsync.PageSize, Configuration.SearchAsync.Start);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count, Is.LessThanOrEqualTo(Configuration.SearchAsync.PageSize));
         }
     }
 }

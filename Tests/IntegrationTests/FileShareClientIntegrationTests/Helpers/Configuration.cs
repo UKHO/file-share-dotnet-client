@@ -10,6 +10,7 @@ namespace FileShareClientIntegrationTests.Helpers
         public static IAuthTokenProvider AuthTokenProvider { get; }
         public static string FssUrl { get; }
         public static GetBatchStatusAsyncModel GetBatchStatusAsync { get; }
+        public static SearchAsyncModel SearchAsync { get; }
 
         static Configuration()
         {
@@ -17,18 +18,26 @@ namespace FileShareClientIntegrationTests.Helpers
 
             HttpClientFactory = new FileShareApiClientFactory();
 
-            var clientId = GetValue("FssAuth:ClientId");
-            var clientSecret = GetValue("FssAuth:ClientSecret");
-            var fssClientId = GetValue("FssAuth:FssClientId");
-            var microsoftOnlineLoginUrl = GetValue("FssAuth:MicrosoftOnlineLoginUrl");
-            var tenantId = GetValue("FssAuth:TenantId");
+            var clientId = GetString("FssAuth:ClientId");
+            var clientSecret = GetString("FssAuth:ClientSecret");
+            var fssClientId = GetString("FssAuth:FssClientId");
+            var microsoftOnlineLoginUrl = GetString("FssAuth:MicrosoftOnlineLoginUrl");
+            var tenantId = GetString("FssAuth:TenantId");
             AuthTokenProvider = new FileShareApiTokenProvider(clientId, clientSecret, fssClientId, microsoftOnlineLoginUrl, tenantId);
 
-            FssUrl = GetValue("FssUrl");
+            FssUrl = GetString("FssUrl");
 
-            GetBatchStatusAsync = new GetBatchStatusAsyncModel { BatchId = GetValue("GetBatchStatusAsync:BatchId") };
+            GetBatchStatusAsync = new GetBatchStatusAsyncModel { BatchId = GetString("GetBatchStatusAsync:BatchId") };
 
-            string GetValue(string key) => configurationRoot!.GetValue<string>(key) ?? throw new NullReferenceException($"Unable to find {key} in appsettings.json");
+            SearchAsync = new SearchAsyncModel
+            {
+                SearchQuery = GetString("SearchAsync:SearchQuery"),
+                PageSize = GetInt("SearchAsync:PageSize"),
+                Start = GetInt("SearchAsync:Start")
+            };
+
+            string GetString(string key) => configurationRoot!.GetValue<string>(key) ?? throw new NullReferenceException($"Unable to find {key} in appsettings.json");
+            int GetInt(string key) => configurationRoot!.GetValue<int>(key);
         }
     }
 }
