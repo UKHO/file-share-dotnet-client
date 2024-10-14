@@ -45,4 +45,5 @@ if ($packageNode2 -eq $null) {
 
 $xmlContent.Save($csprojPath)
 
-Write-Host "Finished"
+Write-Host "Updated project file:"
+Get-Content $csprojPath
