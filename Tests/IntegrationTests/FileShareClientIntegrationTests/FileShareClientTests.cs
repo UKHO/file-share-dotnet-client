@@ -89,7 +89,50 @@ namespace FileShareClientIntegrationTests
         {
             var result = await _fileShareApiClient.GetUserAttributesAsync();
 
-            Assert.That(result?.Count(), Is.GreaterThan(0));
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Count(), Is.GreaterThan(0));
+        }
+
+        [Test]
+        public async Task BatchAttributeSearchAsync()
+        {
+            var result1 = await _fileShareApiClient.BatchAttributeSearchAsync(Configuration.BatchAttributeSearchAsync.SearchQuery, CancellationToken.None);
+
+            Assert.That(result1, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result1.IsSuccess, Is.True);
+                Assert.That(result1.StatusCode, Is.EqualTo(200));
+                Assert.That(result1.Data, Is.Not.Null);
+            });
+            Assert.That(result1.Data.BatchAttributes.Any(x => x.Values.Count > Configuration.BatchAttributeSearchAsync.MaxAttributeValueCount + 1), Is.True);
+
+            var result2 = await _fileShareApiClient.BatchAttributeSearchAsync(Configuration.BatchAttributeSearchAsync.SearchQuery, Configuration.BatchAttributeSearchAsync.MaxAttributeValueCount, CancellationToken.None);
+
+            Assert.That(result2, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result2.IsSuccess, Is.True);
+                Assert.That(result2.StatusCode, Is.EqualTo(200));
+                Assert.That(result2.Data, Is.Not.Null);
+            });
+            Assert.That(result2.Data.BatchAttributes.Any(x => x.Values.Count > Configuration.BatchAttributeSearchAsync.MaxAttributeValueCount + 1), Is.False);
+        }
+
+        [Test]
+        public async Task DownloadZipFileAsync()
+        {
+            var result = await _fileShareApiClient.DownloadZipFileAsync(Configuration.DownloadZipFileAsync.BatchId, CancellationToken.None);
+
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Data, Is.Not.Null);
+            Assert.Multiple(() =>
+            {
+                Assert.That(result.Data.Length, Is.GreaterThan(0));
+                Assert.That(result.Errors?.Count, Is.EqualTo(0));
+                Assert.That(result.IsSuccess, Is.True);
+                Assert.That(result.StatusCode, Is.EqualTo(200));
+            });
         }
     }
 }

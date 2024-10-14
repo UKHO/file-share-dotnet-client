@@ -12,6 +12,8 @@ namespace FileShareClientIntegrationTests.Helpers
         public static GetBatchStatusAsyncModel GetBatchStatusAsync { get; }
         public static SearchAsyncModel SearchAsync { get; }
         public static DownloadFileAsyncModel DownloadFileAsync { get; }
+        public static BatchAttributeSearchAsyncModel BatchAttributeSearchAsync { get; }
+        public static DownloadZipFileAsyncModel DownloadZipFileAsync { get; }
 
         static Configuration()
         {
@@ -42,6 +44,14 @@ namespace FileShareClientIntegrationTests.Helpers
                 BatchId = GetString("DownloadFileAsync:BatchId"),
                 FileName = GetString("DownloadFileAsync:FileName")
             };
+
+            BatchAttributeSearchAsync = new BatchAttributeSearchAsyncModel
+            {
+                SearchQuery = GetString("BatchAttributeSearchAsync:SearchQuery"),
+                MaxAttributeValueCount = GetInt("BatchAttributeSearchAsync:MaxAttributeValueCount")
+            };
+
+            DownloadZipFileAsync = new DownloadZipFileAsyncModel { BatchId = GetString("DownloadZipFileAsync:BatchId") };
 
             string GetString(string key) => configurationRoot!.GetValue<string>(key) ?? throw new NullReferenceException($"Unable to find {key} in appsettings.json");
             int GetInt(string key) => configurationRoot!.GetValue<int>(key);
