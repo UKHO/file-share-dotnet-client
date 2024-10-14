@@ -39,8 +39,7 @@ stages:
   displayName: Build, test and publish
   dependsOn: []
   jobs:
-  - job:
-    name: BuildTestPublish
+  - job: BuildTestPublish
     workspace:
       clean: all
     displayName: Build, unit test and package
