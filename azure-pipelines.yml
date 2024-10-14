@@ -155,7 +155,7 @@ stages:
         arguments:  '--configuration $(BuildConfiguration)'
 
     - task: PowerShell@2
-      displayName: Integration tests - update project file
+      displayName: Update integration tests project file
       inputs:
         targetType: filePath
         filePath: '$(Build.SourcesDirectory)\AddProjectReferences.ps1'
