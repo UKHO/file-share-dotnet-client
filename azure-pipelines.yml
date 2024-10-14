@@ -47,7 +47,7 @@ stages:
     - group: Client Library Integration Tests
     steps:
     - task: PowerShell@2
-      displayName: "Output Environment Variables"
+      displayName: Output environment variables
       inputs:
         targetType: inline
         script: |
@@ -72,13 +72,13 @@ stages:
           -SourceRevisionId "$(Build.SourceVersion)"
           
     - task: UseDotNet@2
-      displayName: 'Use .NET $(SdkVersion) sdk'
+      displayName: Use .NET $(SdkVersion) sdk
       inputs:
         packageType: sdk
         version: $(SdkVersion)
 
     - task: DotNetCoreCLI@2
-      displayName: .NET - NuGet restore non-test projects
+      displayName: FSS libraries package restore
       inputs:
         command: restore
         projects: |
@@ -92,21 +92,21 @@ stages:
 
     - task: CmdLine@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: Run OWASP Dependency Checker
+      displayName: Run OWASP dependency-check
       inputs:
-        filename: 'dependency-check.bat'
+        filename: dependency-check.bat
         arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
 
     - task: PublishBuildArtifacts@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: "Publish Artifact: OWASP Dependency Checker Report"
+      displayName: Publish OWASP dependency-check report
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
-        ArtifactName: "OWASP Dependency Checker Report"
+        PathtoPublish: $(Build.SourcesDirectory)\DCReport
+        ArtifactName: OWASP Dependency-Check Report
 
     - task: PowerShell@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: Fail Build if Dependency Check Finds Any Vulnerabilities
+      displayName: Fail build if OWASP dependency-check finds any vulnerabilities
       inputs:
         scriptType: inlineScript
         arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
@@ -115,7 +115,7 @@ stages:
           Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
     - task: DotNetCoreCLI@2
-      displayName: .NET - NuGet restore for test projects
+      displayName: Unit test package restore
       inputs:
         command: restore
         projects: |
@@ -128,7 +128,7 @@ stages:
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
     
     - task: DotNetCoreCLI@2
-      displayName: dotnet build
+      displayName: Build all except integration tests
       inputs:
         command: build
         projects: |
@@ -137,7 +137,7 @@ stages:
         arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
     - task: DotNetCoreCLI@2
-      displayName: dotnet test
+      displayName: Run unit tests
       inputs:
         command: test
         projects: |
@@ -147,7 +147,7 @@ stages:
         testRunTitle: UnitTests
           
     - task: DotNetCoreCLI@2
-      displayName: .NET - pack projects
+      displayName: Pack FSS libraries
       inputs:
         command: pack
         packagesToPack: '**/FileShareClient.csproj;**/FileShareAdminClient.csproj'
@@ -155,7 +155,7 @@ stages:
         arguments:  '--configuration $(BuildConfiguration)'
 
     - task: PowerShell@2
-      displayName: Include new packages in integration tests
+      displayName: Integration tests - update project file
       inputs:
         targetType: filePath
         filePath: '$(Build.SourcesDirectory)\AddProjectReferences.ps1'
@@ -165,7 +165,7 @@ stages:
           -PackagePath "$(Build.ArtifactStagingDirectory)\packages"
 
     - task: DotNetCoreCLI@2
-      displayName: Integration tests - NuGet restore
+      displayName: Integration tests package restore
       inputs:
         command: restore
         projects: |
@@ -176,7 +176,7 @@ stages:
         restoreDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
     - task: DotNetCoreCLI@2
-      displayName: Integration tests - dotnet build
+      displayName: Build integration tests
       inputs:
         command: build
         projects: |
@@ -229,7 +229,7 @@ stages:
     #     artifact: $(Build.DefinitionName)
           
     - task: PublishPipelineArtifact@1
-      displayName: Publish NuGet Package Artifacts
+      displayName: Publish NuGet packages
       inputs:
         path: $(Build.ArtifactStagingDirectory)/packages
         artifact: NuGetPackages
@@ -254,7 +254,7 @@ stages:
         jsonTargetFiles: 'appsettings.json'
 
     - task: DotNetCoreCLI@2
-      displayName: dotnet test
+      displayName: Run integration tests
       inputs:
         command: test
         projects: |
