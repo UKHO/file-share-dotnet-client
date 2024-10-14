@@ -35,11 +35,11 @@ variables:
   value: "net8.0"
 
 stages:
-- stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
+- stage: BuildTestPublish
   displayName: Build, test and publish
   dependsOn: []
   jobs:
-  - job: BuildTestPublish
+  - job: MainBuild
     workspace:
       clean: all
     displayName: Build, unit test and package
@@ -78,7 +78,7 @@ stages:
         version: $(SdkVersion)
 
     - task: DotNetCoreCLI@2
-      displayName: .Net Core - NuGet restore non-test projects
+      displayName: .NET - NuGet restore non-test projects
       inputs:
         command: restore
         projects: |
@@ -115,7 +115,7 @@ stages:
           Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
     - task: DotNetCoreCLI@2
-      displayName: .Net Core - NuGet restore for test projects
+      displayName: .NET - NuGet restore for test projects
       inputs:
         command: restore
         projects: |
@@ -147,13 +147,10 @@ stages:
         testRunTitle: UnitTests
           
     - task: DotNetCoreCLI@2
-      displayName: Pack Project
+      displayName: .NET - pack projects
       inputs:
         command: pack
-        projects: |
-          **/FileShareClient.csproj
-          **/FileShareAdminClient.csproj
-          !**/*Tests*.csproj
+        packagesToPack: **/FileShareClient.csproj;**/FileShareAdminClient.csproj
         packDirectory: $(Build.ArtifactStagingDirectory)/packages
         arguments:  '--configuration $(BuildConfiguration)'
 
@@ -238,7 +235,7 @@ stages:
         artifact: NuGetPackages
 
   - job:
-    dependsOn: BuildTestPublish
+    dependsOn: MainBuild
     displayName: Integration tests
     variables:
     - group: Client Library Integration Tests
