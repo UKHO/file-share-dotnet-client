@@ -36,16 +36,16 @@ variables:
 
 stages:
 - stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
-  displayName: "Build (inc DependencyChecker, Dotnet Build, dotnet test and publish artifact )"
+  displayName: Build, test and publish
   dependsOn: []
   jobs:
   - job:
+    name: BuildTestPublish
     workspace:
       clean: all
-    displayName: "DependencyChecker Dotnet Build test publish"
+    displayName: Build, unit test and package
     variables:
-    - group: "Client Library Integration Tests"
-
+    - group: Client Library Integration Tests
     steps:
     - task: PowerShell@2
       displayName: "Output Environment Variables"
@@ -58,7 +58,7 @@ stages:
           echo "##vso[task.setvariable variable=UKHOAssemblyCopyright]${AssemblyCopyright}"
 
     - task: PowerShell@2
-      displayName: "Set assembly version numbers based on build ID"
+      displayName: Set assembly version numbers based on build ID
       name: SetAssemblyVersion
       inputs:
         targetType: filePath
@@ -79,7 +79,7 @@ stages:
         version: $(SdkVersion)
 
     - task: DotNetCoreCLI@2
-      displayName: ".Net Core - NuGet restore non-test projects"
+      displayName: .Net Core - NuGet restore non-test projects
       inputs:
         command: restore
         projects: |
@@ -93,21 +93,21 @@ stages:
 
     - task: CmdLine@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: "Run OWASP Dependency Checker"
+      displayName: Run OWASP Dependency Checker
       inputs:
         filename: 'dependency-check.bat'
         arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
 
     - task: PublishBuildArtifacts@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: "Publish Artifact: OWASP Dependency Checker Report"
+      displayName: Publish Artifact: OWASP Dependency Checker Report
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
         ArtifactName: "OWASP Dependency Checker Report"
 
     - task: PowerShell@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: "Fail Build if Dependency Check Finds Any Vulnerabilities"
+      displayName: Fail Build if Dependency Check Finds Any Vulnerabilities
       inputs:
         scriptType: inlineScript
         arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
@@ -116,7 +116,7 @@ stages:
           Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
     - task: DotNetCoreCLI@2
-      displayName: ".Net Core - NuGet restore for test projects"
+      displayName: .Net Core - NuGet restore for test projects
       inputs:
         command: restore
         projects: |
@@ -129,18 +129,18 @@ stages:
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
     
     - task: DotNetCoreCLI@2
-      displayName: "dotnet build"
+      displayName: dotnet build
       inputs:
-        command: "build"
+        command: build
         projects: |
           **/*.csproj
           !**/FileShareClientIntegrationTests.csproj
         arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
     - task: DotNetCoreCLI@2
-      displayName: "dotnet test"
+      displayName: dotnet test
       inputs:
-        command: "test"
+        command: test
         projects: |
           **/*Tests.csproj
           !**/FileShareClientIntegrationTests.csproj
@@ -158,7 +158,7 @@ stages:
         arguments:  '--configuration $(BuildConfiguration)'
 
     - task: PowerShell@2
-      displayName: "Include new packages in integration tests"
+      displayName: Include new packages in integration tests
       inputs:
         targetType: filePath
         filePath: '$(Build.SourcesDirectory)\AddProjectReferences.ps1'
@@ -186,12 +186,18 @@ stages:
           **/FileShareClientIntegrationTests.csproj
         arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests --no-restore'
 
-    - task: FileTransform@2
-      displayName: Integration tests - file transform
+    - task: PublishPipelineArtifact@1
+      displayName: Publish integration tests artifact
       inputs:
-        folderPath: $(Build.BinariesDirectory)\integrationtests
-        xmlTransformationRules:
-        jsonTargetFiles: 'appsettings.json'
+        path: $(Build.BinariesDirectory)\integrationtests
+        artifact: IntegrationTests
+
+    # - task: FileTransform@2
+    #   displayName: Integration tests - file transform
+    #   inputs:
+    #     folderPath: $(Build.BinariesDirectory)\integrationtests
+    #     xmlTransformationRules:
+    #     jsonTargetFiles: 'appsettings.json'
 
     # - task: PublishPipelineArtifact@1
     #   displayName: REMOVE - Publish settings
@@ -199,13 +205,13 @@ stages:
     #     path: $(Build.BinariesDirectory)\integrationtests\appsettings.json
     #     artifact: Settings
 
-    - task: DotNetCoreCLI@2
-      displayName: Integration tests - dotnet test
-      inputs:
-        command: test
-        projects: |
-          $(Build.BinariesDirectory)\integrationtests\FileShareClientIntegrationTests.dll
-        testRunTitle: IntegrationTests
+    # - task: DotNetCoreCLI@2
+    #   displayName: Integration tests - dotnet test
+    #   inputs:
+    #     command: test
+    #     projects: |
+    #       $(Build.BinariesDirectory)\integrationtests\FileShareClientIntegrationTests.dll
+    #     testRunTitle: IntegrationTests
 
     # - task: PublishPipelineArtifact@1
     #   displayName: REMOVE - Publish source
@@ -219,17 +225,42 @@ stages:
     #     path: $(Build.BinariesDirectory)\integrationtests
     #     artifact: Integration test build
 
-    - task: PublishPipelineArtifact@1
-      displayName: Publish Pipeline Artifact
-      inputs:
-        path: $(Build.ArtifactStagingDirectory)
-        artifact: $(Build.DefinitionName)
+    # - task: PublishPipelineArtifact@1
+    #   displayName: Publish Pipeline Artifact
+    #   inputs:
+    #     path: $(Build.ArtifactStagingDirectory)
+    #     artifact: $(Build.DefinitionName)
           
     - task: PublishPipelineArtifact@1
       displayName: Publish NuGet Package Artifacts
       inputs:
         path: $(Build.ArtifactStagingDirectory)/packages
         artifact: NuGetPackages
+
+  - job:
+    dependsOn: BuildTestPublish
+    displayName: Integration tests
+    variables:
+    - group: Client Library Integration Tests
+    steps:
+    - download: current
+      displayName: Download integration tests
+      artifact: IntegrationTests
+
+    - task: FileTransform@2
+      displayName: File transform
+      inputs:
+        folderPath: $(Pipeline.Workspace)\IntegrationTests
+        xmlTransformationRules:
+        jsonTargetFiles: 'appsettings.json'
+
+    - task: DotNetCoreCLI@2
+      displayName: dotnet test
+      inputs:
+        command: test
+        projects: |
+          $(Pipeline.Workspace)\IntegrationTests\FileShareClientIntegrationTests.dll
+        testRunTitle: IntegrationTests
 
 - stage: Proget
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
