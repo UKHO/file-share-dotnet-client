@@ -150,7 +150,7 @@ stages:
       displayName: .NET - pack projects
       inputs:
         command: pack
-        packagesToPack: **/FileShareClient.csproj;**/FileShareAdminClient.csproj
+        packagesToPack: '**/FileShareClient.csproj;**/FileShareAdminClient.csproj'
         packDirectory: $(Build.ArtifactStagingDirectory)/packages
         arguments:  '--configuration $(BuildConfiguration)'
 
