@@ -153,6 +153,7 @@ stages:
         projects: |
           **/FileShareClient.csproj
           **/FileShareAdminClient.csproj
+          !**/*Tests*.csproj
         packDirectory: $(Build.ArtifactStagingDirectory)/packages
         arguments:  '--configuration $(BuildConfiguration)'
 
