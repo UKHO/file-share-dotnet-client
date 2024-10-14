@@ -240,6 +240,8 @@ stages:
     variables:
     - group: Client Library Integration Tests
     steps:
+    - checkout: none
+  
     - download: current
       displayName: Download integration tests
       artifact: IntegrationTests
