@@ -100,7 +100,7 @@ stages:
 
     - task: PublishBuildArtifacts@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: Publish Artifact: OWASP Dependency Checker Report
+      displayName: "Publish Artifact: OWASP Dependency Checker Report"
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)\DCReport'
         ArtifactName: "OWASP Dependency Checker Report"
