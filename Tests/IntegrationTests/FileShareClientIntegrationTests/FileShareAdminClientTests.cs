@@ -30,16 +30,12 @@ namespace FileShareClientIntegrationTests
             };
             _batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(_batchModel);
             Assert.That(_batchHandle, Is.Not.Null);
-            Console.WriteLine($"{TestContext.CurrentContext.Test.Name} BatchId: {_batchHandle.BatchId}");
+            Assert.Multiple(() =>
+            {
+                Assert.That(_batchHandle.BatchId, Is.Not.Null);
+                Assert.That(Guid.TryParse(_batchHandle.BatchId, out _), Is.True);
+            });
         }
-
-        //private async Task<IBatchHandle> CreateBatchAsync()
-        //{
-        //    var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(_batchModel);
-        //    Assert.That(batchHandle, Is.Not.Null);
-        //    Console.WriteLine($"{TestContext.CurrentContext.Test.Name} BatchId: {batchHandle.BatchId}");
-        //    return batchHandle;
-        //}
 
         private async Task RollBackBatchAsync(IBatchHandle batchHandle)
         {
@@ -51,7 +47,6 @@ namespace FileShareClientIntegrationTests
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
             });
-            Console.WriteLine($"{TestContext.CurrentContext.Test.Name} Batch rolled back");
         }
 
         private async Task CommitBatchAsync(IBatchHandle batchHandle)
@@ -64,13 +59,11 @@ namespace FileShareClientIntegrationTests
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(202));
             });
-            Console.WriteLine($"{TestContext.CurrentContext.Test.Name} Batch committed");
         }
 
         [Test]
         public async Task AppendAclAsync()
         {
-            //var batchHandle = await CreateBatchAsync();
             var acl = new Acl
             {
                 ReadUsers = [],
@@ -92,8 +85,6 @@ namespace FileShareClientIntegrationTests
         [Test]
         public async Task GetBatchStatusAsync()
         {
-            //var batchHandle = await CreateBatchAsync();
-
             var result = await _fileShareApiAdminClient.GetBatchStatusAsync(_batchHandle.BatchId);
 
             Assert.That(result, Is.Not.Null);
@@ -105,7 +96,6 @@ namespace FileShareClientIntegrationTests
         [Test]
         public async Task AddFileToBatchAsync()
         {
-            //var batchHandle = await CreateBatchAsync();
             var stream = new MemoryStream(Encoding.UTF8.GetBytes("FileShareAdminClientTests - AddFileToBatchAsync"));
 
             var result = await _fileShareApiAdminClient.AddFileToBatchAsync(_batchHandle, stream, "test.txt", "text/plain", CancellationToken.None);
@@ -123,7 +113,6 @@ namespace FileShareClientIntegrationTests
         [Test]
         public async Task ReplaceAclAsync()
         {
-            //var batchHandle = await CreateBatchAsync();
             var acl = new Acl
             {
                 ReadUsers = [],
@@ -145,7 +134,6 @@ namespace FileShareClientIntegrationTests
         [Test]
         public async Task SetExpiryDateAsync()
         {
-            //var batchHandle = await CreateBatchAsync();
             var batchExpiryModel = new BatchExpiryModel
             {
                 ExpiryDate = _expiryDate.AddMinutes(1)

@@ -188,45 +188,6 @@ stages:
       inputs:
         path: $(Build.BinariesDirectory)\integrationtests
         artifact: IntegrationTests
-
-    # - task: FileTransform@2
-    #   displayName: Integration tests - file transform
-    #   inputs:
-    #     folderPath: $(Build.BinariesDirectory)\integrationtests
-    #     xmlTransformationRules:
-    #     jsonTargetFiles: 'appsettings.json'
-
-    # - task: PublishPipelineArtifact@1
-    #   displayName: REMOVE - Publish settings
-    #   inputs:
-    #     path: $(Build.BinariesDirectory)\integrationtests\appsettings.json
-    #     artifact: Settings
-
-    # - task: DotNetCoreCLI@2
-    #   displayName: Integration tests - dotnet test
-    #   inputs:
-    #     command: test
-    #     projects: |
-    #       $(Build.BinariesDirectory)\integrationtests\FileShareClientIntegrationTests.dll
-    #     testRunTitle: IntegrationTests
-
-    # - task: PublishPipelineArtifact@1
-    #   displayName: REMOVE - Publish source
-    #   inputs:
-    #     path: $(Build.SourcesDirectory)
-    #     artifact: Sources
-
-    # - task: PublishPipelineArtifact@1
-    #   displayName: REMOVE - Publish integration tests build
-    #   inputs:
-    #     path: $(Build.BinariesDirectory)\integrationtests
-    #     artifact: Integration test build
-
-    # - task: PublishPipelineArtifact@1
-    #   displayName: Publish Pipeline Artifact
-    #   inputs:
-    #     path: $(Build.ArtifactStagingDirectory)
-    #     artifact: $(Build.DefinitionName)
           
     - task: PublishPipelineArtifact@1
       displayName: Publish NuGet packages
@@ -259,15 +220,6 @@ stages:
         command: test
         projects: '$(Pipeline.Workspace)\IntegrationTests\FileShareClientIntegrationTests.dll'
         testRunTitle: IntegrationTests
-        arguments: '--logger:trx;LogFileName=integration_test_results.trx'
-        publishTestResults: false
-
-    - task: PublishTestResults@2
-      displayName: Publish integration test results
-      inputs:
-        testResultsFiles: '$(Build.SourcesDirectory)\TestResults\integration_test_results.trx'
-        testRunTitle: IntegrationTests
-        mergeTestResults: true
 
 - stage: Proget
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
