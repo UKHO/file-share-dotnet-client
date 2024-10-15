@@ -53,8 +53,8 @@ namespace FileShareClientIntegrationTests.Helpers
 
             DownloadZipFileAsync = new DownloadZipFileAsyncModel { BatchId = GetString("DownloadZipFileAsync:BatchId") };
 
-            string GetString(string key) => configurationRoot!.GetValue<string>(key) ?? throw new NullReferenceException($"Unable to find {key} in appsettings.json");
-            int GetInt(string key) => configurationRoot!.GetValue<int>(key);
+            string GetString(string lookup) => configurationRoot!.GetValue<string>(lookup) ?? throw new NullReferenceException($"Unable to find {lookup} in appsettings.json");
+            int GetInt(string lookup) => configurationRoot!.GetValue<int>(lookup);
         }
     }
 }
