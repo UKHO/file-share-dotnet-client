@@ -259,14 +259,13 @@ stages:
         command: test
         projects: '$(Pipeline.Workspace)\IntegrationTests\FileShareClientIntegrationTests.dll'
         testRunTitle: IntegrationTests
-        arguments: '--output $(Build.ArtifactStagingDirectory) --logger:trx;LogFileName=integration_test_results.trx'
+        arguments: '--logger:trx;LogFileName=integration_test_results.trx'
         publishTestResults: false
 
     - task: PublishTestResults@2
       displayName: Publish integration test results
       inputs:
-        testResultsFiles: '$(Build.ArtifactStagingDirectory)\integration_test_results.trx'
-        searchFolder: '$(Build.ArtifactStagingDirectory)'
+        testResultsFiles: '$(Build.SourcesDirectory)\TestResults\integration_test_results.trx'
         testRunTitle: IntegrationTests
         mergeTestResults: true
 
