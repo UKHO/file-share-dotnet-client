@@ -14,6 +14,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AE259067-8E64-4101-8510-E4E1F8B31E65}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		AddProjectReferences.ps1 = AddProjectReferences.ps1
 		Apply-AssemblyVersionAndDefaults.ps1 = Apply-AssemblyVersionAndDefaults.ps1
 		azure-pipelines.yml = azure-pipelines.yml
 		BuildNuget.config = BuildNuget.config
@@ -28,6 +29,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientTests", "Tests\UnitTests\FileShareClientTests\FileShareClientTests.csproj", "{7A4A93A0-A56B-43BD-B9A0-F29544774DE3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientTestsCommon", "Tests\UnitTests\FileShareClientTestsCommon\FileShareClientTestsCommon.csproj", "{B605B929-E6CB-47B3-AE0F-E5B18718E794}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{EDA25D86-229C-4AA9-863D-F22FD419186E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientIntegrationTests", "Tests\IntegrationTests\FileShareClientIntegrationTests\FileShareClientIntegrationTests.csproj", "{1D226187-09E3-4B08-A993-706D44E1E146}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +60,10 @@ Global
 		{B605B929-E6CB-47B3-AE0F-E5B18718E794}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B605B929-E6CB-47B3-AE0F-E5B18718E794}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B605B929-E6CB-47B3-AE0F-E5B18718E794}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D226187-09E3-4B08-A993-706D44E1E146}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D226187-09E3-4B08-A993-706D44E1E146}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D226187-09E3-4B08-A993-706D44E1E146}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D226187-09E3-4B08-A993-706D44E1E146}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +73,8 @@ Global
 		{B6A5A281-F07D-4717-8C1B-F24304B6F59B} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
 		{7A4A93A0-A56B-43BD-B9A0-F29544774DE3} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
 		{B605B929-E6CB-47B3-AE0F-E5B18718E794} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
+		{EDA25D86-229C-4AA9-863D-F22FD419186E} = {BEA1BB14-9A1F-477C-A504-1DA2FA8F129B}
+		{1D226187-09E3-4B08-A993-706D44E1E146} = {EDA25D86-229C-4AA9-863D-F22FD419186E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3880E4BB-4AE5-43D3-A157-0C23C2CAF13B}

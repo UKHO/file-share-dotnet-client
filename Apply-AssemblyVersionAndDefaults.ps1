@@ -8,7 +8,7 @@ param (
     [Parameter(Mandatory = $true)] [string] $SourceRevisionId
 )
 
-Write-Host "Build number: " + $buildNumber
+Write-Host "Build number: " $buildNumber
 
 #UKHO.file-share-dotnet-client_merge_20210428.5
 $buildNumberRegex = "(.+)_202([0-9]{3,5})\.([0-9]{1,2})"
@@ -23,6 +23,7 @@ if ($validBuildNumber -eq $false) {
 # Magic var $Matches comes from the above regex match statement: $buildNumber -match $buildNumberRegex
 $buildRevisionNumber = $Matches.2 + "." + $Matches.3
 $versionToApply = $UKHOAssemblyVersionPrefix + $buildRevisionNumber
+Write-Host "##vso[task.setvariable variable=NuGetVersion;isOutput=true]$($versionToApply)"
 
 $assemblyValues = @{
     "Company"           = $UKHOAssemblyCompany;
@@ -44,12 +45,12 @@ function UpdateOrAddAttribute($xmlContent, $assemblyKey, $newValue, $namespace) 
     $propertyGroupNode = $propertyGroup.$assemblyKey
 
     if ($null -ne $propertyGroupNode) {
-        Write-Host "Assembly key $assemblyKey has been located in source file - updating with value: " + $newValue
+        Write-Host "Assembly key $assemblyKey has been located in source file - updating with value: " $newValue
         $propertyGroup.$assemblyKey = $newValue
         return $xmlContent
     }
 
-    Write-Host "Assembly key $assemblyKey could not be located in source file - appending value " + $newValue
+    Write-Host "Assembly key $assemblyKey could not be located in source file - appending value " $newValue
 
     $newChild = $xmlContent.CreateElement($assemblyKey, $namespace)
     $newChild.InnerText = $newValue
