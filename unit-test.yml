@@ -4,7 +4,7 @@ parameters:
 
 steps:
 - task: DotNetCoreCLI@2
-  displayName: Build all except integration tests
+  displayName: Build all except integration tests - ${{ parameters.BuildTaskFramework }}
   inputs:
     command: build
     projects: |
@@ -13,7 +13,7 @@ steps:
     arguments: '--framework ${{ parameters.BuildTaskFramework }} --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
 - task: DotNetCoreCLI@2
-  displayName: Run unit tests
+  displayName: Run unit tests - ${{ parameters.BuildTaskFramework }}
   inputs:
     command: test
     projects: |
