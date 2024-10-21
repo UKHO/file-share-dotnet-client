@@ -1,7 +1,11 @@
 using System;
 using System.Runtime.Serialization;
 using System.Text;
+#if NET8_0
+using System.Text.Json;
+#else
 using Newtonsoft.Json;
+#endif
 
 namespace UKHO.FileShareClient.Models
 {
@@ -26,12 +30,16 @@ namespace UKHO.FileShareClient.Models
         }
 
         /// <summary>
-        /// Returns the JSON string presentation of the object
+        /// Returns the JSON string representation of the object
         /// </summary>
-        /// <returns>JSON string presentation of the object</returns>
+        /// <returns>JSON string representation of the object</returns>
         public virtual string ToJson()
         {
+#if NET8_0
+            return JsonSerializer.Serialize(this, JsonSerializerOptions.Default);
+#else
             return JsonConvert.SerializeObject(this, Formatting.None);
+#endif
         }
 
         public override bool Equals(object input)

@@ -31,8 +31,6 @@ variables:
   value: "File Share Dotnet Client"
 - name: SdkVersion
   value: "8.0.x"
-- name: BuildTaskFramework
-  value: "net8.0"
 
 stages:
 - stage: BuildTestPublish
@@ -126,26 +124,11 @@ stages:
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
-    
-    - task: DotNetCoreCLI@2
-      displayName: Build all except integration tests
-      inputs:
-        command: build
-        projects: |
-          **/*.csproj
-          !**/FileShareClientIntegrationTests.csproj
-        arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
-    - task: DotNetCoreCLI@2
-      displayName: Run unit tests
-      inputs:
-        command: test
-        projects: |
-          **/*Tests.csproj
-          !**/FileShareClientIntegrationTests.csproj
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
-        testRunTitle: UnitTests
-          
+    - template: unit-test.yml
+      parameters:
+        BuildTaskFramework: net8.0
+    
     - task: DotNetCoreCLI@2
       displayName: Pack FSS libraries
       inputs:
@@ -181,7 +164,7 @@ stages:
         command: build
         projects: |
           **/FileShareClientIntegrationTests.csproj
-        arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests --no-restore'
+        arguments: '--framework net8.0 --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests --no-restore'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish integration tests artifact

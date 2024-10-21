@@ -1,0 +1,23 @@
+parameters:
+- name: BuildTaskFramework
+  type: string
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build all except integration tests
+  inputs:
+    command: build
+    projects: |
+      **/*.csproj
+      !**/FileShareClientIntegrationTests.csproj
+    arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: Run unit tests
+  inputs:
+    command: test
+    projects: |
+      **/*Tests.csproj
+      !**/FileShareClientIntegrationTests.csproj
+    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
+    testRunTitle: UnitTests_$(BuildTaskFramework)
