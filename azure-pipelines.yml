@@ -127,10 +127,6 @@ stages:
 
     - template: unit-test.yml
       parameters:
-        BuildTaskFramework: netstandard2.1
-
-    - template: unit-test.yml
-      parameters:
         BuildTaskFramework: net48
 
     - template: unit-test.yml

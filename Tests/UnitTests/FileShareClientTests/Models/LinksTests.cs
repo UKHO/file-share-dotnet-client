@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using NUnit.Framework;
 using UKHO.FileShareClient.Models;
 
 namespace FileShareClientTests.Models

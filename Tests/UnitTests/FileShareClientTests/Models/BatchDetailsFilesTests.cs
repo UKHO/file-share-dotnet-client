@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using NUnit.Framework;
 using UKHO.FileShareClient.Models;
 
 namespace FileShareClientTests.Models
@@ -12,7 +15,7 @@ namespace FileShareClientTests.Models
             var emptyBatchDetailsFiles = new BatchDetailsFiles();
             var batchDetailsFiles1 = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 123456,
@@ -20,7 +23,7 @@ namespace FileShareClientTests.Models
             };
             var batchDetailsFiles1A = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 123456,
@@ -36,7 +39,7 @@ namespace FileShareClientTests.Models
             };
             var batchDetailsFiles2 = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value2"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value2"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 123456,
@@ -44,7 +47,7 @@ namespace FileShareClientTests.Models
             };
             var batchDetailsFiles3 = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink3")),
                 Filename = "File123.png",
                 FileSize = 123456,
@@ -52,7 +55,7 @@ namespace FileShareClientTests.Models
             };
             var batchDetailsFiles4 = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File1234.png",
                 FileSize = 123456,
@@ -60,7 +63,7 @@ namespace FileShareClientTests.Models
             };
             var batchDetailsFiles5 = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 12345,
@@ -68,7 +71,7 @@ namespace FileShareClientTests.Models
             };
             var batchDetailsFiles6 = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 123456,
@@ -98,7 +101,7 @@ namespace FileShareClientTests.Models
             var emptyBatchDetailsFiles = new BatchDetailsFiles();
             var batchDetailsFiles1 = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 123456,
@@ -106,7 +109,7 @@ namespace FileShareClientTests.Models
             };
             var batchDetailsFiles1A = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 123456,
@@ -132,14 +135,14 @@ namespace FileShareClientTests.Models
         {
             var batchDetailsFiles = new BatchDetailsFiles
             {
-                Attributes = [new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2")],
+                Attributes = new List<BatchDetailsAttributes> { new BatchDetailsAttributes("key1", "value1"), new BatchDetailsAttributes("key2", "value2") },
                 Links = new BatchDetailsLinks(new Link("getFileLink")),
                 Filename = "File123.png",
                 FileSize = 123456,
                 Hash = "XEsVGA3neuA4B3aR9AWUZw=="
             };
             var json = batchDetailsFiles.ToJson();
-            Assert.That(json, Is.EqualTo($"{{\"filename\":\"{batchDetailsFiles.Filename}\",\"fileSize\":{batchDetailsFiles.FileSize},\"hash\":\"{batchDetailsFiles.Hash}\",\"attributes\":[{string.Join(',', batchDetailsFiles.Attributes.Select(a => a.ToJson()))}],\"links\":{batchDetailsFiles.Links.ToJson()}}}"));
+            Assert.That(json, Is.EqualTo($"{{\"filename\":\"{batchDetailsFiles.Filename}\",\"fileSize\":{batchDetailsFiles.FileSize},\"hash\":\"{batchDetailsFiles.Hash}\",\"attributes\":[{string.Join(",", batchDetailsFiles.Attributes.Select(a => a.ToJson()))}],\"links\":{batchDetailsFiles.Links.ToJson()}}}"));
         }
     }
 }

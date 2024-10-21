@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using Newtonsoft.Json;
+using NUnit.Framework;
 using UKHO.FileShareAdminClient.Models;
 
 namespace FileShareAdminClientTests.Models

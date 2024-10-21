@@ -9,6 +9,7 @@
     <Company>UK Hydrographic Office</Company>
     <Description>The File Share Service is the single external place for external people to download files from the UK Hydrographic Office. This provides a .Net client to access the file share service.</Description>
     <PackageId>UKHO.FileShareClient</PackageId>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,5 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using FileShareClientTestsCommon.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Models;
 
@@ -10,7 +15,7 @@ namespace FileShareClientTests
         private object _nextResponse;
         private FileShareApiClient _fileShareApiClient;
         private HttpStatusCode _nextResponseStatusCode;
-        private Uri? _lastRequestUri;
+        private Uri _lastRequestUri;
         private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
@@ -52,7 +57,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -75,7 +80,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -98,7 +103,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -121,7 +126,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -144,7 +149,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -166,7 +171,7 @@ namespace FileShareClientTests
         {
             var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20));
 
-            Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
+            Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
 
         [Test]
@@ -174,7 +179,7 @@ namespace FileShareClientTests
         {
             var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20));
 
-            Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
+            Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
 
         [Test]
@@ -184,7 +189,7 @@ namespace FileShareClientTests
             {
                 Count = 0,
                 Total = 0,
-                Entries = [],
+                Entries = new List<BatchDetails>(),
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -207,7 +212,7 @@ namespace FileShareClientTests
             {
                 Count = 0,
                 Total = 0,
-                Entries = [],
+                Entries = new List<BatchDetails>(),
                 Links = new Links(new Link("self"))
             };
 
@@ -228,7 +233,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
 
             };
@@ -254,7 +259,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -279,7 +284,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -304,7 +309,7 @@ namespace FileShareClientTests
             {
                 Count = 2,
                 Total = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -328,7 +333,7 @@ namespace FileShareClientTests
         {
             var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20, cancellationToken: CancellationToken.None));
 
-            Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
+            Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
 
         [Test]
@@ -336,7 +341,7 @@ namespace FileShareClientTests
         {
             var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20, cancellationToken: CancellationToken.None));
 
-            Assert.That(exception!.ParamName, Is.EqualTo("pageSize"));
+            Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
 
         [Test]
@@ -346,7 +351,7 @@ namespace FileShareClientTests
             {
                 Count = 0,
                 Total = 0,
-                Entries = [],
+                Entries = new List<BatchDetails>(),
                 Links = new Links(new Link("self"))
             };
             _nextResponse = expectedResponse;
@@ -371,7 +376,7 @@ namespace FileShareClientTests
             {
                 Count = 0,
                 Total = 0,
-                Entries = [],
+                Entries = new List<BatchDetails>(),
                 Links = new Links(new Link("self"))
             };
 

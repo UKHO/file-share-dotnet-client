@@ -1,6 +1,14 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using FakeItEasy;
 using FileShareClientTestsCommon.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
 
@@ -11,8 +19,8 @@ namespace FileShareAdminClientTests
         private object _nextResponse;
         private FileShareApiAdminClient _fileShareApiAdminClient;
         private HttpStatusCode _nextResponseStatusCode;
-        private List<(HttpMethod HttpMethod, Uri? Uri)> _lastRequestUris;
-        private List<string?> _lastRequestBodies;
+        private List<(HttpMethod HttpMethod, Uri Uri)> _lastRequestUris;
+        private List<string> _lastRequestBodies;
         private const int MaxBlockSize = 32;
         private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
@@ -38,8 +46,8 @@ namespace FileShareAdminClientTests
 
             _nextResponse = new object();
             _nextResponseStatusCode = HttpStatusCode.Created;
-            _lastRequestUris = [];
-            _lastRequestBodies = [];
+            _lastRequestUris = new List<(HttpMethod HttpMethod, Uri Uri)>();
+            _lastRequestBodies = new List<string>();
             _fileShareApiAdminClient = new FileShareApiAdminClient(_fakeFssHttpClientFactory, @"https://fss-tests.net", DUMMY_ACCESS_TOKEN, MaxBlockSize);
         }
 
@@ -113,8 +121,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
             Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
-            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
+            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -145,8 +153,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
             Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
-            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
+            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -177,8 +185,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
             Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
-            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
+            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -216,8 +224,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
             Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
-            Stream stream2 = new MemoryStream([2, 3, 4, 5, 6, 7, 8]);
+            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -370,7 +378,7 @@ namespace FileShareAdminClientTests
             _nextResponse = new CreateBatchResponseModel { BatchId = batchId };
             var batchHandle = new BatchHandle(batchId);
 
-            Stream stream1 = new MemoryStream([1, 2, 3, 4, 5]);
+            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 

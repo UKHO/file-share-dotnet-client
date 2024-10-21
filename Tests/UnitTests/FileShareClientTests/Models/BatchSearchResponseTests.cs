@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using NUnit.Framework;
 using UKHO.FileShareClient.Models;
 
 namespace FileShareClientTests.Models
@@ -13,14 +16,14 @@ namespace FileShareClientTests.Models
             var batchSearchResponse1 = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
             var batchSearchResponse1a = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
@@ -35,7 +38,7 @@ namespace FileShareClientTests.Models
             var batchSearchResponse2 = new BatchSearchResponse
             {
                 Count = 1,
-                Entries = [new BatchDetails("batch1")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1") },
                 Links = new Links(new Link("selfLink1"), new Link("first"), new Link("previous")),
                 Total = 2
             };
@@ -43,7 +46,7 @@ namespace FileShareClientTests.Models
             var batchSearchResponse3 = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = [new BatchDetails("batch3"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch3"), new BatchDetails("batch2") },
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
@@ -70,7 +73,7 @@ namespace FileShareClientTests.Models
             var batchSearchResponse1 = new BatchSearchResponse
             {
                 Count = 2,
-                Entries = [new BatchDetails("batch1"), new BatchDetails("batch2")],
+                Entries = new List<BatchDetails> { new BatchDetails("batch1"), new BatchDetails("batch2") },
                 Links = new Links(new Link("selfLink1")),
                 Total = 2
             };
@@ -90,7 +93,7 @@ namespace FileShareClientTests.Models
         [Test]
         public void TestToJson()
         {
-            var batchDetailsList = new List<BatchDetails>(2) { new("batch1"), new("batch2") };
+            var batchDetailsList = new List<BatchDetails>(2) { new BatchDetails("batch1"), new BatchDetails("batch2") };
             var links = new Links(new Link("selfLink1"), new Link("first"), new Link("previous"), new Link("next"));
             var batchSearchResponse = new BatchSearchResponse
             {
@@ -99,7 +102,7 @@ namespace FileShareClientTests.Models
                 Links = links,
                 Total = 9
             };
-            Assert.That(batchSearchResponse.ToJson(), Is.EqualTo($"{{\"count\":2,\"total\":9,\"entries\":[{string.Join(',', batchDetailsList.Select(e => e.ToJson()))}],\"_links\":{links.ToJson()}}}"));
+            Assert.That(batchSearchResponse.ToJson(), Is.EqualTo($"{{\"count\":2,\"total\":9,\"entries\":[{string.Join(",", batchDetailsList.Select(e => e.ToJson()))}],\"_links\":{links.ToJson()}}}"));
         }
     }
 }

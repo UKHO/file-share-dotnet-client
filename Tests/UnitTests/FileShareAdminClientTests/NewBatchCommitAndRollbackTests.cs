@@ -1,5 +1,13 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using FileShareClientTestsCommon.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
 
@@ -10,8 +18,8 @@ namespace FileShareAdminClientTests
         private object _nextResponse;
         private FileShareApiAdminClient _fileShareApiAdminClient;
         private HttpStatusCode _nextResponseStatusCode;
-        private List<(HttpMethod HttpMethod, Uri? Uri)> _lastRequestUris;
-        private List<string?> _lastRequestBodies;
+        private List<(HttpMethod HttpMethod, Uri Uri)> _lastRequestUris;
+        private List<string> _lastRequestBodies;
         private const int MaxBlockSize = 32;
         private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
@@ -37,8 +45,8 @@ namespace FileShareAdminClientTests
 
             _nextResponse = new object();
             _nextResponseStatusCode = HttpStatusCode.Created;
-            _lastRequestUris = [];
-            _lastRequestBodies = [];
+            _lastRequestUris = new List<(HttpMethod HttpMethod, Uri Uri)>();
+            _lastRequestBodies = new List<string>();
             _fileShareApiAdminClient = new FileShareApiAdminClient(_fakeFssHttpClientFactory, @"https://fss-tests.net", DUMMY_ACCESS_TOKEN, MaxBlockSize);
         }
 

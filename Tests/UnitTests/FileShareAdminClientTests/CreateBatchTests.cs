@@ -1,5 +1,12 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using FileShareClientTestsCommon.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
 using UKHO.FileShareClient.Models;
@@ -11,8 +18,8 @@ namespace FileShareAdminClientTests
         private object _nextResponse;
         private FileShareApiAdminClient _fileShareApiAdminClient;
         private HttpStatusCode _nextResponseStatusCode;
-        private Uri? _lastRequestUri;
-        private List<string?> _lastRequestBodies;
+        private Uri _lastRequestUri;
+        private List<string> _lastRequestBodies;
         private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
@@ -38,7 +45,7 @@ namespace FileShareAdminClientTests
             _nextResponse = new object();
             _nextResponseStatusCode = HttpStatusCode.Created;
             _lastRequestUri = null;
-            _lastRequestBodies = [];
+            _lastRequestBodies = new List<string>();
             _fileShareApiAdminClient = new FileShareApiAdminClient(_fakeFssHttpClientFactory, @"https://fss-tests.net", DUMMY_ACCESS_TOKEN);
         }
 
@@ -83,7 +90,7 @@ namespace FileShareAdminClientTests
         [Test]
         public async Task TestCreateNewBatchWithCancellationTokenWithInvalidBusinessUnit()
         {
-            _nextResponse = new Result<BatchHandle> { IsSuccess = false, StatusCode = 400, Errors = [new Error { Description = "Business Unit is invalid", Source = "BusinessUnit" }], Data = new BatchHandle(null) };
+            _nextResponse = new Result<BatchHandle> { IsSuccess = false, StatusCode = 400, Errors = new List<Error> { new Error { Description = "Business Unit is invalid", Source = "BusinessUnit" } }, Data = new BatchHandle(null) };
             _nextResponseStatusCode = HttpStatusCode.BadRequest;
 
             var createBatchResult = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
