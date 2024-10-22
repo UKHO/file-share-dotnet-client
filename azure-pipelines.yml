@@ -127,11 +127,11 @@ stages:
 
     - template: unit-test.yml
       parameters:
-        BuildTaskFramework: net48
+        BuildTaskFramework: net8.0
 
     - template: unit-test.yml
       parameters:
-        BuildTaskFramework: net8.0
+        BuildTaskFramework: net48
     
     - task: DotNetCoreCLI@2
       displayName: Pack FSS libraries
