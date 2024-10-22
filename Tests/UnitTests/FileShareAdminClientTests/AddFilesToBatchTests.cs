@@ -80,7 +80,11 @@ namespace FileShareAdminClientTests
                 Assert.Multiple(() =>
                 {
                     Assert.That(ex.ParamName, Is.EqualTo("stream"));
+#if NET48
+                    Assert.That(ex.Message, Is.EqualTo("The stream must be seekable.\r\nParameter name: stream"));
+#else
                     Assert.That(ex.Message, Is.EqualTo("The stream must be seekable. (Parameter 'stream')"));
+#endif
                 });
             }
         }
@@ -108,7 +112,11 @@ namespace FileShareAdminClientTests
                 Assert.Multiple(() =>
                 {
                     Assert.That(ex.ParamName, Is.EqualTo("stream"));
+#if NET48
+                    Assert.That(ex.Message, Is.EqualTo("The stream must be seekable.\r\nParameter name: stream"));
+#else
                     Assert.That(ex.Message, Is.EqualTo("The stream must be seekable. (Parameter 'stream')"));
+#endif
                 });
             }
         }
