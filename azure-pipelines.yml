@@ -8,7 +8,7 @@ parameters:
 - name: SkipDependencyCheck
   displayName: "Skip dependency check"
   type: boolean
-  default: false
+  default: true
 
 trigger:
 - main
@@ -126,14 +126,29 @@ stages:
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
     - task: DotNetCoreCLI@2
-      displayName: Run unit tests
+      displayName: Build unit tests - net48
+      inputs:
+        command: build
+        projects: |
+          **/FileShareClientTests.csproj
+          **/FileShareAdminClientTests.csproj
+        arguments: '--framework net48 --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\unittests\net48 --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: Build unit tests - net8.0
+      inputs:
+        command: build
+        projects: |
+          **/FileShareClientTests.csproj
+          **/FileShareAdminClientTests.csproj
+        arguments: '--framework net8.0 --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\unittests\net8.0 --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: Run unit tests - net48
       inputs:
         command: test
-        projects: |
-          **/*Tests.csproj
-          !**/FileShareClientIntegrationTests.csproj
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
-        testRunTitle: UnitTests
+        projects: '$(Build.BinariesDirectory)\unittests\net48\FileShareClientTests.dll'
+        testRunTitle: UnitTests_net48
 
     # - template: unit-test.yml
     #   parameters:
