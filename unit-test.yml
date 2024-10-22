@@ -17,6 +17,6 @@ steps:
   inputs:
     command: test
     projects: |
-      $(Build.BinariesDirectory)\unittests\net48\FileShareClientTests.dll
-      $(Build.BinariesDirectory)\unittests\net48\FileShareAdminClientTests.dll
+      $(Build.BinariesDirectory)\unittests\${{ parameters.BuildTaskFramework }}\FileShareClientTests.dll
+      $(Build.BinariesDirectory)\unittests\${{ parameters.BuildTaskFramework }}\FileShareAdminClientTests.dll
     testRunTitle: UnitTests_${{ parameters.BuildTaskFramework }}
