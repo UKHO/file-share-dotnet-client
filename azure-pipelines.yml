@@ -125,13 +125,23 @@ stages:
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
-    - template: unit-test.yml
-      parameters:
-        BuildTaskFramework: net8.0
+    - task: DotNetCoreCLI@2
+      displayName: Run unit tests
+      inputs:
+        command: test
+        projects: |
+          **/*Tests.csproj
+          !**/FileShareClientIntegrationTests.csproj
+        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+        testRunTitle: UnitTests
 
-    - template: unit-test.yml
-      parameters:
-        BuildTaskFramework: net48
+    # - template: unit-test.yml
+    #   parameters:
+    #     BuildTaskFramework: net8.0
+
+    # - template: unit-test.yml
+    #   parameters:
+    #     BuildTaskFramework: net48
     
     - task: DotNetCoreCLI@2
       displayName: Pack FSS libraries
