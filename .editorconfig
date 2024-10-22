@@ -49,6 +49,7 @@ trim_trailing_whitespace = true
 dotnet_diagnostic.IDE0028.severity = silent
 dotnet_diagnostic.IDE0090.severity = silent
 dotnet_diagnostic.IDE0290.severity = silent
+dotnet_diagnostic.IDE0300.severity = none
 
 # RS0016: Add public types and members to the declared API
 dotnet_diagnostic.RS0016.severity = silent

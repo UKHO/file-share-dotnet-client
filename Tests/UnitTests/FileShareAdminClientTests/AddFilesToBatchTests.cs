@@ -82,8 +82,10 @@ namespace FileShareAdminClientTests
                     Assert.That(ex.ParamName, Is.EqualTo("stream"));
 #if NET48
                     Assert.That(ex.Message, Is.EqualTo("The stream must be seekable.\r\nParameter name: stream"));
-#else
+#elif NET8_0
                     Assert.That(ex.Message, Is.EqualTo("The stream must be seekable. (Parameter 'stream')"));
+#else
+                    Assert.Fail("Framework not catered for.");                    
 #endif
                 });
             }
@@ -114,8 +116,10 @@ namespace FileShareAdminClientTests
                     Assert.That(ex.ParamName, Is.EqualTo("stream"));
 #if NET48
                     Assert.That(ex.Message, Is.EqualTo("The stream must be seekable.\r\nParameter name: stream"));
-#else
+#elif NET8_0
                     Assert.That(ex.Message, Is.EqualTo("The stream must be seekable. (Parameter 'stream')"));
+#else
+                    Assert.Fail("Framework not catered for.");                    
 #endif
                 });
             }
