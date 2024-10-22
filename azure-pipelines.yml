@@ -125,38 +125,38 @@ stages:
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
-    - task: DotNetCoreCLI@2
-      displayName: Build unit tests - net48
-      inputs:
-        command: build
-        projects: |
-          **/FileShareClientTests.csproj
-          **/FileShareAdminClientTests.csproj
-        arguments: '--framework net48 --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\unittests\net48 --no-restore'
+    # - task: DotNetCoreCLI@2
+    #   displayName: Build unit tests - net48
+    #   inputs:
+    #     command: build
+    #     projects: |
+    #       **/FileShareClientTests.csproj
+    #       **/FileShareAdminClientTests.csproj
+    #     arguments: '--framework net48 --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\unittests\net48 --no-restore'
 
-    - task: DotNetCoreCLI@2
-      displayName: Build unit tests - net8.0
-      inputs:
-        command: build
-        projects: |
-          **/FileShareClientTests.csproj
-          **/FileShareAdminClientTests.csproj
-        arguments: '--framework net8.0 --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\unittests\net8.0 --no-restore'
+    # - task: DotNetCoreCLI@2
+    #   displayName: Build unit tests - net8.0
+    #   inputs:
+    #     command: build
+    #     projects: |
+    #       **/FileShareClientTests.csproj
+    #       **/FileShareAdminClientTests.csproj
+    #     arguments: '--framework net8.0 --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\unittests\net8.0 --no-restore'
 
-    - task: DotNetCoreCLI@2
-      displayName: Run unit tests - net48
-      inputs:
-        command: test
-        projects: '$(Build.BinariesDirectory)\unittests\net48\FileShareClientTests.dll'
-        testRunTitle: UnitTests_net48
+    # - task: DotNetCoreCLI@2
+    #   displayName: Run unit tests - net48
+    #   inputs:
+    #     command: test
+    #     projects: '$(Build.BinariesDirectory)\unittests\net48\FileShareClientTests.dll'
+    #     testRunTitle: UnitTests_net48
 
-    # - template: unit-test.yml
-    #   parameters:
-    #     BuildTaskFramework: net8.0
+    - template: unit-test.yml
+      parameters:
+        BuildTaskFramework: net8.0
 
-    # - template: unit-test.yml
-    #   parameters:
-    #     BuildTaskFramework: net48
+    - template: unit-test.yml
+      parameters:
+        BuildTaskFramework: net48
     
     - task: DotNetCoreCLI@2
       displayName: Pack FSS libraries

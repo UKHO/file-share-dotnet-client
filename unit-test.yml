@@ -4,20 +4,19 @@ parameters:
 
 steps:
 - task: DotNetCoreCLI@2
-  displayName: Build all except integration tests - ${{ parameters.BuildTaskFramework }}
+  displayName: Build unit tests - ${{ parameters.BuildTaskFramework }}
   inputs:
     command: build
     projects: |
-      **/*.csproj
-      !**/FileShareClientIntegrationTests.csproj
-    arguments: '--framework ${{ parameters.BuildTaskFramework }} --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\${{ parameters.BuildTaskFramework }} --no-restore'
+      **/FileShareClientTests.csproj
+      **/FileShareAdminClientTests.csproj
+    arguments: '--framework ${{ parameters.BuildTaskFramework }} --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\unittests\${{ parameters.BuildTaskFramework }} --no-restore'
 
 - task: DotNetCoreCLI@2
   displayName: Run unit tests - ${{ parameters.BuildTaskFramework }}
   inputs:
     command: test
     projects: |
-      **/*Tests.csproj
-      !**/FileShareClientIntegrationTests.csproj
-    arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\${{ parameters.BuildTaskFramework }} --no-restore'
+      $(Build.BinariesDirectory)\unittests\net48\FileShareClientTests.dll
+      $(Build.BinariesDirectory)\unittests\net48\FileShareAdminClientTests.dll
     testRunTitle: UnitTests_${{ parameters.BuildTaskFramework }}
