@@ -131,11 +131,11 @@ stages:
 
     - template: unit-test.yml
       parameters:
-        BuildTaskFramework: $(DotNetVersion)
+        BuildTaskFramework: $(DotNetFrameworkVersion)
 
     - template: unit-test.yml
       parameters:
-        BuildTaskFramework: $(DotNetFrameworkVersion)
+        BuildTaskFramework: $(DotNetVersion)
     
     - task: DotNetCoreCLI@2
       displayName: Pack FSS libraries
@@ -167,12 +167,20 @@ stages:
         restoreDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
     - task: DotNetCoreCLI@2
-      displayName: Build integration tests
+      displayName: Build integration tests - $(DotNetFrameworkVersion)
       inputs:
         command: build
         projects: |
           **/FileShareClientIntegrationTests.csproj
-        arguments: '--framework $(DotNetVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests --no-restore'
+        arguments: '--framework $(DotNetFrameworkVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests\$(DotNetFrameworkVersion) --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: Build integration tests - $(DotNetVersion)
+      inputs:
+        command: build
+        projects: |
+          **/FileShareClientIntegrationTests.csproj
+        arguments: '--framework $(DotNetVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests\$(DotNetVersion) --no-restore'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish integration tests artifact
@@ -206,11 +214,18 @@ stages:
         jsonTargetFiles: 'appsettings.json'
 
     - task: DotNetCoreCLI@2
-      displayName: Run integration tests
+      displayName: Run integration tests - $(DotNetFrameworkVersion)
       inputs:
         command: test
-        projects: '$(Pipeline.Workspace)\IntegrationTests\FileShareClientIntegrationTests.dll'
-        testRunTitle: IntegrationTests
+        projects: '$(Pipeline.Workspace)\IntegrationTests\$(DotNetFrameworkVersion)\FileShareClientIntegrationTests.dll'
+        testRunTitle: IntegrationTests_$(DotNetFrameworkVersion)
+
+    - task: DotNetCoreCLI@2
+      displayName: Run integration tests - $(DotNetVersion)
+      inputs:
+        command: test
+        projects: '$(Pipeline.Workspace)\IntegrationTests\$(DotNetVersion)\FileShareClientIntegrationTests.dll'
+        testRunTitle: IntegrationTests_$(DotNetVersion)
 
 - stage: Proget
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
