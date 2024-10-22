@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
+    <TargetFrameworks>net8.0;net48</TargetFrameworks>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
@@ -23,9 +23,6 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
     <PackageReference Include="UKHO.FileShareAdminClient" Version="1.6.40930.2" />
     <PackageReference Include="UKHO.FileShareClient" Version="1.6.40930.2" />
-  </ItemGroup>
-  <ItemGroup>
-    <Using Include="NUnit.Framework" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="appsettings.json" />

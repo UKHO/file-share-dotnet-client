@@ -2,7 +2,7 @@
 {
     public class BatchAttributeSearchAsyncModel
     {
-        public required string SearchQuery { get; set; }
-        public required int MaxAttributeValueCount { get; set; }
+        public string SearchQuery { get; set; }
+        public int MaxAttributeValueCount { get; set; }
     }
 }

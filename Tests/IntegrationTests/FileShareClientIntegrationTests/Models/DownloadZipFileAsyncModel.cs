@@ -2,6 +2,6 @@
 {
     public class DownloadZipFileAsyncModel
     {
-        public required string BatchId { get; set; }
+        public string BatchId { get; set; }
     }
 }

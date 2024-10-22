@@ -1,4 +1,6 @@
-﻿using FileShareClientIntegrationTests.Models;
+﻿using System;
+using System.Net.Http;
+using FileShareClientIntegrationTests.Models;
 using Microsoft.Extensions.Configuration;
 using UKHO.FileShareClient;
 
@@ -53,8 +55,8 @@ namespace FileShareClientIntegrationTests.Helpers
 
             DownloadZipFileAsync = new DownloadZipFileAsyncModel { BatchId = GetString("DownloadZipFileAsync:BatchId") };
 
-            string GetString(string lookup) => configurationRoot!.GetValue<string>(lookup) ?? throw new NullReferenceException($"Unable to find {lookup} in appsettings.json");
-            int GetInt(string lookup) => configurationRoot!.GetValue<int>(lookup);
+            string GetString(string lookup) => configurationRoot.GetValue<string>(lookup) ?? throw new NullReferenceException($"Unable to find {lookup} in appsettings.json");
+            int GetInt(string lookup) => configurationRoot.GetValue<int>(lookup);
         }
     }
 }
