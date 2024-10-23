@@ -172,7 +172,7 @@ stages:
         command: build
         projects: |
           **/FileShareClientIntegrationTests.csproj
-        arguments: '--framework $(DotNetFrameworkVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests\$(DotNetFrameworkVersion) --no-restore'
+        arguments: '--framework $(DotNetFrameworkVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\IntegrationTests\$(DotNetFrameworkVersion) --no-restore'
 
     - task: DotNetCoreCLI@2
       displayName: Build integration tests - $(DotNetVersion)
@@ -180,12 +180,12 @@ stages:
         command: build
         projects: |
           **/FileShareClientIntegrationTests.csproj
-        arguments: '--framework $(DotNetVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests\$(DotNetVersion) --no-restore'
+        arguments: '--framework $(DotNetVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\IntegrationTests\$(DotNetVersion) --no-restore'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish integration tests artifact
       inputs:
-        path: $(Build.BinariesDirectory)\integrationtests
+        path: $(Build.BinariesDirectory)\IntegrationTests
         artifact: IntegrationTests
           
     - task: PublishPipelineArtifact@1
