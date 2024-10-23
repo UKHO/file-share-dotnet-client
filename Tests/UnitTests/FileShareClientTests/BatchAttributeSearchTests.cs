@@ -1,5 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using FileShareClientTestsCommon.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareClient;
 using UKHO.FileShareClient.Models;
 
@@ -10,7 +15,7 @@ namespace FileShareClientTests
         private object _nextResponse;
         private FileShareApiClient _fileShareApiClient;
         private HttpStatusCode _nextResponseStatusCode;
-        private Uri? _lastRequestUri;
+        private Uri _lastRequestUri;
         private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
@@ -42,7 +47,7 @@ namespace FileShareClientTests
             var expectedResponse = new BatchAttributesSearchResponse
             {
                 SearchBatchCount = 2,
-                BatchAttributes = [new BatchAttributesSearchAttribute("Attribute1", firstAttributesList), new BatchAttributesSearchAttribute("Attribute2", secondAttributesList)]
+                BatchAttributes = new List<BatchAttributesSearchAttribute> { new BatchAttributesSearchAttribute("Attribute1", firstAttributesList), new BatchAttributesSearchAttribute("Attribute2", secondAttributesList) }
             };
             _nextResponse = expectedResponse;
 
@@ -65,7 +70,7 @@ namespace FileShareClientTests
             var expectedResponse = new BatchAttributesSearchResponse
             {
                 SearchBatchCount = 2,
-                BatchAttributes = [new BatchAttributesSearchAttribute("Attribute1", firstAttributesList), new BatchAttributesSearchAttribute("Attribute2", secondAttributesList)]
+                BatchAttributes = new List<BatchAttributesSearchAttribute> { new BatchAttributesSearchAttribute("Attribute1", firstAttributesList), new BatchAttributesSearchAttribute("Attribute2", secondAttributesList) }
             };
             _nextResponse = expectedResponse;
 
@@ -85,7 +90,7 @@ namespace FileShareClientTests
         {
             var expectedResponse = new BatchAttributesSearchResponse
             {
-                BatchAttributes = [],
+                BatchAttributes = new List<BatchAttributesSearchAttribute>(),
                 SearchBatchCount = 0
             };
             _nextResponse = expectedResponse;
@@ -107,7 +112,7 @@ namespace FileShareClientTests
             var expectedResponse = new BatchAttributesSearchResponse
             {
                 SearchBatchCount = 0,
-                BatchAttributes = []
+                BatchAttributes = new List<BatchAttributesSearchAttribute>()
             };
 
             await _fileShareApiClient.BatchAttributeSearchAsync("", cancellationToken: CancellationToken.None);

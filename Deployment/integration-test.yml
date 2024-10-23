@@ -1,0 +1,18 @@
+parameters:
+- name: BuildTaskFramework
+  type: string
+
+steps:
+- task: FileTransform@2
+  displayName: File transform - ${{ parameters.BuildTaskFramework }}
+  inputs:
+    folderPath: $(Pipeline.Workspace)\IntegrationTests\${{ parameters.BuildTaskFramework }}
+    xmlTransformationRules:
+    jsonTargetFiles: 'appsettings.json'
+
+- task: DotNetCoreCLI@2
+  displayName: Run integration tests - ${{ parameters.BuildTaskFramework }}
+  inputs:
+    command: test
+    projects: '$(Pipeline.Workspace)\IntegrationTests\${{ parameters.BuildTaskFramework }}\FileShareClientIntegrationTests.dll'
+    testRunTitle: IntegrationTests_${{ parameters.BuildTaskFramework }}

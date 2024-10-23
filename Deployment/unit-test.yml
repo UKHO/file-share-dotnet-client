@@ -1,0 +1,22 @@
+parameters:
+- name: BuildTaskFramework
+  type: string
+
+steps:
+- task: DotNetCoreCLI@2
+  displayName: Build unit tests - ${{ parameters.BuildTaskFramework }}
+  inputs:
+    command: build
+    projects: |
+      **/FileShareClientTests.csproj
+      **/FileShareAdminClientTests.csproj
+    arguments: '--framework ${{ parameters.BuildTaskFramework }} --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\UnitTests\${{ parameters.BuildTaskFramework }} --no-restore'
+
+- task: DotNetCoreCLI@2
+  displayName: Run unit tests - ${{ parameters.BuildTaskFramework }}
+  inputs:
+    command: test
+    projects: |
+      $(Build.BinariesDirectory)\UnitTests\${{ parameters.BuildTaskFramework }}\FileShareClientTests.dll
+      $(Build.BinariesDirectory)\UnitTests\${{ parameters.BuildTaskFramework }}\FileShareAdminClientTests.dll
+    testRunTitle: UnitTests_${{ parameters.BuildTaskFramework }}

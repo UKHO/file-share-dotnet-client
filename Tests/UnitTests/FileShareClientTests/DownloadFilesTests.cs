@@ -1,30 +1,52 @@
+using System;
+using System.Collections.Concurrent;
+using System.IO;
 using System.Net;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using FileShareClientTestsCommon.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareClient;
 
 namespace FileShareClientTests
 {
     public class DownloadFilesTests
     {
-        private object _nextResponse;
+        private ConcurrentQueue<object> _nextResponses;
         private FileShareApiClient _fileShareApiClient;
         private HttpStatusCode _nextResponseStatusCode;
-        private Uri? _lastRequestUri;
+        private Uri _lastRequestUri;
         private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 
         [SetUp]
         public void Setup()
         {
+            _nextResponses = new ConcurrentQueue<object>();
+            _nextResponseStatusCode = HttpStatusCode.OK;
             _fakeFssHttpClientFactory = new FakeFssHttpClientFactory(request =>
             {
                 _lastRequestUri = request.RequestUri;
-                return (_nextResponseStatusCode, _nextResponse);
+
+                if (_nextResponses.IsEmpty)
+                {
+                    return (_nextResponseStatusCode, new object());
+                }
+                else
+                {
+                    if (_nextResponses.TryDequeue(out var response))
+                    {
+                        return (_nextResponseStatusCode, response);
+                    }
+                    else
+                    {
+                        throw new Exception("Failed to dequeue next response");
+                    }
+                }
             });
 
-            _nextResponse = new object();
-            _nextResponseStatusCode = HttpStatusCode.OK;
             _fileShareApiClient = new FileShareApiClient(_fakeFssHttpClientFactory, @"https://fss-tests.net/basePath/", DUMMY_ACCESS_TOKEN);
         }
 
@@ -39,7 +61,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
 
             var batchStatusResponse = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
 
@@ -115,7 +137,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
 
             await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
 
@@ -132,7 +154,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
             var destStream = new MemoryStream();
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
@@ -149,7 +171,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
             var destStream = new MemoryStream();
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
@@ -167,7 +189,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
             var destStream = new MemoryStream();
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
@@ -184,7 +206,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
             var destStream = new MemoryStream();
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
@@ -201,7 +223,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
             var destStream = new MemoryStream();
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
@@ -214,20 +236,25 @@ namespace FileShareClientTests
         }
 
         [Test]
-        public async Task TestForDownloadFilesWhenFileSizeIsGreaterThanMaxDownlodBytes()
+        public async Task TestForDownloadFilesWhenFileSizeIsGreaterThanMaxDownloadBytes()
         {
             var batchId = Guid.NewGuid().ToString();
             _nextResponseStatusCode = HttpStatusCode.PartialContent;
-            var expectedBytes = new byte[10585760];
-            _nextResponse = new MemoryStream(expectedBytes);
+            const int lengthPart1 = 10485760;
+            const int lengthPart2 = 100000;
+            const int totalLength = lengthPart1 + lengthPart2;
+            var expectedBytes1 = new byte[lengthPart1];
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes1));
+            var expectedBytes2 = new byte[lengthPart2];
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes2));
             var destStream = new MemoryStream();
 
-            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, totalLength, CancellationToken.None);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
-                Assert.That(destStream.Length, Is.EqualTo(expectedBytes.Length));
+                Assert.That(destStream.Length, Is.EqualTo(totalLength));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
             });
         }
@@ -237,7 +264,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
             var destStream = new MemoryStream();
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
@@ -255,7 +282,7 @@ namespace FileShareClientTests
             var batchId = Guid.NewGuid().ToString();
 
             var expectedBytes = new MemoryStream(Encoding.UTF8.GetBytes("Contents of a file."));
-            _nextResponse = expectedBytes;
+            _nextResponses.Enqueue(expectedBytes);
 
             var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
@@ -324,7 +351,7 @@ namespace FileShareClientTests
         {
             var batchId = Guid.NewGuid().ToString();
             var expectedBytes = Encoding.UTF8.GetBytes("Contents of a file.");
-            _nextResponse = new MemoryStream(expectedBytes);
+            _nextResponses.Enqueue(new MemoryStream(expectedBytes));
 
             await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 

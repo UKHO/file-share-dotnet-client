@@ -2,7 +2,7 @@
 {
     public class DownloadFileAsyncModel
     {
-        public required string BatchId { get; set; }
-        public required string FileName { get; set; }
+        public string BatchId { get; set; }
+        public string FileName { get; set; }
     }
 }

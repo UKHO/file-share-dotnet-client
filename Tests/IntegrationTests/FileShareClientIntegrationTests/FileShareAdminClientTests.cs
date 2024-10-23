@@ -1,5 +1,11 @@
-﻿using System.Text;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using FileShareClientIntegrationTests.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareAdminClient;
 using UKHO.FileShareAdminClient.Models;
 
@@ -22,10 +28,10 @@ namespace FileShareClientIntegrationTests
                 BusinessUnit = "TEST",
                 Acl = new Acl
                 {
-                    ReadUsers = [],
-                    ReadGroups = []
+                    ReadUsers = new List<string>(),
+                    ReadGroups = new List<string>()
                 },
-                Attributes = [],
+                Attributes = new List<KeyValuePair<string, string>>(),
                 ExpiryDate = _expiryDate
             };
             _batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(_batchModel);
@@ -66,8 +72,8 @@ namespace FileShareClientIntegrationTests
         {
             var acl = new Acl
             {
-                ReadUsers = [],
-                ReadGroups = ["FileShareAdminClientTests AppendAclAsync"]
+                ReadUsers = new List<string>(),
+                ReadGroups = new List<string> { "FileShareAdminClientTests AppendAclAsync" }
             };
 
             var result = await _fileShareApiAdminClient.AppendAclAsync(_batchHandle.BatchId, acl);
@@ -115,8 +121,8 @@ namespace FileShareClientIntegrationTests
         {
             var acl = new Acl
             {
-                ReadUsers = [],
-                ReadGroups = ["FileShareAdminClientTests ReplaceAclAsync"]
+                ReadUsers = new List<string>(),
+                ReadGroups = new List<string> { "FileShareAdminClientTests ReplaceAclAsync" }
             };
 
             var result = await _fileShareApiAdminClient.ReplaceAclAsync(_batchHandle.BatchId, acl);

@@ -31,8 +31,10 @@ variables:
   value: "File Share Dotnet Client"
 - name: SdkVersion
   value: "8.0.x"
-- name: BuildTaskFramework
-  value: "net8.0"
+- name: DotNetVersion
+  value: net8.0
+- name: DotNetFrameworkVersion
+  value: net48
 
 stages:
 - stage: BuildTestPublish
@@ -126,26 +128,15 @@ stages:
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
-    
-    - task: DotNetCoreCLI@2
-      displayName: Build all except integration tests
-      inputs:
-        command: build
-        projects: |
-          **/*.csproj
-          !**/FileShareClientIntegrationTests.csproj
-        arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
 
-    - task: DotNetCoreCLI@2
-      displayName: Run unit tests
-      inputs:
-        command: test
-        projects: |
-          **/*Tests.csproj
-          !**/FileShareClientIntegrationTests.csproj
-        arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory) --no-restore'
-        testRunTitle: UnitTests
-          
+    - template: Deployment/unit-test.yml
+      parameters:
+        BuildTaskFramework: $(DotNetFrameworkVersion)
+
+    - template: Deployment/unit-test.yml
+      parameters:
+        BuildTaskFramework: $(DotNetVersion)
+    
     - task: DotNetCoreCLI@2
       displayName: Pack FSS libraries
       inputs:
@@ -176,17 +167,25 @@ stages:
         restoreDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
     - task: DotNetCoreCLI@2
-      displayName: Build integration tests
+      displayName: Build integration tests - $(DotNetFrameworkVersion)
       inputs:
         command: build
         projects: |
           **/FileShareClientIntegrationTests.csproj
-        arguments: '--framework $(BuildTaskFramework) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\integrationtests --no-restore'
+        arguments: '--framework $(DotNetFrameworkVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\IntegrationTests\$(DotNetFrameworkVersion) --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: Build integration tests - $(DotNetVersion)
+      inputs:
+        command: build
+        projects: |
+          **/FileShareClientIntegrationTests.csproj
+        arguments: '--framework $(DotNetVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\IntegrationTests\$(DotNetVersion) --no-restore'
 
     - task: PublishPipelineArtifact@1
       displayName: Publish integration tests artifact
       inputs:
-        path: $(Build.BinariesDirectory)\integrationtests
+        path: $(Build.BinariesDirectory)\IntegrationTests
         artifact: IntegrationTests
           
     - task: PublishPipelineArtifact@1
@@ -207,19 +206,13 @@ stages:
       displayName: Download integration tests
       artifact: IntegrationTests
 
-    - task: FileTransform@2
-      displayName: File transform
-      inputs:
-        folderPath: $(Pipeline.Workspace)\IntegrationTests
-        xmlTransformationRules:
-        jsonTargetFiles: 'appsettings.json'
+    - template: Deployment/integration-test.yml
+      parameters:
+        BuildTaskFramework: $(DotNetFrameworkVersion)
 
-    - task: DotNetCoreCLI@2
-      displayName: Run integration tests
-      inputs:
-        command: test
-        projects: '$(Pipeline.Workspace)\IntegrationTests\FileShareClientIntegrationTests.dll'
-        testRunTitle: IntegrationTests
+    - template: Deployment/integration-test.yml
+      parameters:
+        BuildTaskFramework: $(DotNetVersion)
 
 - stage: Proget
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))

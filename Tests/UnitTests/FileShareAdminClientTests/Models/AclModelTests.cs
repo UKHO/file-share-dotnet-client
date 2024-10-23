@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Newtonsoft.Json;
+using NUnit.Framework;
 using UKHO.FileShareAdminClient.Models;
 
 namespace FileShareAdminClientTests.Models
@@ -10,8 +12,8 @@ namespace FileShareAdminClientTests.Models
         {
             var model = new Acl
             {
-                ReadGroups = ["ReplaceAclTest"],
-                ReadUsers = ["public"]
+                ReadGroups = new List<string> { "ReplaceAclTest" },
+                ReadUsers = new List<string> { "public" }
             };
 
             var json = JsonConvert.SerializeObject(model);

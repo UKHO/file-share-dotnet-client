@@ -1,13 +1,20 @@
-﻿using System.Net;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FileShareClientTestsCommon.Helpers
 {
-    public class FakeFssHttpClientFactory(Func<HttpRequestMessage, (HttpStatusCode, object)> httpMessageHandler) : DelegatingHandler, IHttpClientFactory
+    public class FakeFssHttpClientFactory : DelegatingHandler, IHttpClientFactory
     {
-        private readonly Func<HttpRequestMessage, (HttpStatusCode, object)> _httpMessageHandler = httpMessageHandler;
-        private HttpClient? _httpClient;
+        private readonly Func<HttpRequestMessage, (HttpStatusCode, object)> _httpMessageHandler;
+        private HttpClient _httpClient;
+
+        public FakeFssHttpClientFactory(Func<HttpRequestMessage, (HttpStatusCode, object)> httpMessageHandler) => _httpMessageHandler = httpMessageHandler;
 
         public HttpClient HttpClient
         {

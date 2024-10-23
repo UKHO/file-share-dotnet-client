@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using NUnit.Framework;
 using UKHO.FileShareClient.Models;
 
 namespace FileShareClientTests.Models
@@ -50,14 +53,14 @@ namespace FileShareClientTests.Models
                 BatchId = Guid.NewGuid().ToString(),
                 BusinessUnit = "BU1",
                 Status = BatchDetails.StatusEnum.Incomplete,
-                Attributes = []
+                Attributes = new List<BatchDetailsAttributes>()
             };
             var batchDetails1B = new BatchDetails
             {
                 BatchId = batchDetails1.BatchId,
                 BusinessUnit = "BU1",
                 Status = BatchDetails.StatusEnum.Incomplete,
-                Attributes = []
+                Attributes = new List<BatchDetailsAttributes>()
             };
 
             Assert.Multiple(() =>

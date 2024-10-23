@@ -1,5 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using FileShareClientTestsCommon.Helpers;
+using NUnit.Framework;
 using UKHO.FileShareClient;
 
 namespace FileShareClientTests
@@ -9,7 +14,7 @@ namespace FileShareClientTests
         private object _nextResponse;
         private FileShareApiClient _fileShareApiClient;
         private HttpStatusCode _nextResponseStatusCode;
-        private Uri? _lastRequestUri;
+        private Uri _lastRequestUri;
         private FakeFssHttpClientFactory _fakeFssHttpClientFactory;
         private const string DUMMY_ACCESS_TOKEN = "ACarefullyEncodedSecretAccessToken";
 

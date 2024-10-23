@@ -2,8 +2,8 @@
 {
     public class SearchAsyncModel
     {
-        public required string SearchQuery { get; set; }
-        public required int PageSize { get; set; }
-        public required int Start { get; set; }
+        public string SearchQuery { get; set; }
+        public int PageSize { get; set; }
+        public int Start { get; set; }
     }
 }
