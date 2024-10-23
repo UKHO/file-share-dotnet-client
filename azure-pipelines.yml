@@ -209,7 +209,7 @@ stages:
     - task: FileTransform@2
       displayName: File transform
       inputs:
-        folderPath: $(Pipeline.Workspace)\IntegrationTests
+        folderPath: $(Pipeline.Workspace)\IntegrationTests\*
         xmlTransformationRules:
         jsonTargetFiles: 'appsettings.json'
 
