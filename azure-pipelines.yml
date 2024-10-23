@@ -209,9 +209,9 @@ stages:
     - task: FileTransform@2
       displayName: File transform
       inputs:
-        folderPath: $(Pipeline.Workspace)\IntegrationTests\*
+        folderPath: $(Pipeline.Workspace)\IntegrationTests
         xmlTransformationRules:
-        jsonTargetFiles: 'appsettings.json'
+        jsonTargetFiles: '$(DotNetFrameworkVersion)\appsettings.json;$(DotNetVersion)\appsettings.json'
 
     - task: DotNetCoreCLI@2
       displayName: Run integration tests - $(DotNetFrameworkVersion)
