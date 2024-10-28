@@ -19,11 +19,19 @@ namespace UKHO.FileShareClient.Models
 
     internal static class Result
     {
+        /// <summary>
+        /// Until .NET 5 (and including Framework 4.8), HttpResponseMessage.Content could return null.
+        /// After .NET 5, HttpResponseMessage.Content will never be null. If set to null then it will return System.Net.Http.EmptyContent, an internal class.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <returns></returns>
+        private static bool HasContent(this HttpResponseMessage response) => response.Content != null && response.Content.GetType().Name != "EmptyContent";
+
         internal static async Task<IResult<Stream>> WithStreamData(HttpResponseMessage response)
         {
             Stream data = default;
 
-            if (response.IsSuccessStatusCode && response.Content != null)
+            if (response.IsSuccessStatusCode && response.HasContent())
             {
                 data = await response.ReadAsStreamAsync();
             }
@@ -35,7 +43,7 @@ namespace UKHO.FileShareClient.Models
         {
             U data = default;
 
-            if (response.IsSuccessStatusCode && response.Content != null)
+            if (response.IsSuccessStatusCode && response.HasContent())
             {
                 data = await response.ReadAsTypeAsync<U>();
             }
@@ -59,7 +67,7 @@ namespace UKHO.FileShareClient.Models
                 Errors = new List<Error>()
             };
 
-            if (response.Content != null && !response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode && response.HasContent())
             {
                 try
                 {
