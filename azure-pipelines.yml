@@ -92,12 +92,9 @@ stages:
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packages'
 
-    - task: CmdLine@1
-      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
+    - script: dependency-check.bat --project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate
       displayName: Run OWASP dependency-check
-      inputs:
-        filename: dependency-check.bat
-        arguments: '--project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate'
+      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
 
     - task: PublishBuildArtifacts@1
       condition: ne('${{ parameters.SkipDependencyCheck }}', true)

@@ -25,7 +25,7 @@ namespace FileShareClientIntegrationTests
             _expiryDate = DateTime.Now.AddMinutes(15);
             _batchModel = new BatchModel
             {
-                BusinessUnit = "TEST",
+                BusinessUnit = Configuration.FssTestBusinessUnit,
                 Acl = new Acl
                 {
                     ReadUsers = new List<string>(),
