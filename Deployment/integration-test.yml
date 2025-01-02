@@ -7,7 +7,7 @@ steps:
   displayName: File transform - ${{ parameters.BuildTaskFramework }}
   inputs:
     folderPath: $(Pipeline.Workspace)\IntegrationTests\${{ parameters.BuildTaskFramework }}
-    xmlTransformationRules:
+    enableXmlTransform: false
     jsonTargetFiles: 'appsettings.json'
 
 - task: DotNetCoreCLI@2
