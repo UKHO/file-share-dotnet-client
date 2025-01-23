@@ -3,12 +3,24 @@
   <suppress>
     <notes>
       <![CDATA[
+   file name: UKHO.FileShareAdminClient:any
+   Suppress all vulnerabilities for this package as it is the old version of the package we're trying to build.
+   ]]>
+    </notes>
+    <packageUrl regex="true">^pkg:nuget/UKHO\.FileShareAdminClient@.*$</packageUrl>
+    <cpe>cpe:/a:file:file</cpe>
+    <cpe>cpe:/a:file_project:file</cpe>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
    file name: UKHO.FileShareClient:any
    Suppress all vulnerabilities for this package as it is the old version of the package we're trying to build.
    ]]>
     </notes>
     <packageUrl regex="true">^pkg:nuget/UKHO\.FileShareClient@.*$</packageUrl>
     <cpe>cpe:/a:file:file</cpe>
+    <cpe>cpe:/a:file_project:file</cpe>
   </suppress>
   <suppress>
     <notes>
