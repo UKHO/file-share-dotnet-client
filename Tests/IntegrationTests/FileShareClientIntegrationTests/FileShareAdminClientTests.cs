@@ -111,6 +111,7 @@ namespace FileShareClientIntegrationTests
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
+                Assert.That(stream.CanSeek, Is.True);
             });
 
             await CommitBatchAsync(_batchHandle);
