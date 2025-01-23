@@ -56,4 +56,24 @@
     <packageUrl regex="true">^pkg:nuget/System\.Text\.Json@.*$</packageUrl>
     <vulnerabilityName>CVE-2024-43485</vulnerabilityName>
   </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
+   file name: Various
+   Applies to mobile apps.
+   ]]>
+    </notes>
+    <cve>CVE-2020-22475</cve>
+    <cve>CVE-2022-39349</cve>
+  </suppress>
+  <suppress>
+    <notes>
+      <![CDATA[
+   file name: Microsoft.JScript.dll
+   Applies to old vulnerability in browsers. See https://msrc.microsoft.com/update-guide/en-US/advisory/CVE-2016-3202
+   ]]>
+    </notes>
+    <packageUrl regex="true">^pkg:generic/Microsoft\.JScript@.*$</packageUrl>
+    <cve>CVE-2016-3202</cve>
+  </suppress>
 </suppressions>
