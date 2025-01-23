@@ -8,7 +8,7 @@
    ]]>
     </notes>
     <packageUrl regex="true">^pkg:nuget/UKHO\.FileShareAdminClient@.*$</packageUrl>
-    <cvssBelow>11</cvssBelow>
+    <cvssBelow>10.0</cvssBelow>
   </suppress>
   <suppress>
     <notes>
