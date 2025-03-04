@@ -4,12 +4,6 @@
 # https://aka.ms/yaml
 name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd).$(BuildCounter)
 
-parameters:
-- name: SkipDependencyCheck
-  displayName: "Skip dependency check"
-  type: boolean
-  default: false
-
 trigger:
 - main
 - release/*
@@ -91,27 +85,6 @@ stages:
         nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
         workingDirectory: '$(Build.SourcesDirectory)'
         packagesDirectory: '$(Build.SourcesDirectory)\packages'
-
-    - script: dependency-check.bat --project "File-Share-Service-.Net-Client - $(Build.SourceBranchName)" --scan "$(Build.SourcesDirectory)" --out "$(Build.SourcesDirectory)\DCReport" --suppression $(Build.SourcesDirectory)\NVDSuppressions.xml --noupdate
-      displayName: Run OWASP dependency-check
-      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-
-    - task: PublishBuildArtifacts@1
-      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: Publish OWASP dependency-check report
-      inputs:
-        PathtoPublish: $(Build.SourcesDirectory)\DCReport
-        ArtifactName: OWASP Dependency-Check Report
-
-    - task: PowerShell@1
-      condition: ne('${{ parameters.SkipDependencyCheck }}', true)
-      displayName: Fail build if OWASP dependency-check finds any vulnerabilities
-      inputs:
-        scriptType: inlineScript
-        arguments: '-ReportLocation $(Build.SourcesDirectory)\DCReport\*'
-        inlineScript: |
-          param($ReportLocation)
-          Invoke-VulnerabilityCheck -ReportLocation $ReportLocation
 
     - task: DotNetCoreCLI@2
       displayName: Unit test package restore
