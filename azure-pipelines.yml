@@ -221,6 +221,8 @@ stages:
     pool:
       name: NautilusRelease
     environment: FileShareDotNetClient-ProGet
+    workspace:
+      clean: all
     strategy:
       runOnce:
         deploy:
@@ -249,6 +251,8 @@ stages:
     pool: 
       name: NautilusRelease
     environment: FileShareDotNetClient-NuGet
+    workspace:
+      clean: all
     strategy:
       runOnce:
         deploy:
