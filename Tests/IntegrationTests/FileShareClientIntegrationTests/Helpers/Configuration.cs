@@ -11,6 +11,7 @@ namespace FileShareClientIntegrationTests.Helpers
         public static IHttpClientFactory HttpClientFactory { get; }
         public static IAuthTokenProvider AuthTokenProvider { get; }
         public static string FssUrl { get; }
+        public static string FssTestBusinessUnit { get; }
         public static GetBatchStatusAsyncModel GetBatchStatusAsync { get; }
         public static SearchAsyncModel SearchAsync { get; }
         public static DownloadFileAsyncModel DownloadFileAsync { get; }
@@ -31,6 +32,7 @@ namespace FileShareClientIntegrationTests.Helpers
             AuthTokenProvider = new FileShareApiTokenProvider(clientId, clientSecret, fssClientId, microsoftOnlineLoginUrl, tenantId);
 
             FssUrl = GetString("FssUrl");
+            FssTestBusinessUnit = GetString("FssTestBusinessUnit");
 
             GetBatchStatusAsync = new GetBatchStatusAsyncModel { BatchId = GetString("GetBatchStatusAsync:BatchId") };
 

@@ -300,7 +300,7 @@ namespace UKHO.FileShareAdminClient
             var buffer = new byte[_maxFileBlockSize];
 
             using (var md5 = MD5.Create())
-            using (var cryptoStream = new CryptoStream(stream, md5, CryptoStreamMode.Read))
+            using (var cryptoStream = new CryptoStream(stream, md5, CryptoStreamMode.Read, true))
             {
                 while (true)
                 {
@@ -385,7 +385,7 @@ namespace UKHO.FileShareAdminClient
                     var buffer = new byte[_maxFileBlockSize];
 
                     using (var md5 = MD5.Create())
-                    using (var cryptoStream = new CryptoStream(stream, md5, CryptoStreamMode.Read))
+                    using (var cryptoStream = new CryptoStream(stream, md5, CryptoStreamMode.Read, true))
                     {
                         while (true)
                         {

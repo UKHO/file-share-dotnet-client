@@ -154,7 +154,12 @@ namespace FileShareAdminClientTests
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
-            Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(stream1.CanSeek, Is.True);
+                Assert.That(stream2.CanSeek, Is.True);
+            });
         }
 
         [Test]
@@ -186,7 +191,12 @@ namespace FileShareAdminClientTests
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
-            Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+            Assert.Multiple(() =>
+            {
+                Assert.That(actualRequests, Is.EqualTo(expectedRequests));
+                Assert.That(stream1.CanSeek, Is.True);
+                Assert.That(stream2.CanSeek, Is.True);
+            });
         }
 
         [Test]
@@ -225,6 +235,8 @@ namespace FileShareAdminClientTests
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(addFile1Request, Does.Contain("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\""));
                 Assert.That(addFile2Request, Does.Contain("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\""));
+                Assert.That(stream1.CanSeek, Is.True);
+                Assert.That(stream2.CanSeek, Is.True);
             });
         }
 
@@ -264,6 +276,8 @@ namespace FileShareAdminClientTests
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(addFile1Request, Does.Contain("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\""));
                 Assert.That(addFile2Request, Does.Contain("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\""));
+                Assert.That(stream1.CanSeek, Is.True);
+                Assert.That(stream2.CanSeek, Is.True);
             });
         }
 
@@ -297,6 +311,7 @@ namespace FileShareAdminClientTests
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(writeBlockFileModel?.BlockIds, Is.EqualTo(expectedBlockIds));
+                Assert.That(stream1.CanSeek, Is.True);
             });
         }
 
@@ -330,6 +345,7 @@ namespace FileShareAdminClientTests
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(writeBlockFileModel?.BlockIds, Is.EqualTo(expectedBlockIds));
+                Assert.That(stream1.CanSeek, Is.True);
             });
         }
 
@@ -355,6 +371,7 @@ namespace FileShareAdminClientTests
                 Assert.That(progressReports, Has.Count.EqualTo(4));
                 Assert.That(progressReports.Select(r => r.blocksComplete), Is.EqualTo(expectedBlocksComplete));
                 Assert.That(progressReports.Select(r => r.totalBlockCount), Is.EqualTo(expectedTotalBlockCount));
+                Assert.That(stream1.CanSeek, Is.True);
             });
         }
 
@@ -380,6 +397,7 @@ namespace FileShareAdminClientTests
                 Assert.That(progressReports, Has.Count.EqualTo(4));
                 Assert.That(progressReports.Select(r => r.blocksComplete), Is.EqualTo(expectedBlocksComplete));
                 Assert.That(progressReports.Select(r => r.totalBlockCount), Is.EqualTo(expectedTotalBlockCount));
+                Assert.That(stream1.CanSeek, Is.True);
             });
         }
 
@@ -401,6 +419,7 @@ namespace FileShareAdminClientTests
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
+                Assert.That(stream1.CanSeek, Is.True);
             });
         }
     }

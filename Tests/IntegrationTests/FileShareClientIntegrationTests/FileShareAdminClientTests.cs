@@ -25,7 +25,7 @@ namespace FileShareClientIntegrationTests
             _expiryDate = DateTime.Now.AddMinutes(15);
             _batchModel = new BatchModel
             {
-                BusinessUnit = "TEST",
+                BusinessUnit = Configuration.FssTestBusinessUnit,
                 Acl = new Acl
                 {
                     ReadUsers = new List<string>(),
@@ -111,6 +111,7 @@ namespace FileShareClientIntegrationTests
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
+                Assert.That(stream.CanSeek, Is.True);
             });
 
             await CommitBatchAsync(_batchHandle);
