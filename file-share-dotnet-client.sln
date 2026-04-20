@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.11.35303.130
+# Visual Studio Version 18
+VisualStudioVersion = 18.5.11709.299 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClient", "FileShareClient\FileShareClient.csproj", "{CA54DE02-0A41-4C68-88BC-4EF1306D20B7}"
 EndProject
@@ -10,16 +10,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BEA1BB14-9A1F-477C-A504-1DA2FA8F129B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnitTests", "UnitTests", "{2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AE259067-8E64-4101-8510-E4E1F8B31E65}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-		AddProjectReferences.ps1 = AddProjectReferences.ps1
-		Apply-AssemblyVersionAndDefaults.ps1 = Apply-AssemblyVersionAndDefaults.ps1
-		azure-pipelines.yml = azure-pipelines.yml
-		BuildNuget.config = BuildNuget.config
-		NVDSuppressions.xml = NVDSuppressions.xml
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareAdminClientTests", "Tests\UnitTests\FileShareAdminClientTests\FileShareAdminClientTests.csproj", "{B6A5A281-F07D-4717-8C1B-F24304B6F59B}"
 EndProject
@@ -30,23 +20,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{EDA25D86-229C-4AA9-863D-F22FD419186E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileShareClientIntegrationTests", "Tests\IntegrationTests\FileShareClientIntegrationTests\FileShareClientIntegrationTests.csproj", "{1D226187-09E3-4B08-A993-706D44E1E146}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", "{6A55D639-0C8B-4EF6-9402-DD1BE4213BE6}"
-	ProjectSection(SolutionItems) = preProject
-		Deployment\integration-test.yml = Deployment\integration-test.yml
-		Deployment\unit-test.yml = Deployment\unit-test.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{11EB9B94-CEF2-456D-9620-8EC7F7D021E6}"
-	ProjectSection(SolutionItems) = preProject
-		.github\dependabot.yml = .github\dependabot.yml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{4ADACA18-BF61-4692-A208-3D9F8C563143}"
-	ProjectSection(SolutionItems) = preProject
-		.github\workflows\codeql-analysis.yml = .github\workflows\codeql-analysis.yml
-		.github\workflows\dependabot-work-item.yml = .github\workflows\dependabot-work-item.yml
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,7 +62,6 @@ Global
 		{B605B929-E6CB-47B3-AE0F-E5B18718E794} = {2FCE0ABC-9B97-4943-9B73-898CE69E4BBC}
 		{EDA25D86-229C-4AA9-863D-F22FD419186E} = {BEA1BB14-9A1F-477C-A504-1DA2FA8F129B}
 		{1D226187-09E3-4B08-A993-706D44E1E146} = {EDA25D86-229C-4AA9-863D-F22FD419186E}
-		{4ADACA18-BF61-4692-A208-3D9F8C563143} = {11EB9B94-CEF2-456D-9620-8EC7F7D021E6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3880E4BB-4AE5-43D3-A157-0C23C2CAF13B}
