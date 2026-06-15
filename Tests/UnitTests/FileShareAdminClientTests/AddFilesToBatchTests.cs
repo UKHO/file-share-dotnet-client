@@ -77,7 +77,7 @@ namespace FileShareAdminClientTests
             }
             catch (ArgumentException ex)
             {
-                Assert.Multiple(() =>
+                using (Assert.EnterMultipleScope())
                 {
                     Assert.That(ex.ParamName, Is.EqualTo("stream"));
 #if NET48
@@ -87,7 +87,8 @@ namespace FileShareAdminClientTests
 #else
                     Assert.Fail("Framework not catered for.");                    
 #endif
-                });
+                }
+
             }
         }
 
@@ -111,7 +112,7 @@ namespace FileShareAdminClientTests
             }
             catch (ArgumentException ex)
             {
-                Assert.Multiple(() =>
+                using (Assert.EnterMultipleScope())
                 {
                     Assert.That(ex.ParamName, Is.EqualTo("stream"));
 #if NET48
@@ -121,7 +122,7 @@ namespace FileShareAdminClientTests
 #else
                     Assert.Fail("Framework not catered for.");                    
 #endif
-                });
+                }
             }
         }
 
@@ -133,8 +134,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
             Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
-            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
+            var stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            var stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -154,12 +155,12 @@ namespace FileShareAdminClientTests
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(stream1.CanSeek, Is.True);
                 Assert.That(stream2.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -170,8 +171,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
             Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
-            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
+            var stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            var stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -191,12 +192,12 @@ namespace FileShareAdminClientTests
                 $"PUT:/batch/{expectedBatchId}/files/{filename2}"
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(stream1.CanSeek, Is.True);
                 Assert.That(stream2.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -207,8 +208,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
             Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
-            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
+            var stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            var stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -230,14 +231,14 @@ namespace FileShareAdminClientTests
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var addFile1Request = _lastRequestBodies[1];
             var addFile2Request = _lastRequestBodies[4];
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(addFile1Request, Does.Contain("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\""));
                 Assert.That(addFile2Request, Does.Contain("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\""));
                 Assert.That(stream1.CanSeek, Is.True);
                 Assert.That(stream2.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -248,8 +249,8 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
             Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
-            Stream stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
+            var stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            var stream2 = new MemoryStream(new byte[] { 2, 3, 4, 5, 6, 7, 8 });
             var filename1 = "File1.bin";
             var filename2 = "File2.bin";
             var mimeType1 = "application/octet-stream";
@@ -271,14 +272,14 @@ namespace FileShareAdminClientTests
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var addFile1Request = _lastRequestBodies[1];
             var addFile2Request = _lastRequestBodies[4];
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(addFile1Request, Does.Contain("\"Key\":\"fileAttributeKey1\",\"Value\":\"fileAttributeValue1\""));
                 Assert.That(addFile2Request, Does.Contain("\"Key\":\"fileAttributeKey2\",\"Value\":\"fileAttributeValue2\""));
                 Assert.That(stream1.CanSeek, Is.True);
                 Assert.That(stream2.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -289,7 +290,7 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
             Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
+            var stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
@@ -307,12 +308,12 @@ namespace FileShareAdminClientTests
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var writeBlockFileModel = _lastRequestBodies.Last()?.DeserialiseJson<WriteBlockFileModel>();
             var expectedBlockIds = new[] { "00001", "00002", "00003" };
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(writeBlockFileModel?.BlockIds, Is.EqualTo(expectedBlockIds));
                 Assert.That(stream1.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -323,7 +324,7 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
             Assert.That(batchHandle.Data.BatchId, Is.EqualTo(expectedBatchId));
 
-            Stream stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
+            var stream1 = new MemoryStream(new byte[MaxBlockSize * 3]);
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
@@ -341,12 +342,12 @@ namespace FileShareAdminClientTests
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var writeBlockFileModel = _lastRequestBodies.Last()?.DeserialiseJson<WriteBlockFileModel>();
             var expectedBlockIds = new[] { "00001", "00002", "00003" };
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(writeBlockFileModel?.BlockIds, Is.EqualTo(expectedBlockIds));
                 Assert.That(stream1.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -366,13 +367,13 @@ namespace FileShareAdminClientTests
 
             var expectedBlocksComplete = new[] { 0, 1, 2, 3 };
             var expectedTotalBlockCount = new[] { 3, 3, 3, 3 };
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(progressReports, Has.Count.EqualTo(4));
                 Assert.That(progressReports.Select(r => r.blocksComplete), Is.EqualTo(expectedBlocksComplete));
                 Assert.That(progressReports.Select(r => r.totalBlockCount), Is.EqualTo(expectedTotalBlockCount));
                 Assert.That(stream1.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -392,13 +393,13 @@ namespace FileShareAdminClientTests
 
             var expectedBlocksComplete = new[] { 0, 1, 2, 3 };
             var expectedTotalBlockCount = new[] { 3, 3, 3, 3 };
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(progressReports, Has.Count.EqualTo(4));
                 Assert.That(progressReports.Select(r => r.blocksComplete), Is.EqualTo(expectedBlocksComplete));
                 Assert.That(progressReports.Select(r => r.totalBlockCount), Is.EqualTo(expectedTotalBlockCount));
                 Assert.That(stream1.CanSeek, Is.True);
-            });
+            }
         }
 
         [Test]
@@ -408,19 +409,19 @@ namespace FileShareAdminClientTests
             _nextResponse = new CreateBatchResponseModel { BatchId = batchId };
             var batchHandle = new BatchHandle(batchId);
 
-            Stream stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+            var stream1 = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
             var filename1 = "File1.bin";
             var mimeType1 = "application/octet-stream";
 
             await _fileShareApiAdminClient.AddFileToBatchAsync(batchHandle, stream1, filename1, mimeType1, CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
                 Assert.That(stream1.CanSeek, Is.True);
-            });
+            }
         }
     }
 }

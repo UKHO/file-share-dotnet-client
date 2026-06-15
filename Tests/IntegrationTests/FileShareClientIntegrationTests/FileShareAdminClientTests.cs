@@ -36,11 +36,11 @@ namespace FileShareClientIntegrationTests
             };
             _batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(_batchModel);
             Assert.That(_batchHandle, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_batchHandle.BatchId, Is.Not.Null);
                 Assert.That(Guid.TryParse(_batchHandle.BatchId, out _), Is.True);
-            });
+            }
         }
 
         private async Task RollBackBatchAsync(IBatchHandle batchHandle)
@@ -48,11 +48,11 @@ namespace FileShareClientIntegrationTests
             var result = await _fileShareApiAdminClient.RollBackBatchAsync(batchHandle, CancellationToken.None);
 
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
-            });
+            }
         }
 
         private async Task CommitBatchAsync(IBatchHandle batchHandle)
@@ -60,11 +60,11 @@ namespace FileShareClientIntegrationTests
             var result = await _fileShareApiAdminClient.CommitBatchAsync(batchHandle, CancellationToken.None);
 
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(202));
-            });
+            }
         }
 
         [Test]
@@ -79,11 +79,11 @@ namespace FileShareClientIntegrationTests
             var result = await _fileShareApiAdminClient.AppendAclAsync(_batchHandle.BatchId, acl);
 
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
-            });
+            }
 
             await RollBackBatchAsync(_batchHandle);
         }
@@ -107,12 +107,12 @@ namespace FileShareClientIntegrationTests
             var result = await _fileShareApiAdminClient.AddFileToBatchAsync(_batchHandle, stream, "test.txt", "text/plain", CancellationToken.None);
 
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
                 Assert.That(stream.CanSeek, Is.True);
-            });
+            }
 
             await CommitBatchAsync(_batchHandle);
         }
@@ -129,11 +129,11 @@ namespace FileShareClientIntegrationTests
             var result = await _fileShareApiAdminClient.ReplaceAclAsync(_batchHandle.BatchId, acl);
 
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
-            });
+            }
 
             await RollBackBatchAsync(_batchHandle);
         }
@@ -149,11 +149,11 @@ namespace FileShareClientIntegrationTests
             var result = await _fileShareApiAdminClient.SetExpiryDateAsync(_batchHandle.BatchId, batchExpiryModel);
 
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(204));
-            });
+            }
 
             await RollBackBatchAsync(_batchHandle);
         }

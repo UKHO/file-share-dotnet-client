@@ -51,11 +51,11 @@ namespace FileShareClientTests
 
             var batchStatusResponse = await _fileShareApiClient.GetBatchStatusAsync(batchId);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(batchStatusResponse.Status, Is.EqualTo(expectedBatchStatus));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/status"));
-            });
+            }
         }
 
         [Test]
@@ -112,11 +112,11 @@ namespace FileShareClientTests
             await _fileShareApiClient.GetBatchStatusAsync(batchId);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
     }
 }

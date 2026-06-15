@@ -42,12 +42,12 @@ namespace FileShareClientTests
         private static void CheckResponseMatchesExpectedResponse(BatchSearchResponse expectedResponse, BatchSearchResponse response)
         {
             Assert.That(response.Count, Is.EqualTo(expectedResponse.Count));
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(response.Total, Is.EqualTo(expectedResponse.Total));
                 Assert.That(response.Links, Is.EqualTo(expectedResponse.Links));
                 Assert.That(response.Entries, Is.EqualTo(expectedResponse.Entries));
-            });
+            }
         }
 
         [Test]
@@ -64,11 +64,11 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("");
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
@@ -87,11 +87,11 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'");
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
@@ -110,11 +110,11 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", 50);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27&limit=50"));
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
@@ -133,11 +133,11 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, 20);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27&start=20"));
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
@@ -156,11 +156,11 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", 10, 20);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27&limit=10&start=20"));
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
@@ -169,7 +169,7 @@ namespace FileShareClientTests
         [TestCase(0)]
         public void TestSearchWithInvalidPageSizeThrowsArgumentException(int pageSize)
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20));
+            var exception = Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20)));
 
             Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
@@ -177,7 +177,7 @@ namespace FileShareClientTests
         [Test]
         public void TestSearchWithInvalidPageStartThrowsArgumentException()
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20));
+            var exception = Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20)));
 
             Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
@@ -196,11 +196,11 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'");
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response);
         }
@@ -219,11 +219,11 @@ namespace FileShareClientTests
             await _fileShareApiClient.SearchAsync("");
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
 
         [Test]
@@ -241,13 +241,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("", null, null, cancellationToken: CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.True);
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -266,13 +266,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.True);
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -291,13 +291,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", 50, null, cancellationToken: CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27&limit=50"));
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.True);
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -316,13 +316,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, 20, cancellationToken: CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27&start=20"));
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.True);
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -331,7 +331,7 @@ namespace FileShareClientTests
         [TestCase(0)]
         public void TestSearchWithInvalidPageSizeThrowsArgumentExceptionAndCancellationn(int pageSize)
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20, cancellationToken: CancellationToken.None));
+            var exception = Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", pageSize, 20, cancellationToken: CancellationToken.None)));
 
             Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
@@ -339,7 +339,7 @@ namespace FileShareClientTests
         [Test]
         public void TestSearchWithInvalidPageStartThrowsArgumentExceptionAndCancellation()
         {
-            var exception = Assert.ThrowsAsync<ArgumentException>(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20, cancellationToken: CancellationToken.None));
+            var exception = Assert.ThrowsAsync<ArgumentException>((Func<Task>)(async () => await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", -10, 20, cancellationToken: CancellationToken.None)));
 
             Assert.That(exception.ParamName, Is.EqualTo("pageSize"));
         }
@@ -358,13 +358,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.True);
-            });
+            }
 
             CheckResponseMatchesExpectedResponse(expectedResponse, response.Data);
         }
@@ -383,11 +383,11 @@ namespace FileShareClientTests
             await _fileShareApiClient.SearchAsync("", null, null, cancellationToken: CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
 
         [Test]
@@ -397,13 +397,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.False);
-            });
+            }
         }
 
         [Test]
@@ -413,13 +413,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.SearchAsync("$batch(key) eq 'value'", null, null, cancellationToken: CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/batch"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo("?$filter=$batch(key)%20eq%20%27value%27"));
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.False);
-            });
+            }
         }
     }
 }

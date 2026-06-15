@@ -26,11 +26,11 @@ namespace FileShareClientIntegrationTests
             var result = await _fileShareApiClient.GetBatchStatusAsync(Configuration.GetBatchStatusAsync.BatchId);
 
             Assert.That(result, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.BatchId, Is.EqualTo(Configuration.GetBatchStatusAsync.BatchId));
                 Assert.That(result.Status, Is.Not.Null);
-            });
+            }
         }
 
         [Test]
@@ -84,11 +84,11 @@ namespace FileShareClientIntegrationTests
 
             var result2 = await _fileShareApiClient.DownloadFileAsync(Configuration.DownloadFileAsync.BatchId, Configuration.DownloadFileAsync.FileName, stream, result1.Length, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result2, Is.Not.Null);
                 Assert.That(stream.Length, Is.EqualTo(result1.Length));
-            });
+            }
         }
 
         [Test]
@@ -106,23 +106,23 @@ namespace FileShareClientIntegrationTests
             var result1 = await _fileShareApiClient.BatchAttributeSearchAsync(Configuration.BatchAttributeSearchAsync.SearchQuery, CancellationToken.None);
 
             Assert.That(result1, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result1.IsSuccess, Is.True);
                 Assert.That(result1.StatusCode, Is.EqualTo(200));
                 Assert.That(result1.Data, Is.Not.Null);
-            });
+            }
             Assert.That(result1.Data.BatchAttributes.Any(x => x.Values.Count > Configuration.BatchAttributeSearchAsync.MaxAttributeValueCount + 1), Is.True);
 
             var result2 = await _fileShareApiClient.BatchAttributeSearchAsync(Configuration.BatchAttributeSearchAsync.SearchQuery, Configuration.BatchAttributeSearchAsync.MaxAttributeValueCount, CancellationToken.None);
 
             Assert.That(result2, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result2.IsSuccess, Is.True);
                 Assert.That(result2.StatusCode, Is.EqualTo(200));
                 Assert.That(result2.Data, Is.Not.Null);
-            });
+            }
             Assert.That(result2.Data.BatchAttributes.Any(x => x.Values.Count > Configuration.BatchAttributeSearchAsync.MaxAttributeValueCount + 1), Is.False);
         }
 
@@ -133,13 +133,13 @@ namespace FileShareClientIntegrationTests
 
             Assert.That(result, Is.Not.Null);
             Assert.That(result.Data, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.Data.Length, Is.GreaterThan(0));
-                Assert.That(result.Errors?.Count, Is.EqualTo(0));
+                Assert.That(result.Errors?.Count, Is.Zero);
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.StatusCode, Is.EqualTo(200));
-            });
+            }
         }
     }
 }

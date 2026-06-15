@@ -92,11 +92,11 @@ namespace FileShareAdminClientTests
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var batchCommitModel = _lastRequestBodies.Last()?.DeserialiseJson<List<FileDetail>>();
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(batchCommitModel?.Select(f => f.FileName), Is.EqualTo(new object[] { filename1, filename2 }));
-            });
+            }
         }
 
         [Test]
@@ -135,11 +135,11 @@ namespace FileShareAdminClientTests
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var batchCommitModel = _lastRequestBodies.Last()?.DeserialiseJson<List<FileDetail>>();
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(batchCommitModel?.Select(f => f.FileName), Is.EqualTo(new object[] { filename1, filename2 }));
-            });
+            }
         }
 
         [Test]
@@ -194,11 +194,11 @@ namespace FileShareAdminClientTests
             await _fileShareApiAdminClient.CommitBatchAsync(batchHandle);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
 
         [Test]
@@ -211,11 +211,11 @@ namespace FileShareAdminClientTests
             await _fileShareApiAdminClient.RollBackBatchAsync(batchHandle);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
     }
 }

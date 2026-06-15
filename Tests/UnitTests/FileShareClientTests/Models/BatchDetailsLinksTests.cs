@@ -16,7 +16,7 @@ namespace FileShareClientTests.Models
             var batchDetailsLinks1C = new BatchDetailsLinks(batchDetailsLinks1.Get);
             var batchDetailsLinks2 = new BatchDetailsLinks(new Link("Link2"));
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchDetailsLinks.Equals(emptyBatchDetailsLinks), Is.True);
                 Assert.That(emptyBatchDetailsLinks.Equals(batchDetailsLinks1), Is.False);
@@ -25,7 +25,7 @@ namespace FileShareClientTests.Models
                 Assert.That(batchDetailsLinks1.Equals(batchDetailsLinks1B), Is.True);
                 Assert.That(batchDetailsLinks1.Equals(batchDetailsLinks1C), Is.True);
                 Assert.That(batchDetailsLinks1.Equals(batchDetailsLinks2), Is.False);
-            });
+            }
         }
 
         [Test]
@@ -36,16 +36,16 @@ namespace FileShareClientTests.Models
             var batchDetailsLinks1 = new BatchDetailsLinks(new Link("Link1"));
             var batchDetailsLinks1B = new BatchDetailsLinks(new Link("Link1"));
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchDetailsLinks.GetHashCode(), Is.Not.Zero);
                 Assert.That(batchDetailsLinks1.GetHashCode(), Is.Not.Zero);
-            });
-            Assert.Multiple(() =>
+            }
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchDetailsLinks.GetHashCode(), Is.EqualTo(emptyBatchDetailsLinks.GetHashCode()));
                 Assert.That(batchDetailsLinks1.GetHashCode(), Is.EqualTo(batchDetailsLinks1.GetHashCode()));
-            });
+            }
             Assert.That(batchDetailsLinks1.GetHashCode(), Is.EqualTo(batchDetailsLinks1B.GetHashCode()));
         }
 

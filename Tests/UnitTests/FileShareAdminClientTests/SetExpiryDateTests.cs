@@ -69,11 +69,11 @@ namespace FileShareAdminClientTests
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var expiryDate = _lastRequestBodies.First()?.DeserialiseJson<BatchExpiryModel>();
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(expiryDate?.ExpiryDate, Is.EqualTo(dateTime));
-            });
+            }
         }
     }
 }

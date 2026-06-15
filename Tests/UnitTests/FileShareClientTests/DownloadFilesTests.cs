@@ -65,11 +65,11 @@ namespace FileShareClientTests
 
             var batchStatusResponse = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(((MemoryStream)batchStatusResponse).ToArray(), Is.EqualTo(expectedBytes));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
-            });
+            }
         }
 
         [Test]
@@ -142,11 +142,11 @@ namespace FileShareClientTests
             await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt");
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
 
         [Test]
@@ -159,11 +159,11 @@ namespace FileShareClientTests
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
-            });
+            }
         }
 
         [Test]
@@ -174,14 +174,14 @@ namespace FileShareClientTests
             _nextResponses.Enqueue(new MemoryStream(expectedBytes));
             var destStream = new MemoryStream();
 
-            var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
+            _ = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
 
         [Test]
@@ -194,11 +194,11 @@ namespace FileShareClientTests
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
-            });
+            }
         }
 
         [Test]
@@ -211,11 +211,11 @@ namespace FileShareClientTests
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
-            });
+            }
         }
 
         [Test]
@@ -228,11 +228,11 @@ namespace FileShareClientTests
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
-            });
+            }
         }
 
         [Test]
@@ -251,12 +251,12 @@ namespace FileShareClientTests
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, totalLength, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(destStream.Length, Is.EqualTo(totalLength));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files/AFilename.txt"));
-            });
+            }
         }
 
         [Test]
@@ -269,11 +269,11 @@ namespace FileShareClientTests
 
             var result = await _fileShareApiClient.DownloadFileAsync(batchId, "AFilename.txt", destStream, expectedBytes.Length, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(destStream.Length, Is.EqualTo(expectedBytes.Length));
-            });
+            }
         }
 
         [Test]
@@ -286,13 +286,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(response.Data, Is.EqualTo(expectedBytes));
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.True);
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
-            });
+            }
         }
 
         [Test]
@@ -303,13 +303,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(response.Data, Is.Null);
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.False);
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
-            });
+            }
         }
 
         [Test]
@@ -320,13 +320,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(response.Data, Is.Null);
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.False);
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
-            });
+            }
         }
 
         [Test]
@@ -337,13 +337,13 @@ namespace FileShareClientTests
 
             var response = await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(response.Data, Is.Null);
                 Assert.That(response.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(response.IsSuccess, Is.False);
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/basePath/batch/{batchId}/files"));
-            });
+            }
         }
 
         [Test]
@@ -356,11 +356,11 @@ namespace FileShareClientTests
             await _fileShareApiClient.DownloadZipFileAsync(batchId, CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
     }
 }

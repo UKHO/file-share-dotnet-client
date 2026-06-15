@@ -15,7 +15,7 @@ namespace FileShareClientTests.Models
             var batchStatusResponse2 = new BatchStatusResponse { BatchId = "batch2", Status = BatchStatusResponse.StatusEnum.Committed };
             var batchStatusResponse3 = new BatchStatusResponse { BatchId = "batch1", Status = BatchStatusResponse.StatusEnum.Rolledback };
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchStatusResponse.Equals(emptyBatchStatusResponse), Is.True);
                 Assert.That(emptyBatchStatusResponse.Equals(batchStatusResponse1), Is.False);
@@ -25,7 +25,7 @@ namespace FileShareClientTests.Models
                 Assert.That(batchStatusResponse1.Equals(emptyBatchStatusResponse), Is.False);
                 Assert.That(batchStatusResponse1.Equals(batchStatusResponse2), Is.False);
                 Assert.That(batchStatusResponse1.Equals(batchStatusResponse3), Is.False);
-            });
+            }
         }
 
         [Test]
@@ -36,16 +36,16 @@ namespace FileShareClientTests.Models
             var batchStatusResponse1 = new BatchStatusResponse { BatchId = "batch1", Status = BatchStatusResponse.StatusEnum.Committed };
             var batchStatusResponse1A = new BatchStatusResponse { BatchId = "batch1", Status = BatchStatusResponse.StatusEnum.Committed };
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchStatusResponse.GetHashCode(), Is.Not.Zero);
                 Assert.That(batchStatusResponse1.GetHashCode(), Is.Not.Zero);
-            });
-            Assert.Multiple(() =>
+            }
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchStatusResponse.GetHashCode(), Is.EqualTo(emptyBatchStatusResponse.GetHashCode()));
                 Assert.That(batchStatusResponse1.GetHashCode(), Is.EqualTo(batchStatusResponse1.GetHashCode()));
-            });
+            }
             Assert.That(batchStatusResponse1.GetHashCode(), Is.EqualTo(batchStatusResponse1A.GetHashCode()));
         }
 

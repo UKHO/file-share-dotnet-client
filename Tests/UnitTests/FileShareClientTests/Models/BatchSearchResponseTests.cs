@@ -51,7 +51,7 @@ namespace FileShareClientTests.Models
                 Total = 2
             };
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchSearchResponse.Equals(emptyBatchSearchResponse), Is.True);
                 Assert.That(emptyBatchSearchResponse.Equals(batchSearchResponse1), Is.False);
@@ -62,7 +62,7 @@ namespace FileShareClientTests.Models
                 Assert.That(batchSearchResponse1.Equals(emptyBatchSearchResponse), Is.False);
                 Assert.That(batchSearchResponse1.Equals(batchSearchResponse2), Is.False);
                 Assert.That(batchSearchResponse1.Equals(batchSearchResponse3), Is.False);
-            });
+            }
         }
 
         [Test]
@@ -78,16 +78,16 @@ namespace FileShareClientTests.Models
                 Total = 2
             };
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchSearchResponse.GetHashCode(), Is.Not.Zero);
                 Assert.That(batchSearchResponse1.GetHashCode(), Is.Not.Zero);
-            });
-            Assert.Multiple(() =>
+            }
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchSearchResponse.GetHashCode(), Is.EqualTo(emptyBatchSearchResponse.GetHashCode()));
                 Assert.That(batchSearchResponse1.GetHashCode(), Is.EqualTo(batchSearchResponse1.GetHashCode()));
-            });
+            }
         }
 
         [Test]

@@ -32,7 +32,7 @@ namespace FileShareClientTests.Models
                 Status = BatchDetails.StatusEnum.Rolledback
             };
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchDetails.Equals(emptyBatchDetails), Is.True);
                 Assert.That(emptyBatchDetails.Equals(batchDetails1), Is.False);
@@ -40,7 +40,7 @@ namespace FileShareClientTests.Models
 
                 Assert.That(batchDetails1.Equals(batchDetails1B), Is.True);
                 Assert.That(batchDetails1.Equals(link2), Is.False);
-            });
+            }
         }
 
         [Test]
@@ -63,17 +63,17 @@ namespace FileShareClientTests.Models
                 Attributes = new List<BatchDetailsAttributes>()
             };
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchDetails.GetHashCode(), Is.Not.Zero);
                 Assert.That(batchDetails1.GetHashCode(), Is.Not.Zero);
-            });
-            Assert.Multiple(() =>
+            }
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyBatchDetails.GetHashCode(), Is.EqualTo(emptyBatchDetails.GetHashCode()));
                 Assert.That(batchDetails1.GetHashCode(), Is.EqualTo(batchDetails1.GetHashCode()));
                 Assert.That(batchDetails1.GetHashCode(), Is.EqualTo(batchDetails1B.GetHashCode()));
-            });
+            }
         }
 
         [Test]

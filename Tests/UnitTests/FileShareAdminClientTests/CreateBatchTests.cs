@@ -64,11 +64,11 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" });
 
             Assert.That(batchHandle, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
-            });
+            }
         }
 
         [Test]
@@ -80,11 +80,11 @@ namespace FileShareAdminClientTests
             var createBatchResult = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
 
             Assert.That(createBatchResult, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(createBatchResult.Data.BatchId, Is.EqualTo(expectedBatchId));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
-            });
+            }
         }
 
         [Test]
@@ -96,13 +96,13 @@ namespace FileShareAdminClientTests
             var createBatchResult = await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
 
             Assert.That(createBatchResult, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(createBatchResult.Data, Is.Null);
                 Assert.That(createBatchResult.StatusCode, Is.EqualTo((int)_nextResponseStatusCode));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
                 Assert.That(createBatchResult.Errors[0].Description, Is.EqualTo("Business Unit is invalid"));
-            });
+            }
         }
 
         [Test]
@@ -125,22 +125,22 @@ namespace FileShareAdminClientTests
             var batchHandle = await _fileShareApiAdminClient.CreateBatchAsync(batchModel);
 
             Assert.That(batchHandle, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(batchHandle.BatchId, Is.EqualTo(expectedBatchId));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/batch"));
                 Assert.That(_lastRequestBodies, Has.Count.EqualTo(1));
-            });
+            }
             var actualRequest = _lastRequestBodies[0]?.DeserialiseJson<BatchModel>();
             Assert.That(actualRequest, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequest.BusinessUnit, Is.EqualTo(batchModel.BusinessUnit));
                 Assert.That(actualRequest.Attributes, Is.EqualTo(batchModel.Attributes));
                 Assert.That(actualRequest.Acl.ReadGroups, Is.EqualTo(batchModel.Acl.ReadGroups));
                 Assert.That(actualRequest.Acl.ReadUsers, Is.EqualTo(batchModel.Acl.ReadUsers));
                 Assert.That(actualRequest.ExpiryDate, Is.EqualTo(batchModel.ExpiryDate.Value.TruncateToMilliseconds()));
-            });
+            }
         }
 
         [Test]
@@ -167,12 +167,12 @@ namespace FileShareAdminClientTests
 
             var batchStatusResponse = await _fileShareApiAdminClient.GetBatchStatusAsync(batchHandle);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(batchStatusResponse.Status, Is.EqualTo(BatchStatusResponse.StatusEnum.Incomplete));
                 Assert.That(batchStatusResponse.BatchId, Is.EqualTo(expectedBatchId));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/batch/{expectedBatchId}/status"));
-            });
+            }
         }
 
         [Test]
@@ -199,12 +199,12 @@ namespace FileShareAdminClientTests
 
             var batchStatusResponse = await _fileShareApiAdminClient.GetBatchStatusAsync(batchHandle.Data);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(batchStatusResponse.Status, Is.EqualTo(BatchStatusResponse.StatusEnum.Incomplete));
                 Assert.That(batchStatusResponse.BatchId, Is.EqualTo(expectedBatchId));
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo($"/batch/{expectedBatchId}/status"));
-            });
+            }
         }
 
         [Test]
@@ -215,11 +215,11 @@ namespace FileShareAdminClientTests
             await _fileShareApiAdminClient.CreateBatchAsync(new BatchModel { BusinessUnit = "TestUnit" }, CancellationToken.None);
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
     }
 }

@@ -71,12 +71,12 @@ namespace FileShareAdminClientTests
             };
             var actualRequests = _lastRequestUris.Select(x => $"{x.HttpMethod}:{x.Uri?.AbsolutePath}");
             var appendAcl = _lastRequestBodies.First()?.DeserialiseJson<Acl>();
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(actualRequests, Is.EqualTo(expectedRequests));
                 Assert.That(appendAcl?.ReadGroups, Is.EqualTo(acl.ReadGroups));
                 Assert.That(appendAcl?.ReadUsers, Is.EqualTo(acl.ReadUsers));
-            });
+            }
         }
     }
 }

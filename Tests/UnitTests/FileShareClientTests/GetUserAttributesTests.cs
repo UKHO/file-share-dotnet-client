@@ -45,12 +45,12 @@ namespace FileShareClientTests
 
             var attributes = await _fileShareApiClient.GetUserAttributesAsync();
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
                 Assert.That(attributes, Is.EqualTo((List<string>)_nextResponse));
-            });
+            }
         }
 
         [Test]
@@ -60,12 +60,12 @@ namespace FileShareClientTests
 
             var attributes = await _fileShareApiClient.GetUserAttributesAsync();
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
                 Assert.That(attributes, Is.EqualTo((List<string>)_nextResponse));
-            });
+            }
         }
 
         [Test]
@@ -73,14 +73,14 @@ namespace FileShareClientTests
         {
             _nextResponseStatusCode = HttpStatusCode.ServiceUnavailable;
 
-            var exception = Assert.ThrowsAsync<HttpRequestException>(_fileShareApiClient.GetUserAttributesAsync);
+            var exception = Assert.ThrowsAsync<HttpRequestException>((Func<Task>)(async () => await _fileShareApiClient.GetUserAttributesAsync()));
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_lastRequestUri?.AbsolutePath, Is.EqualTo("/basePath/attributes"));
                 Assert.That(_lastRequestUri?.Query, Is.EqualTo(""), "Should be no query query string for an empty search");
                 Assert.That(exception.Message, Is.EqualTo("Response status code does not indicate success: 503 (Service Unavailable)."));
-            });
+            }
         }
 
         [Test]
@@ -91,11 +91,11 @@ namespace FileShareClientTests
             await _fileShareApiClient.GetUserAttributesAsync();
 
             Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Scheme, Is.EqualTo("bearer"));
                 Assert.That(_fakeFssHttpClientFactory.HttpClient.DefaultRequestHeaders.Authorization.Parameter, Is.EqualTo(DUMMY_ACCESS_TOKEN));
-            });
+            }
         }
     }
 }

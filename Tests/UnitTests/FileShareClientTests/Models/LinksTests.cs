@@ -20,7 +20,7 @@ namespace FileShareClientTests.Models
             var link5 = new Links(new Link("selfLink"), new Link("firstLink"), new Link("previousLink"), new Link("differentNextLink"), new Link("lastLink"));
             var link6 = new Links(new Link("selfLink"), new Link("firstLink"), new Link("previousLink"), new Link("nextLink"), new Link("differentLastLink"));
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyLinks.Equals(emptyLinks), Is.True);
                 Assert.That(emptyLinks.Equals(link1), Is.False);
@@ -33,7 +33,7 @@ namespace FileShareClientTests.Models
                 Assert.That(link1.Equals(link4), Is.False);
                 Assert.That(link1.Equals(link5), Is.False);
                 Assert.That(link1.Equals(link6), Is.False);
-            });
+            }
         }
 
         [Test]
@@ -44,17 +44,17 @@ namespace FileShareClientTests.Models
             var links1 = new Links(new Link("selfLink"), new Link("firstLink"), new Link("previousLink"), new Link("nextLink"), new Link("lastLink"));
             var links1B = new Links(new Link("selfLink"), new Link("firstLink"), new Link("previousLink"), new Link("nextLink"), new Link("lastLink"));
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyLinks.GetHashCode(), Is.Not.Zero);
                 Assert.That(links1.GetHashCode(), Is.Not.Zero);
                 Assert.That(links1B.GetHashCode(), Is.Not.Zero);
-            });
-            Assert.Multiple(() =>
+            }
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(emptyLinks.GetHashCode(), Is.EqualTo(emptyLinks.GetHashCode()));
                 Assert.That(links1.GetHashCode(), Is.EqualTo(links1.GetHashCode()));
-            });
+            }
             Assert.That(links1.GetHashCode(), Is.EqualTo(links1B.GetHashCode()));
         }
 

@@ -26,13 +26,13 @@ namespace FileShareClientTests
 
             var result = await Result.WithStreamData(response);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.Data, Is.EqualTo(stream));
                 Assert.That(result.StatusCode, Is.EqualTo((int)statusCode));
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.Errors, Has.Count.EqualTo(0));
-            });
+            }
         }
 
         [TestCase(HttpStatusCode.OK)]
@@ -48,14 +48,14 @@ namespace FileShareClientTests
 
             var result = await Result.WithObjectData<List<string>>(response);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.Data[0], Is.EqualTo(content[0]));
                 Assert.That(result.Data[1], Is.EqualTo(content[1]));
                 Assert.That(result.StatusCode, Is.EqualTo((int)statusCode));
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.Errors, Has.Count.EqualTo(0));
-            });
+            }
         }
 
         [TestCase(HttpStatusCode.OK)]
@@ -70,13 +70,13 @@ namespace FileShareClientTests
 
             var result = await Result.WithNullData<string>(response);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(result.Data, Is.Null);
                 Assert.That(result.StatusCode, Is.EqualTo((int)statusCode));
                 Assert.That(result.IsSuccess, Is.True);
                 Assert.That(result.Errors, Has.Count.EqualTo(0));
-            });
+            }
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace FileShareClientTests
 
             void CommonAssertions<T>(IResult<T> result)
             {
-                Assert.Multiple(() =>
+                using (Assert.EnterMultipleScope())
                 {
                     Assert.That(result.Data, Is.Null);
                     Assert.That(result.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
@@ -120,7 +120,7 @@ namespace FileShareClientTests
                     Assert.That(result.Errors[0].Description, Is.EqualTo(badRequestContent.Errors[0].Description));
                     Assert.That(result.Errors[1].Source, Is.EqualTo(badRequestContent.Errors[1].Source));
                     Assert.That(result.Errors[1].Description, Is.EqualTo(badRequestContent.Errors[1].Description));
-                });
+                }
             }
         }
 
@@ -139,13 +139,13 @@ namespace FileShareClientTests
 
             void CommonAssertions<T>(IResult<T> result)
             {
-                Assert.Multiple(() =>
+                using (Assert.EnterMultipleScope())
                 {
                     Assert.That(result.Data, Is.Null);
                     Assert.That(result.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
                     Assert.That(result.IsSuccess, Is.False);
                     Assert.That(result.Errors, Is.Not.Null);
-                });
+                }
                 Assert.That(result.Errors, Has.Count.EqualTo(0));
             }
         }
@@ -166,13 +166,13 @@ namespace FileShareClientTests
 
             void CommonAssertions<T>(IResult<T> result)
             {
-                Assert.Multiple(() =>
+                using (Assert.EnterMultipleScope())
                 {
                     Assert.That(result.Data, Is.Null);
                     Assert.That(result.StatusCode, Is.EqualTo((int)HttpStatusCode.BadRequest));
                     Assert.That(result.IsSuccess, Is.False);
                     Assert.That(result.Errors[0].Description, Is.EqualTo(errorContent));
-                });
+                }
             }
         }
     }

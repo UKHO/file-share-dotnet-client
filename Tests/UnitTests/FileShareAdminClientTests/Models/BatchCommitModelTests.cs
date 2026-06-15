@@ -20,12 +20,12 @@ namespace FileShareAdminClientTests.Models
             var json = JsonConvert.SerializeObject(model);
             var deserialisedModel = JsonConvert.DeserializeObject<BatchCommitModel>(json);
             Assert.That(deserialisedModel, Is.Not.Null);
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(deserialisedModel.FileDetails, Has.Count.EqualTo(model.FileDetails.Count));
                 Assert.That(deserialisedModel.FileDetails.Single().FileName, Is.EqualTo(model.FileDetails.Single().FileName));
                 Assert.That(deserialisedModel.FileDetails.Single().Hash, Is.EqualTo(model.FileDetails.Single().Hash));
-            });
+            }
         }
     }
 }
