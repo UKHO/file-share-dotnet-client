@@ -24,9 +24,9 @@ variables:
 - name: UKHOAssemblyProduct
   value: "File Share Dotnet Client"
 - name: SdkVersion
-  value: "8.0.x"
+  value: "10.0.x"
 - name: DotNetVersion
-  value: net8.0
+  value: net10.0
 - name: DotNetFrameworkVersion
   value: net48
 
