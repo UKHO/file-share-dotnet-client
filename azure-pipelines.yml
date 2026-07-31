@@ -171,7 +171,13 @@ stages:
     - group: Client Library Integration Tests
     steps:
     - checkout: none
-  
+
+    - task: UseDotNet@2
+      displayName: 'Use .NET $(SdkVersion) sdk'
+      inputs:
+        packageType: sdk
+        version: $(SdkVersion)
+
     - download: current
       displayName: Download integration tests
       artifact: IntegrationTests
