@@ -152,6 +152,33 @@ stages:
           **/FileShareClientIntegrationTests.csproj
         arguments: '--framework $(DotNetVersion) --configuration $(BuildConfiguration) --output $(Build.BinariesDirectory)\IntegrationTests\$(DotNetVersion) --no-restore'
 
+    - task: PowerShell@2
+      displayName: List all files in IntegrationTests directory
+      inputs:
+        targetType: inline
+        script: |
+          $IntegrationTestsPath = "$(Build.BinariesDirectory)\IntegrationTests"
+          Write-Host "=== Files in IntegrationTests Directory ===" -ForegroundColor Cyan
+          Write-Host "Path: $IntegrationTestsPath" -ForegroundColor Yellow
+          Write-Host ""
+          
+          if (Test-Path $IntegrationTestsPath) {
+            $files = Get-ChildItem -Path $IntegrationTestsPath -Recurse -File
+            
+            if ($files.Count -eq 0) {
+              Write-Host "No files found in directory." -ForegroundColor Yellow
+            } else {
+              Write-Host "Total files: $($files.Count)" -ForegroundColor Green
+              Write-Host ""
+              foreach ($file in $files) {
+                $relativePath = $file.FullName.Replace($IntegrationTestsPath, "").TrimStart("\")
+                Write-Host "  - $relativePath" -ForegroundColor Green
+              }
+            }
+          } else {
+            Write-Host "Directory not found!" -ForegroundColor Red
+          }
+
     - task: PublishPipelineArtifact@1
       displayName: Publish integration tests artifact
       inputs:
